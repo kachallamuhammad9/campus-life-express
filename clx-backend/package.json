@@ -1,0 +1,37 @@
+{
+  "name": "clx-backend",
+  "version": "1.0.0",
+  "description": "Campus Life Express (CLX) - Backend API Server. Flagship product of Dandalin Sauki Ltd",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "test": "node test/runner.js"
+  },
+  "keywords": [
+    "campus",
+    "commerce",
+    "express",
+    "api"
+  ],
+  "author": "Dandalin Sauki Ltd",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.0",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "supabase": "^2.115.0"
+  }
+}

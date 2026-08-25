@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace Rules & Safety | Campus Life Express (CLX)</title>
+    <meta name="description" content="Peer-to-peer student marketplace rules, permitted vs. prohibited items, safety guidelines, and meetup tips for Campus Life Express (CLX).">
+    <meta name="theme-color" content="#001F7F">
+
+    <link rel="icon" href="images/clx.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body class="policy-page marketplace-rules-page">
+
+    <!-- Header & Nav -->
+    <header class="header">
+        <div class="announcement-bar" style="background:#001556;color:#ffffff;font-size:12px;padding:8px 0;">
+            <div class="container announcement-content" style="display:flex;align-items:center;justify-content:space-between;">
+                <span><i class="fa-solid fa-handshake-angle" style="color:#FCC501;margin-right:6px;"></i> Student Safety & Commerce Guidelines</span>
+                <span style="opacity:0.85;">Dandalin Sauki Ltd</span>
+            </div>
+        </div>
+
+        <div class="navbar" style="background:#ffffff;border-bottom:1px solid var(--gray-200);">
+            <div class="container header-container" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">
+                <a href="index.html" class="logo" aria-label="Campus Life Express Home">
+                    <img src="images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-img">
+                </a>
+
+                <nav class="desktop-nav">
+                    <ul class="nav-list" style="display:flex;align-items:center;gap:20px;margin:0;list-style:none;">
+                        <li><a href="index.html" style="font-weight:500;color:var(--gray-700);">Home</a></li>
+                        <li><a href="categories.html" style="font-weight:500;color:var(--gray-700);">Categories</a></li>
+                        <li><a href="food.html" style="font-weight:500;color:var(--gray-700);">Food</a></li>
+                        <li><a href="shopping.html" style="font-weight:500;color:var(--gray-700);">Shopping</a></li>
+                        <li><a href="services.html" style="font-weight:500;color:var(--gray-700);">Services</a></li>
+                        <li><a href="marketplace.html" style="font-weight:500;color:var(--gray-700);">Marketplace</a></li>
+                        <li><a href="delivery.html" style="font-weight:500;color:var(--gray-700);">Delivery</a></li>
+                        <li><a href="orders.html" style="font-weight:500;color:var(--gray-700);">Orders</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions" style="display:flex;align-items:center;gap:12px;">
+                    <a href="sell.html" class="btn btn-primary" style="background:var(--color-primary);color:#fff;font-size:13px;padding:8px 16px;border-radius:10px;">
+                        Sell an Item
+                    </a>
+                
+                    <!-- Mobile Toggle -->
+                    <button id="mobile-toggle" type="button" class="mobile-toggle" aria-label="Open Menu" style="font-size:20px;color:var(--gray-800);">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="menu-overlay" class="menu-overlay"></div>
+
+        <!-- Mobile Navigation -->
+        <aside id="mobile-menu" class="mobile-menu" aria-label="Mobile Navigation">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--gray-200);">
+                <div style="font-weight:700;color:var(--color-primary);">Campus Life Express</div>
+                <button id="close-menu" type="button" class="close-menu" style="font-size:20px;color:var(--gray-500);"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <ul style="padding:20px;list-style:none;">
+                <li style="margin-bottom:14px;"><a href="index.html" style="font-weight:600;color:var(--color-primary);"><i class="fa-solid fa-house" style="margin-right:10px;"></i> Home</a></li>
+                <li style="margin-bottom:14px;"><a href="categories.html"><i class="fa-solid fa-layer-group" style="margin-right:10px;"></i> All Categories</a></li>
+                <li style="margin-bottom:14px;"><a href="food.html"><i class="fa-solid fa-utensils" style="margin-right:10px;"></i> Food & Vendors</a></li>
+                <li style="margin-bottom:14px;"><a href="shopping.html"><i class="fa-solid fa-bag-shopping" style="margin-right:10px;"></i> Student Shopping</a></li>
+                <li style="margin-bottom:14px;"><a href="services.html"><i class="fa-solid fa-screwdriver-wrench" style="margin-right:10px;"></i> Campus Services</a></li>
+                <li style="margin-bottom:14px;"><a href="marketplace.html"><i class="fa-solid fa-handshake" style="margin-right:10px;"></i> Student Marketplace</a></li>
+                <li style="margin-bottom:14px;"><a href="delivery.html"><i class="fa-solid fa-truck-fast" style="margin-right:10px;"></i> Delivery & Errands</a></li>
+                <li style="margin-bottom:14px;"><a href="vendors.html"><i class="fa-solid fa-store" style="margin-right:10px;"></i> Campus Businesses</a></li>
+                <li style="margin-bottom:14px;"><a href="orders.html"><i class="fa-solid fa-box-open" style="margin-right:10px;"></i> My Orders & Requests</a></li>
+                <li style="margin-bottom:14px;"><a href="account.html"><i class="fa-solid fa-user" style="margin-right:10px;"></i> Student Account</a></li>
+                <li style="margin-top:24px;border-top:1px solid var(--gray-200);padding-top:16px;">
+                    <a href="sell.html" class="btn btn-outline" style="width:100%;margin-bottom:10px;text-align:center;display:block;">Sell on CLX</a>
+                    <a href="vendor-onboarding.html" class="btn btn-primary" style="width:100%;text-align:center;display:block;background:var(--color-primary);color:#fff;">Become a Vendor</a>
+                </li>
+            </ul>
+        </aside>
+    </header>
+
+    <!-- Page Banner -->
+    <section class="policy-banner" style="background:linear-gradient(135deg, #001F7F 0%, #001556 100%);color:#fff;padding-top:20px;padding-bottom:20px;height:130px;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;">
+        <div class="container" style="max-width:800px;">
+            <div class="policy-badge" style="display:inline-flex;align-items:center;gap:8px;background:rgba(252,197,1,0.15);color:#FCC501;padding:6px 16px;border-radius:999px;font-size:12px;font-weight:700;margin-bottom:5px;">
+                <i class="fa-solid fa-shield-check"></i> TRUST & SAFETY CODE
+            </div>
+            <h1 style="font-size:clamp(24px, 3.5vw, 32px);font-weight:800;margin-bottom:3px;color:#fff;">Marketplace Rules</h1>
+            <div class="policy-updated" style="margin-top:7px;font-size:12px;color:#94A3B8;">
+                Last Updated: August 2026 • Published by Dandalin Sauki Ltd
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="policy-content-section" style="padding:50px 0 70px;background:#F8FAFC;">
+        <div class="container policy-cards-grid" style="max-width:1280px;">
+
+            <div class="policy-card" style="background:#ffffff;border-radius:20px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 4px 15px rgba(0,0,0,0.02);margin-bottom:30px;text-align:justify;">
+                <h2 style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                    <i class="fa-solid fa-circle-info" style="color:var(--color-primary);font-size:18px;"></i> Introduction & Community Standards
+                </h2>
+                <p style="font-size:14px;color:var(--gray-700);line-height:1.7;margin-bottom:16px;">
+                    The <strong>Campus Life Express (CLX) Student Marketplace</strong>, operated by <strong>Dandalin Sauki Ltd</strong>, empowers university students to buy, sell, and trade pre-owned academic materials, electronics, hostel equipment, and student essentials in a secure campus environment.
+                </p>
+                <p style="font-size:14px;color:var(--gray-700);line-height:1.7;margin:0;">
+                    To protect students from fraud and ensure a respectful collegiate trading culture, all users must strictly adhere to these marketplace policies, listing standards, and safety meetup protocols.
+                </p>
+            </div>
+
+            <div class="policy-card" style="background:#ffffff;border-radius:20px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 4px 15px rgba(0,0,0,0.02);margin-bottom:30px;text-align:justify;">
+                <h2 style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                    <i class="fa-solid fa-list-check" style="color:var(--color-primary);font-size:18px;"></i> Permitted vs. Prohibited Listings
+                </h2>
+                <p style="font-size:14px;color:var(--gray-700);line-height:1.7;margin-bottom:16px;">
+                    All listings are subjected to automated filtering and student community moderation. Only authorized campus items are permitted:
+                </p>
+                <ul style="padding-left:0px;font-size:14px;color:var(--gray-700);line-height:1.8;margin:0;">
+                    <li><strong>Permitted Academic Goods:</strong> Textbooks, study notes, laboratory coats, drawing instruments, and approved scientific calculators.</li>
+                    <li><strong>Permitted Hostel Essentials:</strong> Laptops, mobile phones, rechargeable fans, reading lamps, hotplates, mattresses, and room decor.</li>
+                    <li><strong>Prohibited Contraband:</strong> Stolen items, examination leaks, forged documents, prescription medicines, weapons, and counterfeit goods.</li>
+                    <li><strong>Zero Tolerance:</strong> Academic dishonesty, sale of leaked tests, or unlawful substances results in an immediate permanent ban.</li>
+                </ul>
+            </div>
+
+            <div class="policy-card" style="background:#ffffff;border-radius:20px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 4px 15px rgba(0,0,0,0.02);margin-bottom:30px;text-align:justify;">
+                <h2 style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                    <i class="fa-solid fa-camera-retro" style="color:var(--color-primary);font-size:18px;"></i> Listing Quality & Accurate Condition
+                </h2>
+                <p style="font-size:14px;color:var(--gray-700);line-height:1.7;margin-bottom:16px;">
+                    Sellers are held to high standards of honesty and transparency to prevent misunderstandings:
+                </p>
+                <ul style="padding-left:20px;font-size:14px;color:var(--gray-700);line-height:1.8;margin:0;">
+                    <li><strong>Authentic Photographs:</strong> Upload clear, actual photos of the item you possess. Downloaded stock photos from online retail sites are strictly prohibited.</li>
+                    <li><strong>Disclose Defects:</strong> Clearly specify battery wear, cosmetic flaws, screen scratches, or missing cables in the item description.</li>
+                    <li><strong>Reasonable Student Pricing:</strong> Set transparent prices in Naira (₦). Price gouging on essential faculty study materials is prohibited.</li>
+                    <li><strong>Prompt Status Updates:</strong> Sellers must promptly mark items as sold once an exchange is concluded with a buyer.</li>
+                </ul>
+            </div>
+
+            <div class="policy-card" style="background:#ffffff;border-radius:20px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 4px 15px rgba(0,0,0,0.02);margin-bottom:30px;text-align:justify;">
+                <h2 style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                    <i class="fa-solid fa-location-dot" style="color:var(--color-primary);font-size:18px;"></i> Safe Meetups & Handover Protocols
+                </h2>
+                <p style="font-size:14px;color:var(--gray-700);line-height:1.7;margin-bottom:16px;">
+                    Always prioritize your personal security when meeting peers to inspect and exchange goods:
+                </p>
+                <ul style="padding-left:20px;font-size:14px;color:var(--gray-700);line-height:1.8;margin:0;">
+                    <li><strong>Public Campus Landmarks:</strong> Arrange meetups in well-lit, populated spots like the University Library foyer, Student Union Building (SUB), or cafeteria.</li>
+                    <li><strong>Daylight Hours:</strong> Schedule inspections during daytime hours. Avoid private off-campus rooms or secluded quarters after dark.</li>
+                    <li><strong>Test Before Paying:</strong> Thoroughly power on gadgets, inspect device ports, and check textbook pages before confirming payment.</li>
+                    <li><strong>CLX Campus Courier:</strong> Use CLX verified errand runners for safe hostel delivery if unable to meet in person.</li>
+                </ul>
+            </div>
+
+            <div class="policy-card" style="background:#ffffff;border-radius:20px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 4px 15px rgba(0,0,0,0.02);margin-bottom:30px;text-align:justify;">
+                <h2 style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                    <i class="fa-solid fa-shield-halved" style="color:var(--color-primary);font-size:18px;"></i> Payments & Anti-Fraud Protection
+                </h2>
+                <p style="font-size:14px;color:var(--gray-700);line-height:1.7;margin-bottom:16px;">
+                    Protect your student allowance and avoid financial scams with these security practices:
+                </p>
+                <ul style="padding-left:20px;font-size:14px;color:var(--gray-700);line-height:1.8;margin:0;">
+                    <li><strong>No Advance Deposits:</strong> Never transfer funds in advance to a seller before physically inspecting the item on campus.</li>
+                    <li><strong>Confirm Bank Credit:</strong> Sellers must verify successful in-app bank credit notifications before releasing merchandise to a buyer.</li>
+                    <li><strong>Credential Protection:</strong> CLX staff will never ask for your bank PIN, card CVV, or one-time password (OTP).</li>
+                    <li><strong>Report Scams Promptly:</strong> Immediately flag suspicious users or fraudulent payment links to our Trust & Safety team.</li>
+                </ul>
+            </div>
+
+            <div class="policy-card" style="background:#ffffff;border-radius:20px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 4px 15px rgba(0,0,0,0.02);text-align:justify;">
+                <h2 style="font-size:20px;font-weight:800;color:var(--gray-900);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                    <i class="fa-solid fa-gavel" style="color:var(--color-primary);font-size:18px;"></i> Violations & Moderation Enforcement
+                </h2>
+                <p style="font-size:14px;color:var(--gray-700);line-height:1.7;margin-bottom:14px;">
+                    Dandalin Sauki Ltd maintains strict enforcement procedures to maintain a reliable student marketplace:
+                </p>
+                <ul style="padding-left:20px;font-size:14px;color:var(--gray-700);line-height:1.8;margin-bottom:16px;">
+                    <li><strong>First Infraction:</strong> Immediate removal of the offending listing and formal warning issued to the account holder.</li>
+                    <li><strong>Repeated Misrepresentation:</strong> 30-day suspension of marketplace selling privileges across all campus portals.</li>
+                    <li><strong>Fraud & Contraband:</strong> Permanent account termination, platform blacklist, and reporting to Campus Security authorities.</li>
+                </ul>
+                <p style="font-size:13px;color:var(--gray-600);line-height:1.6;margin:0;">
+                    For safety concerns or listing reports, contact <strong style="color:var(--color-primary);">safety@campuslifeexpress.com</strong> or visit our <a href="contact.html" style="color:var(--color-primary);font-weight:600;">Support Desk</a>.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background:#0F172A;color:#94A3B8;padding:60px 0 30px;border-top:1px solid #1E293B;">
+        <div class="container">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:40px;margin-bottom:48px;">
+                <!-- Col 1: Brand -->
+                <div>
+                    <div style="margin-bottom:16px;">
+                        <img src="images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-footer">
+                    </div>
+                    <p style="font-size:13px;line-height:1.6;color:#94A3B8;margin-bottom:16px;text-align:justify;">
+                        The official campus commerce platform connecting food, shopping, services, peer marketplace, and delivery.
+                    </p>
+                    <div style="font-size:12px;color:#64748B;font-weight:500;">
+                        A flagship digital product of <strong style="color:#CBD5E1;">Dandalin Sauki Ltd</strong>.
+                    </div>
+                </div>
+
+                <!-- Col 2: Core Categories -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Core Categories</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="food.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Food & Vendors</a></li>
+                        <li><a href="shopping.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Shopping</a></li>
+                        <li><a href="services.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Services</a></li>
+                        <li><a href="marketplace.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Marketplace</a></li>
+                        <li><a href="delivery.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Delivery & Errands</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Navigation & Portals -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Portals & Orders</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="orders.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Track Orders & Requests</a></li>
+                        <li><a href="account.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Account</a></li>
+                        <li><a href="vendors.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Business Directory</a></li>
+                        <li><a href="sell.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Sell on Student Marketplace</a></li>
+                        <li><a href="vendor-onboarding.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Become a Vendor</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Company & Support -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">About & Support</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="about.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">About CLX</a></li>
+                        <li><a href="contact.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Customer & Vendor Support</a></li>
+                        <li><a href="contact.html#faqs" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Commerce FAQs</a></li>
+                        <li><a href="about.html#safety" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Trust & Moderation</a></li>
+                        <li><a href="contact.html#feedback" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Submit Feedback</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="border-top:1px solid #1E293B;padding-top:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:12px;color:#64748B;text-align:center;">
+                <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
+                    <a href="privacy.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Privacy Policy</a>
+                    <span style="color:#334155;">•</span>
+                    <a href="terms.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Terms of Service</a>
+                    <span style="color:#334155;">•</span>
+                    <a href="marketplace-rules.html" style="color:#FCC501;text-decoration:none;font-weight:600;">Marketplace Rules</a>
+                </div>
+                <div>
+                    © 2026 Campus Life Express (CLX) — Developed by Dandalin Sauki Ltd. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

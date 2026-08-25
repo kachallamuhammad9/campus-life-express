@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Campus Vendor | Campus Life Express (CLX)</title>
+    <meta name="description" content="Register your food kitchen, campus retail shop, or skilled service provider business on CLX.">
+    <meta name="theme-color" content="#001F7F">
+
+    <link rel="icon" href="images/clx.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body class="vendor-onboarding-page">
+
+    <!-- Header & Nav -->
+    <header class="header">
+        <div class="navbar" style="background:#ffffff;border-bottom:1px solid var(--gray-200);">
+            <div class="container header-container" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">
+                <a href="index.html" class="logo" aria-label="Campus Life Express Home">
+                    <img src="images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-img">
+                </a>
+
+                <div class="header-actions">
+                    <a href="vendors.html" class="btn btn-outline" style="font-size:13px;padding:8px 16px;border-radius:10px;border:1px solid var(--gray-300);">
+                        View Directory
+                    </a>
+                
+                    <!-- Mobile Toggle -->
+                    <button id="mobile-toggle" type="button" class="mobile-toggle" aria-label="Open Menu" style="font-size:20px;color:var(--gray-800);">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+                <!-- Mobile Menu Overlay -->
+            <div id="menu-overlay" class="menu-overlay"></div>
+
+            <!-- Mobile Navigation -->
+            <aside id="mobile-menu" class="mobile-menu" aria-label="Mobile Navigation">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--gray-200);">
+                    <div style="font-weight:700;color:var(--color-primary);">Campus Life Express</div>
+                    <button id="close-menu" type="button" class="close-menu" style="font-size:20px;color:var(--gray-500);"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <ul style="padding:20px;list-style:none;">
+                    <li style="margin-bottom:14px;"><a href="index.html" style="font-weight:600;color:var(--color-primary);"><i class="fa-solid fa-house" style="margin-right:10px;"></i> Home</a></li>
+                    <li style="margin-bottom:14px;"><a href="categories.html"><i class="fa-solid fa-layer-group" style="margin-right:10px;"></i> All Categories</a></li>
+                    <li style="margin-bottom:14px;"><a href="food.html"><i class="fa-solid fa-utensils" style="margin-right:10px;"></i> Food & Vendors</a></li>
+                    <li style="margin-bottom:14px;"><a href="shopping.html"><i class="fa-solid fa-bag-shopping" style="margin-right:10px;"></i> Student Shopping</a></li>
+                    <li style="margin-bottom:14px;"><a href="services.html"><i class="fa-solid fa-screwdriver-wrench" style="margin-right:10px;"></i> Campus Services</a></li>
+                    <li style="margin-bottom:14px;"><a href="marketplace.html"><i class="fa-solid fa-handshake" style="margin-right:10px;"></i> Student Marketplace</a></li>
+                    <li style="margin-bottom:14px;"><a href="delivery.html"><i class="fa-solid fa-truck-fast" style="margin-right:10px;"></i> Delivery & Errands</a></li>
+                    <li style="margin-bottom:14px;"><a href="vendors.html"><i class="fa-solid fa-store" style="margin-right:10px;"></i> Campus Businesses</a></li>
+                    <li style="margin-bottom:14px;"><a href="orders.html"><i class="fa-solid fa-box-open" style="margin-right:10px;"></i> My Orders & Requests</a></li>
+                    <li style="margin-bottom:14px;"><a href="account.html"><i class="fa-solid fa-user" style="margin-right:10px;"></i> Student Account</a></li>
+                    <li style="margin-top:24px;border-top:1px solid var(--gray-200);padding-top:16px;">
+                        <a href="sell.html" class="btn btn-outline" style="width:100%;margin-bottom:10px;text-align:center;display:block;">Sell on CLX</a>
+                        <a href="vendor-onboarding.html" class="btn btn-primary" style="width:100%;text-align:center;display:block;background:var(--color-primary);color:#fff;">Become a Vendor</a>
+                    </li>
+                </ul>
+            </aside>
+    </header>
+
+    <!-- Onboarding Form Section -->
+    <section style="padding:60px 0;background:#F8FAFC;">
+        <div class="container" style="max-width:740px;">
+            
+            <div style="background:#fff;border-radius:24px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 10px 30px rgba(0,0,0,0.04);">
+                <div style="display:inline-block;font-size:12px;font-weight:700;color:var(--color-primary);background:rgba(0,31,127,0.08);padding:4px 10px;border-radius:6px;margin-bottom:8px;">
+                    Merchant Application
+                </div>
+                <h1 style="font-size:26px;font-weight:800;color:var(--gray-900);margin-bottom:8px;">Grow Your Business on CLX</h1>
+                <p style="font-size:14px;color:var(--gray-600);margin-bottom:28px;">Connect directly with thousands of campus students for meals, products, and skilled services.</p>
+
+                <form id="vendor-onboard-form">
+                    
+                    <!-- Business Info -->
+                    <div style="margin-bottom:18px;">
+                        <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Business / Brand Name *</label>
+                        <input type="text" required placeholder="e.g. Al-Bukhari Suya & Shawarma / QuickPrint Hub" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                    </div>
+
+                    <!-- Category & Campus -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:18px;">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Business Category *</label>
+                            <select style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                                <option value="food">Campus Food Vendor / Restaurant</option>
+                                <option value="shopping">Student Shopping & Retail Store</option>
+                                <option value="services">Campus Service Provider (Printing, Laundry, Repair, Grooming)</option>
+                                <option value="delivery">Logistics / Errand Dispatch Partner</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Target Campus *</label>
+                            <select id="onboard-campus-select" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                                <option value="unimaid">University of Maiduguri (UNIMAID)</option>
+                                <option value="kiu">Kampala International University (KIU)</option>
+                                <option value="unilag">University of Lagos (UNILAG)</option>
+                                <option value="abu">Ahmadu Bello University (ABU)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Physical Location on Campus -->
+                    <div style="margin-bottom:18px;">
+                        <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Campus Physical Location / Shop Address *</label>
+                        <input type="text" required placeholder="e.g. Commercial Center, Shop 14, Opposite Faculty of Arts" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                    </div>
+
+                    <!-- Contact Person & Phone -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:18px;">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Contact Person / Owner *</label>
+                            <input type="text" required placeholder="e.g. Mallam Garba Mohammed" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Phone / WhatsApp *</label>
+                            <input type="text" required placeholder="e.g. 08023456789" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div style="margin-bottom:24px;">
+                        <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Summary of Products / Services Offered *</label>
+                        <textarea required placeholder="Briefly describe your menu items, products, or service offerings..." rows="3" style="width:100%;border:1px solid var(--gray-300);border-radius:10px;padding:12px;font-size:13px;font-family:inherit;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%;height:50px;border-radius:12px;font-size:16px;font-weight:700;background:var(--color-primary);color:#fff;cursor:pointer;">
+                        Submit Vendor Application
+                    </button>
+                    <div style="text-align:center;font-size:12px;color:var(--gray-400);margin-top:10px;">
+                        Our campus merchant team reviews and verifies applications within 24 hours.
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background:#0F172A;color:#94A3B8;padding:60px 0 30px;border-top:1px solid #1E293B;">
+        <div class="container">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:40px;margin-bottom:48px;">
+                <!-- Col 1: Brand -->
+                <div>
+                    <div style="margin-bottom:16px;">
+                        <img src="images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-footer">
+                    </div>
+                    <p style="font-size:13px;line-height:1.6;color:#94A3B8;margin-bottom:16px;text-align:justify;">
+                        The official campus commerce platform connecting food, shopping, services, peer marketplace, and delivery.
+                    </p>
+                    <div style="font-size:12px;color:#64748B;font-weight:500;">
+                        A flagship digital product of <strong style="color:#CBD5E1;">Dandalin Sauki Ltd</strong>.
+                    </div>
+                </div>
+
+                <!-- Col 2: Core Categories -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Core Categories</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="food.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Food & Vendors</a></li>
+                        <li><a href="shopping.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Shopping</a></li>
+                        <li><a href="services.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Services</a></li>
+                        <li><a href="marketplace.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Marketplace</a></li>
+                        <li><a href="delivery.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Delivery & Errands</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Navigation & Portals -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Portals & Orders</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="orders.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Track Orders & Requests</a></li>
+                        <li><a href="account.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Account</a></li>
+                        <li><a href="vendors.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Business Directory</a></li>
+                        <li><a href="sell.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Sell on Student Marketplace</a></li>
+                        <li><a href="vendor-onboarding.html" style="color:#FCC501;font-weight:600;text-decoration:none;">Become a Vendor</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Company & Support -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">About & Support</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="about.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">About CLX</a></li>
+                        <li><a href="contact.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Customer & Vendor Support</a></li>
+                        <li><a href="contact.html#faqs" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Commerce FAQs</a></li>
+                        <li><a href="about.html#safety" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Trust & Moderation</a></li>
+                        <li><a href="contact.html#feedback" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Submit Feedback</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="border-top:1px solid #1E293B;padding-top:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:12px;color:#64748B;text-align:center;">
+                <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
+                    <a href="privacy.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Privacy Policy</a>
+                    <span style="color:#334155;">•</span>
+                    <a href="terms.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Terms of Service</a>
+                    <span style="color:#334155;">•</span>
+                    <a href="marketplace-rules.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Marketplace Rules</a>
+                </div>
+                <div>
+                    © 2026 Campus Life Express (CLX) — Developed by Dandalin Sauki Ltd. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { Utils } from './js/app.js';
+
+        document.getElementById("vendor-onboard-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            Utils.showToast("Application submitted successfully! Our campus verification team will contact you shortly.");
+            setTimeout(() => {
+                window.location.href = "vendors.html";
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "Campus Life Express",
+  "description": "Campus Life Express (CLX) 2.0 - Campus commerce and logistics platform connecting students, vendors, and services across food, shopping, services, marketplace, and deliveries.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

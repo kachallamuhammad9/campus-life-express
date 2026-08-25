@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell on Student Marketplace | Campus Life Express (CLX)</title>
+    <meta name="description" content="List your used textbooks, room electronics, appliances, and furniture for sale to students across campus.">
+    <meta name="theme-color" content="#001F7F">
+
+    <link rel="icon" href="images/clx.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body class="category-page sell-item-page">
+
+    <!-- Header & Nav -->
+    <header class="header">
+        <div class="navbar" style="background:#ffffff;border-bottom:1px solid var(--gray-200);">
+            <div class="container header-container" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">
+                <a href="index.html" class="logo" aria-label="Campus Life Express Home">
+                    <img src="images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-img">
+                </a>
+
+                <div class="header-actions">
+                    <a href="marketplace.html" class="btn btn-outline" style="font-size:13px;padding:8px 16px;border-radius:10px;border:1px solid var(--gray-300);">
+                        Back to Marketplace
+                    </a>
+                
+                    <!-- Mobile Toggle -->
+                    <button id="mobile-toggle" type="button" class="mobile-toggle" aria-label="Open Menu" style="font-size:20px;color:var(--gray-800);">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+                <!-- Mobile Menu Overlay -->
+            <div id="menu-overlay" class="menu-overlay"></div>
+
+            <!-- Mobile Navigation -->
+            <aside id="mobile-menu" class="mobile-menu" aria-label="Mobile Navigation">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--gray-200);">
+                    <div style="font-weight:700;color:var(--color-primary);">Campus Life Express</div>
+                    <button id="close-menu" type="button" class="close-menu" style="font-size:20px;color:var(--gray-500);"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <ul style="padding:20px;list-style:none;">
+                    <li style="margin-bottom:14px;"><a href="index.html" style="font-weight:600;color:var(--color-primary);"><i class="fa-solid fa-house" style="margin-right:10px;"></i> Home</a></li>
+                    <li style="margin-bottom:14px;"><a href="categories.html"><i class="fa-solid fa-layer-group" style="margin-right:10px;"></i> All Categories</a></li>
+                    <li style="margin-bottom:14px;"><a href="food.html"><i class="fa-solid fa-utensils" style="margin-right:10px;"></i> Food & Vendors</a></li>
+                    <li style="margin-bottom:14px;"><a href="shopping.html"><i class="fa-solid fa-bag-shopping" style="margin-right:10px;"></i> Student Shopping</a></li>
+                    <li style="margin-bottom:14px;"><a href="services.html"><i class="fa-solid fa-screwdriver-wrench" style="margin-right:10px;"></i> Campus Services</a></li>
+                    <li style="margin-bottom:14px;"><a href="marketplace.html"><i class="fa-solid fa-handshake" style="margin-right:10px;"></i> Student Marketplace</a></li>
+                    <li style="margin-bottom:14px;"><a href="delivery.html"><i class="fa-solid fa-truck-fast" style="margin-right:10px;"></i> Delivery & Errands</a></li>
+                    <li style="margin-bottom:14px;"><a href="vendors.html"><i class="fa-solid fa-store" style="margin-right:10px;"></i> Campus Businesses</a></li>
+                    <li style="margin-bottom:14px;"><a href="orders.html"><i class="fa-solid fa-box-open" style="margin-right:10px;"></i> My Orders & Requests</a></li>
+                    <li style="margin-bottom:14px;"><a href="account.html"><i class="fa-solid fa-user" style="margin-right:10px;"></i> Student Account</a></li>
+                    <li style="margin-top:24px;border-top:1px solid var(--gray-200);padding-top:16px;">
+                        <a href="sell.html" class="btn btn-outline" style="width:100%;margin-bottom:10px;text-align:center;display:block;">Sell on CLX</a>
+                        <a href="vendor-onboarding.html" class="btn btn-primary" style="width:100%;text-align:center;display:block;background:var(--color-primary);color:#fff;">Become a Vendor</a>
+                    </li>
+                </ul>
+            </aside>
+    </header>
+
+    <!-- Post Listing Section -->
+    <section style="padding:60px 0;background:#F8FAFC;">
+        <div class="container" style="max-width:720px;">
+            
+            <div style="background:#fff;border-radius:24px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 10px 30px rgba(0,0,0,0.04);">
+                <div style="display:inline-block;font-size:12px;font-weight:700;color:var(--color-primary);background:rgba(0,31,127,0.08);padding:4px 10px;border-radius:6px;margin-bottom:8px;">
+                    Student-to-Student Sales
+                </div>
+                <h1 style="font-size:26px;font-weight:800;color:var(--gray-900);margin-bottom:8px;">List an Item For Sale</h1>
+                <p style="font-size:14px;color:var(--gray-600);margin-bottom:28px;">Sell textbooks, room appliances, gadgets, or hostel furniture to fellow students on your campus.</p>
+
+                <form id="sell-form">
+                    
+                    <!-- Item Title -->
+                    <div style="margin-bottom:18px;">
+                        <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Item Title *</label>
+                        <input type="text" id="sell-title" required placeholder="e.g. Clinical Anatomy 10th Ed / 90L Hisense Mini Fridge" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                    </div>
+
+                    <!-- Category & Condition -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:18px;">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Subcategory *</label>
+                            <select id="sell-subcategory" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                                <option value="Used Textbooks">Used Textbooks</option>
+                                <option value="Electronics & Gadgets">Electronics & Gadgets</option>
+                                <option value="Furniture">Hostel Furniture</option>
+                                <option value="Hostel Items">Hostel Essentials & Utensils</option>
+                                <option value="Fashion">Clothing & Footwear</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Item Condition *</label>
+                            <select id="sell-condition" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                                <option value="Like New">Like New (Barely used, flawless)</option>
+                                <option value="Good">Good (Working fine with minor cosmetic wear)</option>
+                                <option value="Fair">Fair (Noticeable wear, fully functional)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Price & Photo URL -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:18px;">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Asking Price (₦) *</label>
+                            <input type="number" id="sell-price" required placeholder="e.g. 15000" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Photo (Image URL or Mock)</label>
+                            <input type="text" id="sell-image" placeholder="https://..." value="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div style="margin-bottom:18px;">
+                        <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Item Description & Details *</label>
+                        <textarea id="sell-desc" required placeholder="Describe the item's age, specs, working condition, and reason for selling..." rows="4" style="width:100%;border:1px solid var(--gray-300);border-radius:10px;padding:12px;font-size:13px;font-family:inherit;"></textarea>
+                    </div>
+
+                    <!-- Student Seller Profile -->
+                    <div style="background:var(--gray-50);border-radius:16px;padding:20px;border:1px solid var(--gray-200);margin-bottom:24px;">
+                        <h4 style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:12px;">Your Student Contact Details</h4>
+                        
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;">
+                            <div>
+                                <label style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;">Your Full Name *</label>
+                                <input type="text" id="sell-name" required placeholder="e.g. Fatima Sani" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:8px;padding:0 12px;font-size:13px;background:#fff;">
+                            </div>
+                            <div>
+                                <label style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;">Department / Level *</label>
+                                <input type="text" id="sell-dept" required placeholder="e.g. 400L Accounting" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:8px;padding:0 12px;font-size:13px;background:#fff;">
+                            </div>
+                            <div style="grid-column:1/-1;">
+                                <label style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;">Phone / WhatsApp Number *</label>
+                                <input type="text" id="sell-phone" required placeholder="e.g. 08123456789" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:8px;padding:0 12px;font-size:13px;background:#fff;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary" style="width:100%;height:50px;border-radius:12px;font-size:16px;font-weight:700;background:var(--color-primary);color:#fff;cursor:pointer;">
+                        Submit Listing For Moderation
+                    </button>
+                    <div style="text-align:center;font-size:12px;color:var(--gray-400);margin-top:10px;">
+                        Listings are moderated. Review our <a href="marketplace-rules.html" style="color:var(--color-primary);font-weight:600;">Marketplace Rules & Guidelines</a>.
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background:#0F172A;color:#94A3B8;padding:60px 0 30px;border-top:1px solid #1E293B;">
+        <div class="container">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:40px;margin-bottom:48px;">
+                <!-- Col 1: Brand -->
+                <div>
+                    <div style="margin-bottom:16px;">
+                        <img src="images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-footer">
+                    </div>
+                    <p style="font-size:13px;line-height:1.6;color:#94A3B8;margin-bottom:16px;text-align:justify;">
+                        The official campus commerce platform connecting food, shopping, services, peer marketplace, and delivery.
+                    </p>
+                    <div style="font-size:12px;color:#64748B;font-weight:500;">
+                        A flagship digital product of <strong style="color:#CBD5E1;">Dandalin Sauki Ltd</strong>.
+                    </div>
+                </div>
+
+                <!-- Col 2: Core Categories -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Core Categories</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="food.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Food & Vendors</a></li>
+                        <li><a href="shopping.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Shopping</a></li>
+                        <li><a href="services.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Services</a></li>
+                        <li><a href="marketplace.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Marketplace</a></li>
+                        <li><a href="delivery.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Delivery & Errands</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Navigation & Portals -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Portals & Orders</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="orders.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Track Orders & Requests</a></li>
+                        <li><a href="account.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Account</a></li>
+                        <li><a href="vendors.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Business Directory</a></li>
+                        <li><a href="sell.html" style="color:#FCC501;font-weight:600;text-decoration:none;">Sell on Student Marketplace</a></li>
+                        <li><a href="vendor-onboarding.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Become a Vendor</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Company & Support -->
+                <div>
+                    <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">About & Support</h4>
+                    <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
+                        <li><a href="about.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">About CLX</a></li>
+                        <li><a href="contact.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Customer & Vendor Support</a></li>
+                        <li><a href="contact.html#faqs" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Commerce FAQs</a></li>
+                        <li><a href="about.html#safety" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Trust & Moderation</a></li>
+                        <li><a href="contact.html#feedback" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Submit Feedback</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="border-top:1px solid #1E293B;padding-top:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:12px;color:#64748B;text-align:center;">
+                <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
+                    <a href="privacy.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Privacy Policy</a>
+                    <span style="color:#334155;">•</span>
+                    <a href="terms.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Terms of Service</a>
+                    <span style="color:#334155;">•</span>
+                    <a href="marketplace-rules.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Marketplace Rules</a>
+                </div>
+                <div>
+                    © 2026 Campus Life Express (CLX) — Developed by Dandalin Sauki Ltd. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { api } from './js/api.js';
+        import { Utils, CampusManager } from './js/app.js';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("sell-form");
+            if (form) {
+                form.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const listingData = {
+                        title: document.getElementById("sell-title").value,
+                        subcategory: document.getElementById("sell-subcategory").value,
+                        condition: document.getElementById("sell-condition").value,
+                        price: Number(document.getElementById("sell-price").value || 0),
+                        image: document.getElementById("sell-image").value,
+                        description: document.getElementById("sell-desc").value,
+                        sellerName: document.getElementById("sell-name").value,
+                        sellerDept: document.getElementById("sell-dept").value,
+                        contactPhone: document.getElementById("sell-phone").value,
+                        campus: CampusManager.selectedCampus
+                    };
+
+                    await api.marketplace.createListing(listingData);
+                    Utils.showToast("Listing created! Your item is now listed on the marketplace.");
+                    setTimeout(() => {
+                        window.location.href = "marketplace.html";
+                    }, 800);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+-- RLS is intentionally deferred.
+-- This migration is reserved for a separately reviewed, controlled RLS implementation.
+-- Do not enable row-level security or create policies in this phase.

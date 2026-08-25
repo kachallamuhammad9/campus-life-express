@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment variables (NEVER commit real secrets)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs (if any)
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# Temp files
+tmp/
+temp/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Supabase CLI temporary files
+supabase/.temp/
