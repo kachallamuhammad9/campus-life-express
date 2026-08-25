@@ -172,6 +172,11 @@ async function fetchJson(endpoint, options = {}) {
 
         if (!response.ok) {
             const errorMessage = data?.error?.message || data?.message || `Request failed with status ${response.status}`;
+            if (response.status === 401) {
+                localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+                localStorage.removeItem(STORAGE_KEYS.USER_PROFILE);
+                window.dispatchEvent(new CustomEvent("clx:auth-changed", { detail: { user: null } }));
+            }
             return {
                 success: false,
                 status: response.status,
@@ -224,6 +229,11 @@ export const api = {
                 body: { email, password }
             });
 
+            if (!res.success) {
+                api.auth.logout();
+                return res;
+            }
+
             if (res.success && res.data?.token) {
                 api.auth.setToken(res.data.token);
                 if (res.data.user) {
@@ -237,6 +247,11 @@ export const api = {
                 method: 'POST',
                 body: userData
             });
+
+            if (!res.success) {
+                api.auth.logout();
+                return res;
+            }
 
             if (res.success && res.data?.token) {
                 api.auth.setToken(res.data.token);
