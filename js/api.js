@@ -239,6 +239,7 @@ export const api = {
                 if (res.data.user) {
                     localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(res.data.user));
                 }
+                window.dispatchEvent(new CustomEvent("clx:auth-changed", { detail: { user: res.data.user || null } }));
             }
             return res;
         },
@@ -258,6 +259,7 @@ export const api = {
                 if (res.data.user) {
                     localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(res.data.user));
                 }
+                window.dispatchEvent(new CustomEvent("clx:auth-changed", { detail: { user: res.data.user || null } }));
             }
             return res;
         },
@@ -271,6 +273,7 @@ export const api = {
                 if (res.data.user) {
                     localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(res.data.user));
                 }
+                window.dispatchEvent(new CustomEvent("clx:auth-changed", { detail: { user: res.data.user || null } }));
             }
             return res;
         },
@@ -278,6 +281,7 @@ export const api = {
             const res = await fetchJson('/auth/me');
             if (res.success && res.data) {
                 localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(res.data));
+                window.dispatchEvent(new CustomEvent("clx:auth-changed", { detail: { user: res.data } }));
             }
             return res;
         },

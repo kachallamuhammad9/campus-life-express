@@ -525,6 +525,26 @@ export const SearchController = {
 };
 
 // ==================================================
+// AUTHENTICATION STATE
+// ==================================================
+export const AuthManager = {
+    user: null,
+
+    init() {
+        this.user = api.auth.getUserProfile();
+        window.addEventListener("clx:auth-changed", (event) => {
+            this.user = event.detail?.user || null;
+        });
+
+        if (api.auth.getToken()) {
+            api.auth.getMe().then((res) => {
+                if (res.success) this.user = res.data;
+            });
+        }
+    }
+};
+
+// ==================================================
 // GLOBAL INITIALIZER
 // ==================================================
 // Expose global CLX namespace immediately
@@ -534,6 +554,7 @@ window.CLX = {
     campus: CampusManager,
     cart: CartManager,
     search: SearchController,
+    auth: AuthManager,
     utils: Utils,
     getCampus: () => CampusManager.selectedCampus
 };
@@ -542,6 +563,7 @@ function initCLXApp() {
     CampusManager.init();
     CartManager.init();
     SearchController.init();
+    AuthManager.init();
 
     // Mobile nav toggle
     const mobileToggle = document.getElementById("mobile-toggle");
