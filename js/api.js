@@ -42,7 +42,7 @@ const normalizeProduct = (p) => {
         image: p.image_url || p.imageUrl || p.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80",
         imageUrl: p.image_url || p.imageUrl || p.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80",
         category: (p.category_slug || p.categorySlug || p.category || p.fallbackCategory || "food").toLowerCase(),
-        subcategory: p.subcategory_name || p.subcategoryName || p.subcategory || (p.category === "food" ? "Meals" : "Stationery"),
+        subcategory: p.subcategory_name || p.subcategoryName || p.subcategory || ((p.category || p.fallbackCategory) === "food" ? "Meals" : "Stationery"),
         description: p.description || "",
         rating: Number(p.rating !== undefined ? p.rating : (p.average_rating || 4.5)),
         reviewsCount: Number(p.reviews_count !== undefined ? p.reviews_count : (p.review_count !== undefined ? p.review_count : (p.reviewsCount || 12))),
@@ -76,7 +76,7 @@ const normalizeVendor = (v) => {
 
 const normalizeService = (s) => {
     if (!s) return null;
-    const priceNaira = s.base_price_kobo ? Math.round(Number(s.base_price_kobo) / 100) : (s.startingPrice || 1000);
+    const priceNaira = s.starting_price_kobo !== undefined ? Math.round(Number(s.starting_price_kobo) / 100) : (s.base_price_kobo ? Math.round(Number(s.base_price_kobo) / 100) : (s.startingPrice || 1000));
     return {
         id: String(s.id),
         name: s.name || "",
@@ -90,6 +90,9 @@ const normalizeService = (s) => {
         reviewsCount: Number(s.reviews_count || s.reviewsCount || 15),
         priceType: s.price_type || s.priceType || "Starting from",
         startingPrice: priceNaira,
+        basePrice: priceNaira,
+        priceLabel: s.price_label || s.priceLabel || `${s.price_type || "Starting from"} ₦${priceNaira.toLocaleString()}`,
+        turnaround: s.turnaround_time || s.turnaround || "Contact provider",
         deliveryType: s.delivery_type || s.deliveryType || "In-Person / Pickup",
         image: s.image_url || s.image || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80",
         description: s.description || ""
@@ -342,8 +345,8 @@ export const api = {
     vendors: {
         async list(filters = {}) {
             const params = new URLSearchParams();
-            if (filters.campus) params.append('campus', filters.campus);
-            if (filters.category && filters.category !== "all") params.append('category', filters.category);
+            if (filters.campus) params.append('campusId', filters.campus);
+            if (filters.category && filters.category !== "all") params.append('categoryId', filters.category);
             if (filters.search) params.append('search', filters.search);
             if (filters.limit) params.append('limit', filters.limit);
             if (filters.offset) params.append('offset', filters.offset);
@@ -478,8 +481,8 @@ export const api = {
     services: {
         async list(filters = {}) {
             const params = new URLSearchParams();
-            if (filters.campus) params.append('campus', filters.campus);
-            if (filters.category && filters.category !== "all") params.append('category', filters.category);
+            if (filters.campus) params.append('campusId', filters.campus);
+            if (filters.category && filters.category !== "all") params.append('categoryId', filters.category);
             if (filters.search) params.append('search', filters.search);
 
             const queryString = params.toString() ? `?${params.toString()}` : '';
@@ -517,17 +520,20 @@ export const api = {
         },
         async requestService(serviceRequest) {
             // Attempt backend service request creation
-            const backendRes = await fetchJson('/services/requests', {
+            const deliveryType = String(serviceRequest.deliveryType || 'PICKUP').toUpperCase().replace('IN-PERSON / PICKUP', 'IN_PERSON');
+            const backendRes = await fetchJson(`/services/${encodeURIComponent(serviceRequest.serviceId)}/requests`, {
                 method: 'POST',
                 body: {
                     serviceId: serviceRequest.serviceId,
-                    campusId: serviceRequest.campus || api.campuses.getSelectedCampus(),
-                    notes: serviceRequest.instructions || serviceRequest.description,
-                    deliveryAddress: serviceRequest.deliveryLocation || serviceRequest.room,
-                    phoneNumber: serviceRequest.phone,
-                    estimatedPriceKobo: (serviceRequest.estimatedPrice || 1000) * 100
+                    deliveryType,
+                    customerLocation: serviceRequest.location || serviceRequest.deliveryLocation || serviceRequest.room,
+                    description: serviceRequest.description || serviceRequest.notes || serviceRequest.customerInfo,
+                    notes: serviceRequest.instructions || serviceRequest.notes,
+                    estimatedBudgetKobo: (serviceRequest.estimatedPrice || 1000) * 100
                 }
             });
+
+            if (!backendRes.success) return backendRes;
 
             // Maintain local storage sync for unified tracking & orders view
             const userRequests = JSON.parse(localStorage.getItem(STORAGE_KEYS.SERVICE_REQUESTS) || "[]");
@@ -567,8 +573,8 @@ export const api = {
     marketplace: {
         async list(filters = {}) {
             const params = new URLSearchParams();
-            if (filters.campus) params.append('campus', filters.campus);
-            if (filters.subcategory && filters.subcategory !== "all") params.append('category', filters.subcategory);
+            if (filters.campus) params.append('campusId', filters.campus);
+            if (filters.subcategory && filters.subcategory !== "all") params.append('categoryId', filters.subcategory);
             if (filters.condition && filters.condition !== "all") params.append('condition', filters.condition);
             if (filters.search) params.append('search', filters.search);
 
