@@ -14,24 +14,22 @@ const getMe = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body || {};
-  if (!email || typeof email !== 'string') {
-    throw new AppError(400, 'INVALID_INPUT', 'Valid email address is required');
+  if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
+    throw new AppError(400, 'INVALID_INPUT', 'Email and password are required');
   }
 
   const cleanEmail = email.trim().toLowerCase();
+  const authenticatedUser = await authService.authenticateCredentials(cleanEmail, password);
+  const currentUser = await authService.getCurrentUser(authenticatedUser.id, authenticatedUser.email);
   const token = authService.generateToken({
-    sub: '00000000-0000-4000-8000-000000000088',
-    email: cleanEmail,
+    sub: authenticatedUser.id,
+    email: authenticatedUser.email,
+    fullName: currentUser.profile?.full_name,
   });
 
   return sendSuccess(res, {
     token,
-    user: {
-      id: '00000000-0000-4000-8000-000000000088',
-      email: cleanEmail,
-      role: 'CUSTOMER',
-      roles: ['CUSTOMER'],
-    },
+    user: currentUser,
   });
 };
 

@@ -169,6 +169,14 @@ const getCurrentUser = async (userId, fallbackEmail = null) => {
   };
 };
 
+const authenticateCredentials = async (email, password) => {
+  const user = await userRepository.getUserByCredentials(email, password);
+  if (!user) {
+    throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password');
+  }
+  return user;
+};
+
 module.exports = {
   ROLE_HIERARCHY,
   VALID_ROLES,
@@ -177,4 +185,5 @@ module.exports = {
   generateToken,
   resolveUserContext,
   getCurrentUser,
+  authenticateCredentials,
 };

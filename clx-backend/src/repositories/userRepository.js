@@ -65,6 +65,21 @@ const getUserProfileByEmail = async (email) => {
   return result.rows[0] || null;
 };
 
+const getUserByCredentials = async (email, password) => {
+  const result = await database.query(
+    `SELECT id, email
+       FROM auth.users
+      WHERE LOWER(email) = LOWER($1)
+        AND deleted_at IS NULL
+        AND encrypted_password IS NOT NULL
+        AND crypt($2, encrypted_password) = encrypted_password
+      LIMIT 1`,
+    [email, password]
+  );
+
+  return result.rows[0] || null;
+};
+
 const getUserRoles = async (userId) => {
   const result = await database.query(
     `SELECT role
@@ -80,5 +95,6 @@ const getUserRoles = async (userId) => {
 module.exports = {
   getUserProfileById,
   getUserProfileByEmail,
+  getUserByCredentials,
   getUserRoles,
 };
