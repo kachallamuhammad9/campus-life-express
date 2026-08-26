@@ -10,6 +10,7 @@ const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   databaseUrl: process.env.DATABASE_URL,
+  databaseSslCa: process.env.DATABASE_SSL_CA || null,
   jwtSecret: process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'clx-dev-test-jwt-secret-key-32-chars-dandalin'),
   gasIntegrationKey: process.env.GAS_INTEGRATION_KEY || process.env.APPS_SCRIPT_API_KEY || (process.env.NODE_ENV === 'production' ? undefined : 'clx-dev-gas-secret-key-32-chars-sauki'),
   gasWebhookUrl: process.env.GAS_WEBHOOK_URL || null,
@@ -23,6 +24,12 @@ const config = {
   smtpUser: process.env.SMTP_USER || null,
   smtpPass: process.env.SMTP_PASS || null,
   smtpSecure: process.env.SMTP_SECURE === 'true',
+
+  // Paystack Configuration
+  paystackSecretKey: process.env.PAYSTACK_SECRET_KEY || null,
+  paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY || null,
+  paystackCallbackUrl: process.env.PAYSTACK_CALLBACK_URL || null,
+  paystackApiBaseUrl: process.env.PAYSTACK_API_BASE_URL || 'https://api.paystack.co',
 
   // API Rate Limiting Configuration
   authRateLimitWindowMs: process.env.AUTH_RATE_LIMIT_WINDOW_MS ? Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS) : 15 * 60 * 1000,

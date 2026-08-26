@@ -6,6 +6,7 @@
  */
 
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const config = require('../config/env');
 
 const MAX_EMAIL_LOGS = 100;
@@ -64,6 +65,40 @@ const sendStubEmail = async (emailPayload) => {
  * Custom provider registry for extensibility
  */
 const customProviders = new Map();
+
+const isSmtpConfigured = () => Boolean(config.smtpHost && config.smtpUser && config.smtpPass);
+
+const sendSmtpEmail = async (emailPayload) => {
+  if (!isSmtpConfigured()) {
+    throw new Error('SMTP email provider is not configured');
+  }
+
+  const transport = nodemailer.createTransport({
+    host: config.smtpHost,
+    port: config.smtpPort,
+    secure: config.smtpSecure,
+    auth: {
+      user: config.smtpUser,
+      pass: config.smtpPass,
+    },
+  });
+
+  const result = await transport.sendMail({
+    from: emailPayload.from,
+    to: emailPayload.to,
+    subject: emailPayload.subject,
+    text: emailPayload.text,
+    html: emailPayload.html || undefined,
+  });
+
+  return {
+    success: true,
+    messageId: result.messageId,
+    to: emailPayload.to,
+    subject: emailPayload.subject,
+    provider: 'smtp',
+  };
+};
 
 /**
  * Send Transactional Email
@@ -127,6 +162,10 @@ const sendEmail = async ({
       return await customFn(payload);
     }
 
+    if (providerName === 'smtp') {
+      return await sendSmtpEmail(payload);
+    }
+
     // Default to stub provider
     return await sendStubEmail(payload);
   } catch (err) {
@@ -171,7 +210,8 @@ const getEmailProviderStatus = () => ({
   defaultSender: config.emailFrom,
   totalSentBuffered: sentEmailsBuffer.length,
   customProviders: Array.from(customProviders.keys()),
-  isStubMode: config.emailProvider === 'stub' || !customProviders.has(config.emailProvider),
+  isStubMode: config.emailProvider === 'stub' || (config.emailProvider !== 'smtp' && !customProviders.has(config.emailProvider)),
+  isConfigured: config.emailProvider === 'smtp' ? isSmtpConfigured() : true,
 });
 
 module.exports = {
@@ -181,4 +221,5 @@ module.exports = {
   clearSentEmails,
   registerCustomProvider,
   getEmailProviderStatus,
+  isSmtpConfigured,
 };

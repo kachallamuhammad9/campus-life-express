@@ -1,6 +1,7 @@
 const authService = require('../services/authService');
 const { sendSuccess } = require('../utils/response');
 const { AppError } = require('../utils/AppError');
+const emailProvider = require('../utils/emailProvider');
 
 /**
  * Auth Controller
@@ -41,6 +42,16 @@ const register = async (req, res) => {
     sub: account.id,
     email: account.email,
     fullName: currentUser.profile?.full_name,
+  });
+
+  emailProvider.sendEmail({
+    to: account.email,
+    subject: 'Welcome to Campus Life Express',
+    text: `Welcome to Campus Life Express, ${currentUser.profile?.full_name || 'Student'}. Your account is ready.`,
+    template: 'account_registration',
+    metadata: { userId: account.id },
+  }).catch((error) => {
+    console.warn('[Auth] Registration email dispatch failed:', error.message);
   });
 
   return sendSuccess(res, {

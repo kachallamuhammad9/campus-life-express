@@ -11,6 +11,9 @@ const {
   paymentLimiter,
 } = require('../src/middleware/rateLimiter');
 const { getAuthHeader } = require('./helpers/authHelper');
+const { buildSslConfig } = require('../src/config/database');
+const campusRepository = require('../src/repositories/campusRepository');
+const categoryRepository = require('../src/repositories/categoryRepository');
 
 const makeRequest = (appInstance, path, options = {}) => new Promise((resolve, reject) => {
   const server = appInstance.listen(0, () => {
@@ -212,13 +215,27 @@ test('6. Payment rate limiter protects checkout / payment initialization endpoin
 });
 
 test('7. Public catalog GET endpoints remain functional and are not blocked', async () => {
-  const rCampus = await makeRequest(app, '/api/v1/campuses');
-  assert.equal(rCampus.statusCode, 200);
-  assert.equal(rCampus.body.success, true);
+  const originalGetActiveCampuses = campusRepository.getActiveCampuses;
+  const originalGetActiveRootCategories = categoryRepository.getActiveRootCategories;
+  const originalGetActiveCategories = categoryRepository.getActiveCategories;
 
-  const rCategories = await makeRequest(app, '/api/v1/categories');
-  assert.equal(rCategories.statusCode, 200);
-  assert.equal(rCategories.body.success, true);
+  campusRepository.getActiveCampuses = async () => [];
+  categoryRepository.getActiveRootCategories = async () => [];
+  categoryRepository.getActiveCategories = async () => [];
+
+  try {
+    const rCampus = await makeRequest(app, '/api/v1/campuses');
+    assert.equal(rCampus.statusCode, 200);
+    assert.equal(rCampus.body.success, true);
+
+    const rCategories = await makeRequest(app, '/api/v1/categories');
+    assert.equal(rCategories.statusCode, 200);
+    assert.equal(rCategories.body.success, true);
+  } finally {
+    campusRepository.getActiveCampuses = originalGetActiveCampuses;
+    categoryRepository.getActiveRootCategories = originalGetActiveRootCategories;
+    categoryRepository.getActiveCategories = originalGetActiveCategories;
+  }
 });
 
 test('8. Rate limiting does not interfere with authenticated JWT authorization headers', async () => {
@@ -231,4 +248,11 @@ test('8. Rate limiting does not interfere with authenticated JWT authorization h
   assert.equal(res.statusCode, 200);
   assert.equal(res.body.success, true);
   assert.ok(res.body.data.id || res.body.data.email);
+});
+
+test('9. Production database SSL configuration always validates certificates', () => {
+  const ssl = buildSslConfig(true, 'test-ca\\ncontent');
+  assert.equal(ssl.rejectUnauthorized, true);
+  assert.equal(ssl.ca, 'test-ca\ncontent');
+  assert.equal(buildSslConfig(false), undefined);
 });

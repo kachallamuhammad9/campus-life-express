@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Webhook endpoint (provider-agnostic stub, external callbacks)
 router.post('/webhook', paymentController.handleWebhook);
+router.get('/callback', paymentController.handleCallback);
 
 // Protected customer payment operations
 router.post('/initialize', requireAuth, paymentLimiter, paymentController.initializePayment);

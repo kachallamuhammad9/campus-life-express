@@ -1,5 +1,7 @@
 const paymentRepository = require('../repositories/paymentRepository');
 const { AppError } = require('../utils/AppError');
+const paystackProvider = require('../utils/paystackProvider');
+const config = require('../config/env');
 
 /**
  * Payment Service
@@ -179,7 +181,7 @@ const confirmCashOnDelivery = async (orderId, user) => {
  */
 const initializePayment = async (orderId, user, {
   paymentMethod = 'CARD',
-  provider = 'GENERIC',
+  provider = 'PAYSTACK',
 } = {}) => {
   if (!orderId) {
     throw new AppError(400, 'VALIDATION_ERROR', 'Order ID is required');
@@ -218,8 +220,22 @@ const initializePayment = async (orderId, user, {
 
   // Server-authoritative integer kobo total
   const authoritativeTotalKobo = Number.parseInt(order.total_kobo, 10);
-  const normalizedProvider = (provider || 'GENERIC').toUpperCase();
+  const normalizedProvider = (provider || 'PAYSTACK').toUpperCase();
+  if (normalizedProvider !== 'PAYSTACK') {
+    throw new AppError(400, 'UNSUPPORTED_PAYMENT_PROVIDER', 'Unsupported card payment provider');
+  }
+
   const providerReference = `CLX_PAY_${order.id.replace(/-/g, '').substring(0, 8)}_${Date.now()}`;
+  const providerTransaction = await paystackProvider.initializeTransaction({
+    email: user.email,
+    amountKobo: authoritativeTotalKobo,
+    reference: providerReference,
+    callbackUrl: config.paystackCallbackUrl,
+  });
+
+  if (providerTransaction.reference !== providerReference || !providerTransaction.authorization_url) {
+    throw new AppError(502, 'PAYMENT_PROVIDER_ERROR', 'Card payment service returned an invalid checkout response');
+  }
 
   const createdPayment = await paymentRepository.createOrderPayment({
     orderId: order.id,
@@ -245,8 +261,8 @@ const initializePayment = async (orderId, user, {
     amountNgn: authoritativeTotalKobo / 100,
     paymentMethod: normalizedMethod,
     paymentStatus: 'PENDING',
-    authorizationUrl: null,
-    accessCode: null,
+    authorizationUrl: providerTransaction.authorization_url,
+    accessCode: providerTransaction.access_code || null,
     payment: formatPayment(createdPayment),
   };
 };
@@ -316,43 +332,75 @@ const updatePaymentStatus = async (paymentId, newStatus, {
 /**
  * Provider-agnostic webhook handler stub with idempotency protection
  */
-const handleWebhook = async (payload, signature = null, headers = {}) => {
+const reconcilePaystackPayment = async (payment, transaction) => {
+  if (!transaction || transaction.status !== 'success') {
+    throw new AppError(400, 'PAYMENT_NOT_SUCCESSFUL', 'Provider transaction is not successful');
+  }
+
+  const transactionAmount = Number.parseInt(transaction.amount, 10);
+  if (!Number.isSafeInteger(transactionAmount) || transactionAmount !== Number.parseInt(payment.amount_kobo, 10)) {
+    throw new AppError(400, 'PAYMENT_AMOUNT_MISMATCH', 'Provider transaction amount does not match the order total');
+  }
+
+  if (payment.status === 'PAID') {
+    return {
+      received: true,
+      verified: true,
+      idempotent: true,
+      status: payment.status,
+      message: 'Payment event already processed',
+    };
+  }
+
+  const updatedPayment = await updatePaymentStatus(payment.id, 'PAID', {
+    provider: 'PAYSTACK',
+    providerReference: transaction.reference,
+    paidAt: transaction.paid_at || new Date().toISOString(),
+  });
+
+  return {
+    received: true,
+    verified: true,
+    idempotent: false,
+    payment: updatedPayment,
+  };
+};
+
+const handleWebhook = async (payload, signature = null, rawBody = null) => {
   if (!payload || typeof payload !== 'object' || Object.keys(payload).length === 0) {
     throw new AppError(400, 'INVALID_WEBHOOK_PAYLOAD', 'Webhook payload is empty or invalid');
   }
 
-  const provider = (payload.provider || headers['x-payment-provider'] || 'GENERIC').toUpperCase();
-  const providerReference = payload.providerReference || payload.reference || payload.data?.reference || null;
-
-  // Idempotency check if provider reference is present
-  if (providerReference) {
-    const existingPayment = await paymentRepository.getPaymentByProviderReference(
-      provider,
-      providerReference
-    );
-
-    if (existingPayment) {
-      if (existingPayment.status === 'PAID' || existingPayment.status === 'REFUNDED') {
-        return {
-          received: true,
-          idempotent: true,
-          status: existingPayment.status,
-          message: 'Webhook event already processed',
-        };
-      }
-    }
+  if (!paystackProvider.verifyWebhookSignature(rawBody, signature)) {
+    throw new AppError(401, 'INVALID_WEBHOOK_SIGNATURE', 'Invalid payment webhook signature');
   }
 
-  // In this phase (stub mode without live provider configuration),
-  // do NOT blindly mark payments as PAID without authenticated signature verification.
-  return {
-    received: true,
-    verified: false,
-    stub: true,
-    provider,
-    providerReference,
-    message: 'Provider-agnostic webhook received in stub mode. Signature verification not configured.',
-  };
+  if (payload.event !== 'charge.success') {
+    return { received: true, verified: true, ignored: true };
+  }
+
+  const providerReference = payload.data?.reference || null;
+  if (!providerReference) {
+    throw new AppError(400, 'INVALID_WEBHOOK_PAYLOAD', 'Payment reference is required');
+  }
+
+  const payment = await paymentRepository.getPaymentByProviderReference('PAYSTACK', providerReference);
+  if (!payment) {
+    throw new AppError(404, 'PAYMENT_NOT_FOUND', 'Payment record was not found');
+  }
+
+  const transaction = await paystackProvider.verifyTransaction(providerReference);
+  return reconcilePaystackPayment(payment, transaction);
+};
+
+const handleCallback = async (reference) => {
+  const payment = await paymentRepository.getPaymentByProviderReference('PAYSTACK', reference);
+  if (!payment) {
+    throw new AppError(404, 'PAYMENT_NOT_FOUND', 'Payment record was not found');
+  }
+
+  const transaction = await paystackProvider.verifyTransaction(reference);
+  return reconcilePaystackPayment(payment, transaction);
 };
 
 module.exports = {
@@ -366,4 +414,5 @@ module.exports = {
   initializePayment,
   updatePaymentStatus,
   handleWebhook,
+  handleCallback,
 };

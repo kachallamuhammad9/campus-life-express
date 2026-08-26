@@ -808,6 +808,35 @@ test('Phase 14 - In-App & Email Notifications Test Suite', async (t) => {
         }
       );
     });
+
+    await t2.test('5.5 SMTP mode requires complete provider configuration', async () => {
+      const env = require('../src/config/env');
+      const originalProvider = env.emailProvider;
+      const originalHost = env.smtpHost;
+      const originalUser = env.smtpUser;
+      const originalPass = env.smtpPass;
+
+      env.emailProvider = 'smtp';
+      env.smtpHost = null;
+      env.smtpUser = null;
+      env.smtpPass = null;
+
+      try {
+        const status = emailProvider.getEmailProviderStatus();
+        const result = await emailProvider.sendEmail({
+          to: 'student@unimaid.edu.ng',
+          subject: 'SMTP configuration test',
+        });
+        assert.equal(status.isConfigured, false);
+        assert.equal(result.success, false);
+        assert.equal(result.provider, 'smtp');
+      } finally {
+        env.emailProvider = originalProvider;
+        env.smtpHost = originalHost;
+        env.smtpUser = originalUser;
+        env.smtpPass = originalPass;
+      }
+    });
   });
 
   await t.test('6. Event Triggers, GAS Integration & Fault Tolerance', async (t2) => {

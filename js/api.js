@@ -784,7 +784,7 @@ export const api = {
     // PAYMENTS (/api/v1/payments)
     // ----------------------------------------------------
     payments: {
-        async initialize(orderId, paymentMethod = 'CARD', provider = 'GENERIC') {
+        async initialize(orderId, paymentMethod = 'CARD', provider = 'PAYSTACK') {
             return fetchJson('/payments/initialize', {
                 method: 'POST',
                 body: { orderId, paymentMethod, provider }

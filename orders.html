@@ -374,6 +374,12 @@
                         ? await api.payments.getForOrder(orderId)
                         : await api.payments.initialize(orderId, paymentMethod);
 
+                    if (paymentMethod === "CARD" && !paymentResult.success) {
+                        Utils.showToast(paymentResult.error?.message || "We couldn't start secure card checkout", "error");
+                        loadOrders();
+                        return;
+                    }
+
                     if (api.auth.getToken()) {
                         await CartManager.syncFromBackend();
                     } else {
@@ -383,7 +389,12 @@
                     }
 
                     document.getElementById("checkout-box").style.display = "none";
-                    Utils.showToast(paymentResult.success ? "Order placed. Payment is pending." : "Order placed. Payment status is pending.");
+                    if (paymentMethod === "CARD" && paymentResult.data?.authorizationUrl) {
+                        window.location.assign(paymentResult.data.authorizationUrl);
+                        return;
+                    }
+
+                    Utils.showToast("Order placed. Payment is pending.");
                     loadOrders();
                 });
             }

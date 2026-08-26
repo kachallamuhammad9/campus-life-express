@@ -29,8 +29,13 @@ const confirmCashOnDelivery = async (req, res) => {
 };
 
 const handleWebhook = async (req, res) => {
-  const signature = req.headers['x-webhook-signature'] || req.headers['x-paystack-signature'] || null;
-  const result = await paymentService.handleWebhook(req.body, signature, req.headers);
+  const signature = req.headers['x-paystack-signature'] || null;
+  const result = await paymentService.handleWebhook(req.body, signature, req.rawBody);
+  return sendSuccess(res, result, 200);
+};
+
+const handleCallback = async (req, res) => {
+  const result = await paymentService.handleCallback(req.query?.reference);
   return sendSuccess(res, result, 200);
 };
 
@@ -40,4 +45,5 @@ module.exports = {
   initializePayment,
   confirmCashOnDelivery,
   handleWebhook,
+  handleCallback,
 };

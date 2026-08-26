@@ -37,8 +37,13 @@ app.use(morgan(morganFormat));
 // CORS configuration
 app.use(corsMiddleware);
 
-// Parse JSON request bodies
-app.use(express.json({ limit: '10mb' }));
+// Retain the raw JSON bytes for provider webhook signature verification.
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buffer) => {
+    req.rawBody = Buffer.from(buffer);
+  },
+}));
 
 // Parse URL-encoded request bodies
 app.use(express.urlencoded({ limit: '10mb', extended: true }));

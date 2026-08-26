@@ -6,6 +6,7 @@ const app = require('../src/app');
 const paymentRepository = require('../src/repositories/paymentRepository');
 const userRepository = require('../src/repositories/userRepository');
 const paymentService = require('../src/services/paymentService');
+const paystackProvider = require('../src/utils/paystackProvider');
 const {
   TEST_USER_ID,
   TEST_ADMIN_ID,
@@ -223,6 +224,13 @@ test('5. POST /api/v1/payments/initialize initializes payment with server-author
 
   const stubs = [
     ...setupAuthMocks(),
+    [paystackProvider, {
+      initializeTransaction: async ({ reference }) => ({
+        reference,
+        authorization_url: 'https://checkout.paystack.test/authorize',
+        access_code: 'test_access_code',
+      }),
+    }],
     [paymentRepository, {
       getOrderById: async (id) => (id === ORDER_ID_1 ? SAMPLE_ORDER : null),
       createOrderPayment: async (payload) => {
@@ -270,6 +278,12 @@ test('5. POST /api/v1/payments/initialize initializes payment with server-author
 test('6. POST /api/v1/payments/orders/:orderId/initialize initializes payment via URL parameter route', async () => {
   const stubs = [
     ...setupAuthMocks(),
+    [paystackProvider, {
+      initializeTransaction: async ({ reference }) => ({
+        reference,
+        authorization_url: 'https://checkout.paystack.test/authorize',
+      }),
+    }],
     [paymentRepository, {
       getOrderById: async (id) => (id === ORDER_ID_1 ? SAMPLE_ORDER : null),
       createOrderPayment: async (payload) => ({
@@ -710,17 +724,33 @@ test('22. Admin user can view payments for any order', async () => {
 // 5. WEBHOOK & IDEMPOTENCY
 // ==========================================
 
-test('23. POST /api/v1/payments/webhook receives provider-agnostic webhook without auth in stub mode', async () => {
+test('23. POST /api/v1/payments/webhook accepts a verified Paystack event and reconciles the payment', async () => {
   const stubs = [
+    [paystackProvider, {
+      verifyWebhookSignature: () => true,
+      verifyTransaction: async () => ({
+        reference: 'T123456789',
+        amount: 575000,
+        status: 'success',
+        paid_at: '2026-08-22T13:00:00.000Z',
+      }),
+    }],
     [paymentRepository, {
-      getPaymentByProviderReference: async () => null,
+      getPaymentByProviderReference: async () => ({
+        ...SAMPLE_PAYMENT,
+        provider: 'PAYSTACK',
+        provider_reference: 'T123456789',
+      }),
+      getPaymentById: async () => SAMPLE_PAYMENT,
+      updatePaymentStatus: async () => ({ ...SAMPLE_PAYMENT, status: 'PAID' }),
+      updateOrderPaymentInfo: async () => ({ id: ORDER_ID_1 }),
     }],
   ];
 
   await withStubs(stubs, async () => {
     const response = await request('/api/v1/payments/webhook', {
       method: 'POST',
-      headers: { 'x-payment-provider': 'PAYSTACK' },
+      headers: { 'x-paystack-signature': 'verified-test-signature' },
       body: {
         event: 'charge.success',
         reference: 'T123456789',
@@ -735,13 +765,21 @@ test('23. POST /api/v1/payments/webhook receives provider-agnostic webhook witho
     assert.equal(response.statusCode, 200);
     assert.equal(response.body.success, true);
     assert.equal(response.body.data.received, true);
-    assert.equal(response.body.data.stub, true);
-    assert.equal(response.body.data.verified, false);
+    assert.equal(response.body.data.verified, true);
+    assert.equal(response.body.data.idempotent, false);
   });
 });
 
-test('24. POST /api/v1/payments/webhook handles idempotency for already processed payment', async () => {
+test('24. POST /api/v1/payments/webhook handles duplicate verified events idempotently', async () => {
   const stubs = [
+    [paystackProvider, {
+      verifyWebhookSignature: () => true,
+      verifyTransaction: async () => ({
+        reference: 'PROCESSED_REF_123',
+        amount: 575000,
+        status: 'success',
+      }),
+    }],
     [paymentRepository, {
       getPaymentByProviderReference: async (provider, ref) => ({
         ...SAMPLE_PAYMENT,
@@ -755,9 +793,14 @@ test('24. POST /api/v1/payments/webhook handles idempotency for already processe
   await withStubs(stubs, async () => {
     const response = await request('/api/v1/payments/webhook', {
       method: 'POST',
+      headers: { 'x-paystack-signature': 'verified-test-signature' },
       body: {
-        provider: 'GENERIC',
-        reference: 'PROCESSED_REF_123',
+        event: 'charge.success',
+        data: {
+          reference: 'PROCESSED_REF_123',
+          amount: 575000,
+          status: 'success',
+        },
       },
     });
 
@@ -771,12 +814,36 @@ test('24. POST /api/v1/payments/webhook handles idempotency for already processe
 test('25. POST /api/v1/payments/webhook rejects empty payload with 400', async () => {
   const response = await request('/api/v1/payments/webhook', {
     method: 'POST',
+      headers: { 'x-paystack-signature': 'verified-test-signature' },
     body: {},
   });
 
   assert.equal(response.statusCode, 400);
   assert.equal(response.body.success, false);
   assert.equal(response.body.error.code, 'INVALID_WEBHOOK_PAYLOAD');
+});
+
+test('26. POST /api/v1/payments/webhook rejects an invalid signature', async () => {
+  const stubs = [
+    [paystackProvider, {
+      verifyWebhookSignature: () => false,
+    }],
+  ];
+
+  await withStubs(stubs, async () => {
+    const response = await request('/api/v1/payments/webhook', {
+      method: 'POST',
+      headers: { 'x-paystack-signature': 'invalid-signature' },
+      body: {
+        event: 'charge.success',
+        data: { reference: 'UNTRUSTED_REF' },
+      },
+    });
+
+    assert.equal(response.statusCode, 401);
+    assert.equal(response.body.success, false);
+    assert.equal(response.body.error.code, 'INVALID_WEBHOOK_SIGNATURE');
+  });
 });
 
 // ==========================================
