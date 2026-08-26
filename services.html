@@ -168,6 +168,11 @@
                 </div>
 
                 <div style="margin-bottom:16px;">
+                    <label for="form-preferred-date" style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Preferred Date (if required)</label>
+                    <input type="date" id="form-preferred-date" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                </div>
+
+                <div style="margin-bottom:16px;">
                     <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Project Notes / Special Instructions</label>
                     <textarea id="form-service-notes" placeholder="e.g. 50 pages double-sided project binding, black leather with gold foil, needed by Friday 2 PM." rows="3" style="width:100%;border:1px solid var(--gray-300);border-radius:10px;padding:12px;font-size:13px;font-family:inherit;"></textarea>
                 </div>
@@ -359,11 +364,16 @@
                         customerInfo: document.getElementById("form-customer-info").value,
                         location: document.getElementById("form-customer-location").value,
                         deliveryType: document.getElementById("form-delivery-type").value,
+                        preferredDate: document.getElementById("form-preferred-date").value,
                         notes: document.getElementById("form-service-notes").value,
                         campus: CampusManager.selectedCampus
                     };
 
                     const res = await api.services.requestService(reqData);
+                    if (!res.success) {
+                        Utils.showToast(res.error?.message || "We couldn't submit the service request", "error");
+                        return;
+                    }
                     document.getElementById("service-request-modal").classList.remove("active");
                     Utils.showToast(`Request submitted! Reference #${res.data.id}`);
                     setTimeout(() => {

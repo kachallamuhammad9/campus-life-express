@@ -233,8 +233,22 @@
             const container = document.getElementById("orders-list-container");
             if (!container) return;
 
-            const res = await api.orders.list();
+            const [res, deliveries] = await Promise.all([api.orders.list(), api.delivery.list()]);
             allOrders = res.data || [];
+            if (deliveries.success) {
+                allOrders = allOrders.concat((deliveries.data || []).map(delivery => ({
+                    id: delivery.id,
+                    type: "delivery",
+                    title: delivery.taskType || "Campus Delivery",
+                    vendor: "CLX Express Dispatch",
+                    campus: delivery.campus?.slug || "unimaid",
+                    total: Number(delivery.estimatedFeeKobo || 0) / 100,
+                    status: delivery.status || "REQUESTED",
+                    statusStep: delivery.status === "DELIVERED" ? 4 : delivery.status === "IN_TRANSIT" ? 3 : delivery.status === "ACCEPTED" ? 2 : 1,
+                    date: delivery.createdAt ? new Date(delivery.createdAt).toLocaleDateString() : "Today",
+                    fulfillment: `${delivery.pickupLocation} → ${delivery.dropoffLocation}`
+                })));
+            }
 
             renderOrdersList();
         }

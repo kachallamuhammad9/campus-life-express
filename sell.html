@@ -250,7 +250,11 @@
                         campus: CampusManager.selectedCampus
                     };
 
-                    await api.marketplace.createListing(listingData);
+                    const res = await api.marketplace.createListing(listingData);
+                    if (!res.success) {
+                        Utils.showToast(res.error?.message || "We couldn't create the listing", "error");
+                        return;
+                    }
                     Utils.showToast("Listing created! Your item is now listed on the marketplace.");
                     setTimeout(() => {
                         window.location.href = "marketplace.html";

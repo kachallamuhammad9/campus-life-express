@@ -303,6 +303,12 @@
                 };
 
                 const res = await api.delivery.requestDelivery(data);
+                if (!res.success) {
+                    Utils.showToast(res.error?.message || "We couldn't create the delivery request", "error");
+                    return;
+                }
+                const backendFee = Number(res.data?.estimatedFeeKobo || 0) / 100;
+                document.getElementById("del-fee-display").textContent = Utils.formatPrice(backendFee);
                 Utils.showToast(`Delivery dispatched! Reference #${res.data.id}`);
                 setTimeout(() => {
                     window.location.href = "orders.html";

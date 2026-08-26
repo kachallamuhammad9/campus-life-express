@@ -106,17 +106,19 @@ const normalizeMarketplace = (m) => {
         id: String(m.id),
         title: m.title || m.name || "",
         category: "marketplace",
-        subcategory: m.subcategory_name || m.subcategory || "Electronics",
+        subcategory: m.subcategory_name || m.subcategory || m.fallbackSubcategory || "Electronics",
         price: priceNaira,
         price_kobo: priceNaira * 100,
         condition: m.condition || "Used - Good",
         sellerName: m.seller_name || m.sellerName || "Verified Student",
+        sellerDept: m.seller_department || m.sellerDept || "",
         sellerPhone: m.seller_phone || m.sellerPhone || "08012345678",
+        contactPhone: m.seller_contact_phone || m.contactPhone || m.seller_phone || m.sellerPhone || "",
         sellerRoom: m.seller_room || m.sellerRoom || "Hostel A, Rm 14",
         campus: (m.campus_slug || m.campus || "unimaid").toLowerCase(),
         dateListed: m.date_listed || m.dateListed || "Recently",
         status: m.status || "Active",
-        image: m.image_url || m.image || "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=600&auto=format&fit=crop&q=80",
+        image: m.primary_image_url || m.image_url || m.image || "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=600&auto=format&fit=crop&q=80",
         description: m.description || "",
         isModerated: m.is_moderated !== undefined ? Boolean(m.is_moderated) : true
     };
@@ -517,6 +519,8 @@ export const api = {
                 return { success: true, data: list, count: list.length };
             }
 
+            if (!res.success) return res;
+
             // Resilient fallback
             let list = [...SERVICES];
             if (filters.subcategory && filters.subcategory !== "all") {
@@ -541,7 +545,8 @@ export const api = {
         },
         async requestService(serviceRequest) {
             // Attempt backend service request creation
-            const deliveryType = String(serviceRequest.deliveryType || 'PICKUP').toUpperCase().replace('IN-PERSON / PICKUP', 'IN_PERSON');
+            const deliveryTypes = { pickup: 'PICKUP', 'hostel-pickup': 'DELIVERY' };
+            const deliveryType = deliveryTypes[serviceRequest.deliveryType] || String(serviceRequest.deliveryType || 'PICKUP').toUpperCase();
             const backendRes = await fetchJson(`/services/${encodeURIComponent(serviceRequest.serviceId)}/requests`, {
                 method: 'POST',
                 body: {
@@ -550,7 +555,8 @@ export const api = {
                     customerLocation: serviceRequest.location || serviceRequest.deliveryLocation || serviceRequest.room,
                     description: serviceRequest.description || serviceRequest.notes || serviceRequest.customerInfo,
                     notes: serviceRequest.instructions || serviceRequest.notes,
-                    estimatedBudgetKobo: (serviceRequest.estimatedPrice || 1000) * 100
+                    estimatedBudgetKobo: (serviceRequest.estimatedPrice || 1000) * 100,
+                    preferredDate: serviceRequest.preferredDate || undefined
                 }
             });
 
@@ -559,9 +565,10 @@ export const api = {
             // Maintain local storage sync for unified tracking & orders view
             const userRequests = JSON.parse(localStorage.getItem(STORAGE_KEYS.SERVICE_REQUESTS) || "[]");
             const newRequest = {
-                id: backendRes.data?.id || ("SRV-" + Math.floor(10000 + Math.random() * 90000)),
+                ...(backendRes.data || {}),
+                id: backendRes.data?.id,
                 type: "service",
-                status: "Submitted",
+                status: backendRes.data?.status || "SUBMITTED",
                 statusStep: 1,
                 date: "Just now",
                 ...serviceRequest
@@ -595,8 +602,14 @@ export const api = {
         async list(filters = {}) {
             const params = new URLSearchParams();
             if (filters.campus) params.append('campusId', filters.campus);
-            if (filters.subcategory && filters.subcategory !== "all") params.append('categoryId', filters.subcategory);
-            if (filters.condition && filters.condition !== "all") params.append('condition', filters.condition);
+            const subcategorySlugs = {
+                "Used Textbooks": "marketplace-used-textbooks",
+                "Electronics & Gadgets": "marketplace-used-electronics",
+                "Furniture": "marketplace-furniture",
+                "Hostel Items": "marketplace-hostel-items"
+            };
+            if (filters.subcategory && filters.subcategory !== "all") params.append('categoryId', subcategorySlugs[filters.subcategory] || filters.subcategory);
+            if (filters.condition && filters.condition !== "all") params.append('condition', filters.condition.replace(/\s+/g, '_').toUpperCase());
             if (filters.search) params.append('search', filters.search);
 
             const queryString = params.toString() ? `?${params.toString()}` : '';
@@ -604,10 +617,15 @@ export const api = {
 
             const customListings = JSON.parse(localStorage.getItem(STORAGE_KEYS.MARKETPLACE_CUSTOM) || "[]");
 
-            if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-                const combined = [...customListings, ...res.data.map(normalizeMarketplace)];
+            if (res.success && Array.isArray(res.data)) {
+                const combined = [...customListings, ...res.data.map(listing => normalizeMarketplace({
+                    ...listing,
+                    fallbackSubcategory: filters.subcategory !== "all" ? filters.subcategory : undefined
+                }))];
                 return { success: true, data: combined, count: combined.length };
             }
+
+            if (!res.success) return res;
 
             // Resilient fallback
             let list = [...customListings, ...MARKETPLACE_LISTINGS];
@@ -637,22 +655,39 @@ export const api = {
         },
         async createListing(listingData) {
             const priceNaira = Number(listingData.price) || 0;
+            const campusResponse = await fetchJson('/campuses');
+            const campus = campusResponse.data?.find(item => item.slug === (listingData.campus || api.campuses.getSelectedCampus()) || item.id === listingData.campus);
+            const categoryResponse = await fetchJson('/categories');
+            const marketplaceCategory = categoryResponse.data?.find(item => item.slug === 'marketplace');
+            const subcategorySlugs = {
+                "Used Textbooks": "marketplace-used-textbooks",
+                "Electronics & Gadgets": "marketplace-used-electronics",
+                "Furniture": "marketplace-furniture",
+                "Hostel Items": "marketplace-hostel-items",
+                "Fashion": "marketplace-student-sales"
+            };
+            const subcategories = marketplaceCategory?.subcategories || [];
+            const subcategory = subcategories.find(item => item.slug === subcategorySlugs[listingData.subcategory]);
             const res = await fetchJson('/marketplace', {
                 method: 'POST',
                 body: {
                     title: listingData.title,
                     description: listingData.description,
                     priceKobo: priceNaira * 100,
-                    condition: listingData.condition || 'USED_GOOD',
-                    campusId: listingData.campus || api.campuses.getSelectedCampus(),
-                    phoneNumber: listingData.sellerPhone,
-                    roomNumber: listingData.sellerRoom,
-                    imageUrl: listingData.image
+                    condition: (listingData.condition || 'GOOD').replace(/\s+/g, '_').toUpperCase(),
+                    campusId: campus?.id || listingData.campus,
+                    categoryId: marketplaceCategory?.id || listingData.categoryId,
+                    subcategoryId: subcategory?.id || ( /^[0-9a-f-]{36}$/i.test(listingData.subcategoryId || '') ? listingData.subcategoryId : undefined),
+                    sellerDepartment: listingData.sellerDept,
+                    sellerContactPhone: listingData.contactPhone,
+                    images: listingData.image ? [listingData.image] : []
                 }
             });
 
+            if (!res.success) return res;
+
             const newListing = {
-                id: res.data?.id || ("m-" + Date.now()),
+                id: res.data?.id,
                 category: "marketplace",
                 dateListed: "Just now",
                 status: "Pending Review",
@@ -674,45 +709,32 @@ export const api = {
     // ----------------------------------------------------
     delivery: {
         async requestDelivery(deliveryData) {
-            const estimatedFee = Number(deliveryData.estimatedFee) || 500;
+            const taskTypes = { parcel: 'DELIVERY', pickup: 'VENDOR_PICKUP', errand: 'ERRAND' };
             const res = await fetchJson('/deliveries', {
                 method: 'POST',
                 body: {
-                    taskType: deliveryData.taskType || 'PARCEL',
+                    taskType: taskTypes[deliveryData.taskType] || deliveryData.taskType,
                     pickupLocation: deliveryData.pickupLocation,
                     dropoffLocation: deliveryData.dropoffLocation,
                     campusId: deliveryData.campus || api.campuses.getSelectedCampus(),
-                    senderPhone: deliveryData.senderPhone,
-                    recipientPhone: deliveryData.recipientPhone,
-                    notes: deliveryData.description,
-                    estimatedFeeKobo: estimatedFee * 100
+                    description: deliveryData.description,
+                    urgency: deliveryData.urgency,
+                    notes: deliveryData.notes
                 }
             });
 
-            const newDelivery = {
-                id: res.data?.id || ("DEL-" + Math.floor(10000 + Math.random() * 90000)),
-                type: "delivery",
-                title: deliveryData.taskType === "errand" ? `Campus Errand: ${(deliveryData.description || '').slice(0, 35)}...` : `Parcel Delivery: ${deliveryData.pickupLocation} to ${deliveryData.dropoffLocation}`,
-                vendor: "CLX Express Dispatch",
-                campus: deliveryData.campus || api.campuses.getSelectedCampus(),
-                total: estimatedFee,
-                status: "Requested",
-                statusStep: 1,
-                date: "Just now",
-                fulfillment: `${deliveryData.pickupLocation} → ${deliveryData.dropoffLocation}`
-            };
+            if (!res.success) return res;
 
-            const userOrders = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS) || "[]");
-            userOrders.unshift(newDelivery);
-            localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(userOrders));
+            const newDelivery = res.data?.delivery || res.data;
 
             return { success: true, data: newDelivery };
         },
         async list() {
             const res = await fetchJson('/deliveries');
-            if (res.success && Array.isArray(res.data)) {
-                return res;
+            if (res.success && Array.isArray(res.data?.deliveries)) {
+                return { success: true, data: res.data.deliveries, count: res.data.deliveries.length };
             }
+            if (!res.success) return res;
             return { success: true, data: [] };
         }
     },
