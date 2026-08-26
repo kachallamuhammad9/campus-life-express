@@ -125,6 +125,14 @@
                         <label for="register-email" style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px;">Email</label>
                         <input id="register-email" type="email" autocomplete="email" required placeholder="you@example.com" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 12px;font-size:13px;background:#fff;">
                     </div>
+                    <div style="margin-bottom:16px;">
+                        <label for="register-password" style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px;">Password</label>
+                        <input id="register-password" type="password" autocomplete="new-password" required minlength="8" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 12px;font-size:13px;background:#fff;">
+                    </div>
+                    <div style="margin-bottom:20px;">
+                        <label for="register-password-confirm" style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px;">Confirm Password</label>
+                        <input id="register-password-confirm" type="password" autocomplete="new-password" required minlength="8" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 12px;font-size:13px;background:#fff;">
+                    </div>
                     <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;border-radius:10px;font-size:13px;font-weight:600;background:var(--color-primary);color:#fff;border:none;cursor:pointer;">Create CLX Account</button>
                 </form>
             </div>
@@ -370,8 +378,22 @@
                 event.preventDefault();
                 const fullName = document.getElementById("register-name").value.trim();
                 const email = document.getElementById("register-email").value.trim();
+                const password = document.getElementById("register-password").value;
+                const passwordConfirmation = document.getElementById("register-password-confirm").value;
                 if (!fullName || fullName.length < 2 || !email) {
                     showAuthMessage("Enter your full name and a valid email address.");
+                    return;
+                }
+                if (!password) {
+                    showAuthMessage("Create a password to continue.");
+                    return;
+                }
+                if (password.length < 8) {
+                    showAuthMessage("Your password must be at least 8 characters long.");
+                    return;
+                }
+                if (password !== passwordConfirmation) {
+                    showAuthMessage("Your passwords do not match.");
                     return;
                 }
                 if (!registerForm.checkValidity()) {
@@ -381,7 +403,7 @@
 
                 showAuthMessage("");
                 setFormBusy(registerForm, true, "Creating account...");
-                const res = await api.auth.register({ fullName, email, campusId: CampusManager.selectedCampus });
+                const res = await api.auth.register({ fullName, email, password, campusId: CampusManager.selectedCampus });
                 setFormBusy(registerForm, false, "Create CLX Account");
                 if (!res.success) showAuthMessage(getAuthError(res));
             });
