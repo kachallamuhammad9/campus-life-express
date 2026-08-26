@@ -158,6 +158,7 @@ export const CampusManager = {
 // ==================================================
 export const CartManager = {
     items: [],
+    remoteCart: null,
 
     init() {
         try {
@@ -173,6 +174,42 @@ export const CartManager = {
 
         this.bindEvents();
         this.updateUI();
+        this.syncFromBackend();
+        window.addEventListener("clx:auth-changed", () => {
+            if (api.auth.getToken()) {
+                this.syncFromBackend();
+                return;
+            }
+            this.remoteCart = null;
+            this.items = [];
+            this.save();
+            this.updateUI();
+        });
+    },
+
+    async syncFromBackend() {
+        if (!api.auth.getToken()) return;
+        const res = await api.cart.get();
+        if (res.success && res.data?.cart) {
+            this.applyRemoteCart(res.data.cart);
+            this.updateUI();
+        }
+    },
+
+    applyRemoteCart(cart) {
+        this.remoteCart = cart;
+        this.items = (cart.items || []).map(item => ({
+            id: item.productId,
+            cartItemId: item.id,
+            name: item.productName,
+            price: Number(item.unitPriceKobo || 0) / 100,
+            vendorId: cart.vendorId || "v-general",
+            vendorName: cart.vendor?.name || "Campus Vendor",
+            image: item.productImageUrl || Utils.fallbackImage,
+            campus: cart.campus?.slug || CampusManager.selectedCampus,
+            quantity: item.quantity,
+            totalPriceKobo: item.totalPriceKobo
+        }));
     },
 
     bindEvents() {
@@ -240,7 +277,20 @@ export const CartManager = {
         }
     },
 
-    addItem(item) {
+    async addItem(item) {
+        if (api.auth.getToken()) {
+            const res = await api.cart.addItem(item.id, 1);
+            if (!res.success) {
+                Utils.showToast(res.error?.message || "Unable to add this item", "error");
+                return;
+            }
+            this.applyRemoteCart(res.data?.cart || {});
+            this.updateUI();
+            Utils.showToast(`Added "${item.name}" to cart`);
+            this.open();
+            return;
+        }
+
         // Enforce 1 vendor per cart constraint
         if (this.items.length > 0 && this.items[0].vendorId !== item.vendorId) {
             const confirmChange = confirm(`Your cart contains items from "${this.items[0].vendorName}". CLX supports 1 vendor per checkout.\n\nWould you like to clear your cart and add this item from "${item.vendorName}"?`);
@@ -261,15 +311,36 @@ export const CartManager = {
         this.open();
     },
 
-    removeItem(id) {
+    async removeItem(id) {
+        const item = this.items.find(i => i.id === id);
+        if (api.auth.getToken() && item?.cartItemId) {
+            const res = await api.cart.removeItem(item.cartItemId);
+            if (!res.success) {
+                Utils.showToast(res.error?.message || "Unable to remove this item", "error");
+                return;
+            }
+            this.applyRemoteCart(res.data?.cart || { items: [] });
+            this.updateUI();
+            return;
+        }
         this.items = this.items.filter(i => i.id !== id);
         this.save();
         this.updateUI();
     },
 
-    updateQuantity(id, delta) {
+    async updateQuantity(id, delta) {
         const item = this.items.find(i => i.id === id);
         if (!item) return;
+        if (api.auth.getToken() && item.cartItemId) {
+            const res = await api.cart.updateItem(item.cartItemId, item.quantity + delta);
+            if (!res.success) {
+                Utils.showToast(res.error?.message || "Unable to update cart quantity", "error");
+                return;
+            }
+            this.applyRemoteCart(res.data?.cart || { items: [] });
+            this.updateUI();
+            return;
+        }
         item.quantity += delta;
         if (item.quantity <= 0) {
             this.removeItem(id);
@@ -283,7 +354,26 @@ export const CartManager = {
         localStorage.setItem("clx_cart_items", JSON.stringify(this.items));
     },
 
+    async clear() {
+        if (api.auth.getToken()) {
+            const res = await api.cart.clear();
+            if (!res.success) {
+                Utils.showToast(res.error?.message || "Unable to clear cart", "error");
+                return;
+            }
+            this.applyRemoteCart(res.data?.cart || { items: [] });
+            this.updateUI();
+            return;
+        }
+        this.items = [];
+        this.save();
+        this.updateUI();
+    },
+
     getSubtotal() {
+        if (api.auth.getToken() && this.remoteCart) {
+            return Number(this.remoteCart.subtotalKobo || 0) / 100;
+        }
         return this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     },
 
@@ -296,6 +386,9 @@ export const CartManager = {
     },
 
     getTotal() {
+        if (api.auth.getToken() && this.remoteCart) {
+            return this.getSubtotal();
+        }
         return this.getSubtotal() + this.getDeliveryFee() + this.getServiceFee();
     },
 

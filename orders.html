@@ -280,6 +280,8 @@
                                 <span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:${order.status === 'Completed' ? 'rgba(22,163,74,0.1)' : 'rgba(0,31,127,0.1)'};color:${order.status === 'Completed' ? 'var(--color-success)' : 'var(--color-primary)'};margin-top:4px;">
                                     ${order.status}
                                 </span>
+                                <div style="margin-top:8px;font-size:12px;color:var(--gray-500);">Payment: ${order.paymentStatus || 'PENDING'}</div>
+                                <button type="button" class="payment-status-btn" data-order-id="${order.id}" style="margin-top:6px;padding:5px 9px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;color:var(--gray-700);font-size:11px;cursor:pointer;">View payment</button>
                             </div>
                         </div>
 
@@ -304,7 +306,10 @@
             }).join('');
         }
 
-        function initOrdersPage() {
+        async function initOrdersPage() {
+            if (api.auth.getToken()) {
+                await CartManager.syncFromBackend();
+            }
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get("checkout") === "direct" && CartManager.items.length > 0) {
                 const chkBox = document.getElementById("checkout-box");
@@ -336,25 +341,50 @@
                     if (items.length === 0) return;
 
                     const newOrderData = {
-                        type: "order",
-                        title: items.map(i => `${i.quantity}x ${i.name}`).join(', '),
-                        vendor: items[0].vendorName,
-                        total: CartManager.getTotal(),
-                        campus: CampusManager.selectedCampus,
-                        fulfillment: `Delivery to ${document.getElementById("chk-location").value}`,
-                        payment: document.getElementById("chk-payment").value
+                        type: items[0].category === "shopping" ? "SHOPPING" : "FOOD",
+                        deliveryAddress: document.getElementById("chk-location").value.trim(),
+                        phone: document.getElementById("chk-phone").value.trim(),
+                        paymentMethod: document.getElementById("chk-payment").value === "cod" ? "CASH_ON_DELIVERY" : "CARD",
+                        notes: ""
                     };
 
-                    await api.orders.create(newOrderData);
-                    CartManager.items = [];
-                    CartManager.save();
-                    CartManager.updateUI();
+                    const orderResult = await api.orders.create(newOrderData);
+                    if (!orderResult.success) {
+                        Utils.showToast(orderResult.error?.message || "We couldn't place your order", "error");
+                        return;
+                    }
+
+                    const orderId = orderResult.data.id;
+                    const paymentMethod = newOrderData.paymentMethod;
+                    const paymentResult = paymentMethod === "CASH_ON_DELIVERY"
+                        ? await api.payments.getForOrder(orderId)
+                        : await api.payments.initialize(orderId, paymentMethod);
+
+                    if (api.auth.getToken()) {
+                        await CartManager.syncFromBackend();
+                    } else {
+                        CartManager.items = [];
+                        CartManager.save();
+                        CartManager.updateUI();
+                    }
 
                     document.getElementById("checkout-box").style.display = "none";
-                    Utils.showToast("Order confirmed and dispatched!");
+                    Utils.showToast(paymentResult.success ? "Order placed. Payment is pending." : "Order placed. Payment status is pending.");
                     loadOrders();
                 });
             }
+
+            document.addEventListener("click", async (event) => {
+                const button = event.target.closest(".payment-status-btn");
+                if (!button) return;
+                const result = await api.payments.getForOrder(button.dataset.orderId);
+                if (!result.success) {
+                    Utils.showToast(result.error?.message || "Unable to load payment status", "error");
+                    return;
+                }
+                const status = result.data.orderPaymentStatus || "PENDING";
+                Utils.showToast(`Payment status: ${status}`);
+            });
         }
 
         if (document.readyState === "loading") {

@@ -51,8 +51,8 @@ const register = async (req, res) => {
 
 const demoSession = async (req, res) => {
   const role = (req.body?.role || req.query?.role || 'CUSTOMER').toUpperCase();
-  let userId = '00000000-0000-4000-8000-000000000088';
-  let email = 'student@unimaid.edu.ng';
+  let userId = '5689167a-10a2-4dd4-92b0-3901922e901a';
+  let email = 'e2e.test.user@campuslife.express';
 
   if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
     userId = '00000000-0000-4000-8000-000000000001';

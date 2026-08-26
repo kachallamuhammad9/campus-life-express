@@ -130,14 +130,16 @@ const normalizeOrder = (o) => {
         type: (o.type || "order").toLowerCase(),
         title: o.title || (o.vendor?.name ? `Order from ${o.vendor.name}` : `Campus Order #${o.id || ""}`),
         vendor: o.vendor_name || o.vendorName || (o.vendor?.name) || "Campus Store",
-        campus: (o.campus_slug || o.campus || (o.campus?.slug) || "unimaid").toLowerCase(),
+        campus: (o.campus_slug || (typeof o.campus === "object" ? o.campus?.slug : o.campus) || "unimaid").toLowerCase(),
         total: totalNaira,
         status: o.status || "Processing",
         statusStep: o.status === "DELIVERED" || o.status === "Completed" ? 4 : o.status === "IN_TRANSIT" || o.status === "Out for Delivery" ? 3 : o.status === "CONFIRMED" || o.status === "Confirmed" ? 2 : 1,
         date: o.created_at ? new Date(o.created_at).toLocaleDateString() : (o.date || "Today"),
         fulfillment: o.delivery_address || o.deliveryAddress || o.fulfillment || "Campus Delivery",
         items: Array.isArray(o.items) ? o.items : [],
-        paymentMethod: o.payment_method || o.paymentMethod || "CASH_ON_DELIVERY"
+        paymentMethod: o.payment_method || o.paymentMethod || "CASH_ON_DELIVERY",
+        paymentStatus: o.payment_status || o.paymentStatus || "PENDING",
+        payments: Array.isArray(o.payments) ? o.payments : []
     };
 };
 
@@ -757,15 +759,41 @@ export const api = {
     },
 
     // ----------------------------------------------------
+    // PAYMENTS (/api/v1/payments)
+    // ----------------------------------------------------
+    payments: {
+        async initialize(orderId, paymentMethod = 'CARD', provider = 'GENERIC') {
+            return fetchJson('/payments/initialize', {
+                method: 'POST',
+                body: { orderId, paymentMethod, provider }
+            });
+        },
+        async confirmCashOnDelivery(orderId) {
+            return fetchJson('/payments/cash-on-delivery', {
+                method: 'POST',
+                body: { orderId }
+            });
+        },
+        async getForOrder(orderId) {
+            return fetchJson(`/payments/orders/${encodeURIComponent(orderId)}`);
+        },
+        async getById(paymentId) {
+            return fetchJson(`/payments/${encodeURIComponent(paymentId)}`);
+        }
+    },
+
+    // ----------------------------------------------------
     // ORDERS (/api/v1/orders)
     // ----------------------------------------------------
     orders: {
         async list() {
             const res = await fetchJson('/orders');
-            if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-                const normalized = res.data.map(normalizeOrder);
+            if (res.success && Array.isArray(res.data?.orders)) {
+                const normalized = res.data.orders.map(normalizeOrder);
                 return { success: true, data: normalized };
             }
+
+            if (!res.success) return res;
 
             const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS) || "null");
             if (!stored) {
@@ -777,8 +805,9 @@ export const api = {
         async getById(id) {
             const res = await fetchJson(`/orders/${id}`);
             if (res.success && res.data) {
-                return { success: true, data: normalizeOrder(res.data) };
+                return { success: true, data: normalizeOrder(res.data.order || res.data) };
             }
+            if (!res.success) return res;
             const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS) || "[]");
             const found = stored.find(o => o.id === id);
             return found ? { success: true, data: found } : { success: false, message: "Order not found" };
@@ -787,21 +816,17 @@ export const api = {
             const res = await fetchJson('/orders', {
                 method: 'POST',
                 body: {
-                    deliveryAddress: orderData.deliveryAddress || orderData.room || "Hostel Room A1",
-                    phoneNumber: orderData.phone || "08012345678",
+                    deliveryAddress: orderData.deliveryAddress,
+                    phoneNumber: orderData.phone,
                     paymentMethod: orderData.paymentMethod || 'CASH_ON_DELIVERY',
-                    notes: orderData.instructions || orderData.notes,
-                    items: orderData.items || []
+                    notes: orderData.notes,
+                    type: orderData.type
                 }
             });
 
-            const newOrder = {
-                id: res.data?.id || ("ORD-" + Math.floor(10000 + Math.random() * 90000)),
-                date: "Just now",
-                status: "Confirmed",
-                statusStep: 2,
-                ...orderData
-            };
+            if (!res.success) return res;
+
+            const newOrder = normalizeOrder(res.data?.order || res.data);
 
             const userOrders = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS) || JSON.stringify(INITIAL_ORDERS));
             userOrders.unshift(newOrder);
