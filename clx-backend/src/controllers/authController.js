@@ -55,8 +55,12 @@ const demoSession = async (req, res) => {
   let email = 'e2e.test.user@campuslife.express';
 
   if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
-    userId = '00000000-0000-4000-8000-000000000001';
-    email = 'admin@campuslife.express';
+    userId = role === 'SUPER_ADMIN'
+      ? 'd538e58d-ea27-4240-9ac9-0251563f7296'
+      : 'c427e58d-ea27-4240-9ac9-0251563f7295';
+    email = role === 'SUPER_ADMIN'
+      ? 'e2e.superadmin@campuslife.express'
+      : 'e2e.admin@campuslife.express';
   } else if (role === 'VENDOR') {
     userId = '00000000-0000-4000-8000-000000000010';
     email = 'vendor@unimaid.edu.ng';

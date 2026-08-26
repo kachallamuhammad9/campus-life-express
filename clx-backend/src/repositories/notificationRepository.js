@@ -49,7 +49,9 @@ const createNotification = async ({
       is_read,
       read_at
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    RETURNING ${NOTIFICATION_COLUMNS}
+    RETURNING id, user_id, type, title, message,
+          related_order_id, related_service_request_id,
+          related_delivery_request_id, is_read, read_at, created_at
   `;
 
   const values = [
@@ -156,7 +158,9 @@ const markAsRead = async (notificationId, userId = null) => {
        SET is_read = true,
            read_at = NOW()
      WHERE ${whereClauses.join(' AND ')}
-    RETURNING ${NOTIFICATION_COLUMNS}
+    RETURNING id, user_id, type, title, message,
+          related_order_id, related_service_request_id,
+          related_delivery_request_id, is_read, read_at, created_at
   `;
 
   const result = await database.query(query, values);

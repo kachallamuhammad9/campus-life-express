@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLX Admin Console</title>
+    <link rel="icon" href="images/clx.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <main style="padding:48px 0;background:#F8FAFC;min-height:100vh;">
+        <div class="container" style="max-width:1080px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+                <div><span style="font-size:12px;font-weight:700;color:var(--color-primary);text-transform:uppercase;">CLX Operations</span><h1 style="font-size:28px;font-weight:800;color:var(--gray-900);margin:4px 0;">Admin Console</h1><p style="font-size:14px;color:var(--gray-600);margin:0;">Dashboard, audit, and moderation controls.</p></div>
+                <div style="display:flex;gap:10px;"><a href="index.html" class="btn btn-outline" style="padding:9px 14px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);">Back to CLX</a><button id="admin-logout" class="btn btn-outline" style="padding:9px 14px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);cursor:pointer;">Logout</button></div>
+            </div>
+            <div id="admin-message" role="alert" style="display:none;margin-bottom:20px;padding:12px;border-radius:9px;background:rgba(220,38,38,0.08);color:#B91C1C;font-size:13px;"></div>
+            <section id="admin-content" hidden>
+                <div id="admin-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;"></div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;">
+                    <section style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:22px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h2 style="font-size:17px;margin:0;color:var(--gray-900);">Vendor moderation</h2><button id="refresh-vendors" class="btn btn-outline" style="padding:6px 9px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;cursor:pointer;">Refresh</button></div><div id="admin-vendors"></div></section>
+                    <section style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:22px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h2 style="font-size:17px;margin:0;color:var(--gray-900);">Audit logs</h2><button id="refresh-audit" class="btn btn-outline" style="padding:6px 9px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;cursor:pointer;">Refresh</button></div><div id="admin-audit"></div></section>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script type="module">
+        import { api } from './js/api.js';
+        import { AuthManager } from './js/app.js';
+
+        const message = document.getElementById('admin-message');
+        const content = document.getElementById('admin-content');
+        const showError = text => { message.textContent = text; message.style.display = 'block'; };
+        const statValue = (value, label) => `<div style="background:#fff;border:1px solid var(--gray-200);border-radius:14px;padding:18px;"><div style="font-size:24px;font-weight:800;color:var(--color-primary);">${value ?? 0}</div><div style="font-size:12px;color:var(--gray-500);margin-top:4px;">${label}</div></div>`;
+
+        async function loadDashboard() {
+            const [summary, vendors, audit] = await Promise.all([api.admin.getSummary(), api.admin.listVendors({ limit: 20 }), api.admin.getAuditLogs({ limit: 10 })]);
+            if (!summary.success || !vendors.success || !audit.success) { showError('Admin data is unavailable or your session lacks permission.'); return; }
+            content.hidden = false;
+            message.style.display = 'none';
+            const stats = summary.data || {};
+            document.getElementById('admin-stats').innerHTML = statValue(stats.users?.total, 'Users') + statValue(stats.vendors?.total, 'Vendors') + statValue(stats.products?.total, 'Products') + statValue(stats.orders?.total, 'Orders');
+            const vendorRows = vendors.data?.vendors || vendors.data || [];
+            document.getElementById('admin-vendors').innerHTML = vendorRows.length ? vendorRows.map(v => `<div style="padding:11px 0;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;gap:10px;"><div><strong style="display:block;font-size:13px;color:var(--gray-900);">${v.name || 'Vendor'}</strong><span style="font-size:12px;color:var(--gray-500);">${v.status || 'UNKNOWN'}</span></div><button class="vendor-status" data-id="${v.id}" data-status="${v.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE'}" style="padding:6px 8px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;color:var(--gray-700);font-size:11px;cursor:pointer;">${v.status === 'ACTIVE' ? 'Suspend' : 'Activate'}</button></div>`).join('') : '<p style="font-size:13px;color:var(--gray-500);">No vendors found.</p>';
+            const auditRows = audit.data?.logs || audit.data || [];
+            document.getElementById('admin-audit').innerHTML = auditRows.length ? auditRows.map(log => `<div style="padding:10px 0;border-bottom:1px solid var(--gray-100);"><strong style="display:block;font-size:12px;color:var(--gray-900);">${log.action || 'AUDIT EVENT'}</strong><span style="font-size:12px;color:var(--gray-500);">${log.resource_type || log.resourceType || ''} ${log.created_at || log.createdAt || ''}</span></div>`).join('') : '<p style="font-size:13px;color:var(--gray-500);">No audit logs found.</p>';
+        }
+
+        document.getElementById('admin-logout').addEventListener('click', () => { api.auth.logout(); window.location.href = 'account.html'; });
+        document.getElementById('refresh-vendors').addEventListener('click', loadDashboard);
+        document.getElementById('refresh-audit').addEventListener('click', loadDashboard);
+        document.getElementById('admin-vendors').addEventListener('click', async event => { const button = event.target.closest('.vendor-status'); if (!button) return; const result = await api.admin.updateVendorStatus(button.dataset.id, button.dataset.status); if (!result.success) showError('Vendor update was rejected by the server.'); else loadDashboard(); });
+        window.addEventListener('clx:auth-changed', event => { if (event.detail?.user) loadDashboard(); });
+        if (api.auth.getToken()) { const result = await api.auth.getMe(); if (result.success && ['ADMIN', 'SUPER_ADMIN'].includes(result.data.role)) loadDashboard(); else showError('Admin access is required.'); } else showError('Sign in with an admin account to continue.');
+    </script>
+</body>
+</html>

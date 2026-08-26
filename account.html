@@ -206,6 +206,17 @@
 
             </div>
 
+            <div id="account-notifications" hidden style="background:#fff;border-radius:20px;padding:24px;border:1px solid var(--gray-200);margin-top:24px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;">
+                    <div>
+                        <h3 style="font-size:16px;font-weight:700;color:var(--gray-900);margin:0 0 4px;">Notifications <span id="notification-count" style="font-size:12px;color:var(--color-primary);"></span></h3>
+                        <p style="font-size:13px;color:var(--gray-500);margin:0;">Your latest campus activity updates.</p>
+                    </div>
+                    <button type="button" id="mark-all-notifications" class="btn btn-outline" style="padding:8px 12px;border:1px solid var(--gray-300);border-radius:8px;background:#fff;color:var(--gray-700);font-size:12px;cursor:pointer;">Mark all read</button>
+                </div>
+                <div id="notifications-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+
         </div>
     </section>
 
@@ -290,6 +301,9 @@
         const settings = document.getElementById("account-settings");
         const loginForm = document.getElementById("login-form");
         const registerForm = document.getElementById("register-form");
+        const notificationsPanel = document.getElementById("account-notifications");
+        const notificationsList = document.getElementById("notifications-list");
+        const notificationCount = document.getElementById("notification-count");
 
         function showAuthMessage(message) {
             if (!authMessage) return;
@@ -309,6 +323,7 @@
             if (authPanel) authPanel.style.display = isAuthenticated ? "none" : "block";
             if (dashboard) dashboard.hidden = !isAuthenticated;
             if (settings) settings.hidden = !isAuthenticated;
+            if (notificationsPanel) notificationsPanel.hidden = !isAuthenticated;
 
             if (isAuthenticated) {
                 const name = user.profile?.full_name || user.fullName || "Campus Student";
@@ -316,6 +331,22 @@
                 document.getElementById("account-user-name").textContent = name;
                 document.getElementById("account-user-email").textContent = email;
             }
+        }
+
+        async function loadNotifications() {
+            if (!api.auth.getToken() || !notificationsList) return;
+            const result = await api.notifications.list();
+            if (!result.success) {
+                notificationsList.innerHTML = `<p style="font-size:13px;color:var(--gray-500);">Notifications are unavailable right now.</p>`;
+                return;
+            }
+            const notifications = result.data || [];
+            notificationCount.textContent = result.unreadCount ? `(${result.unreadCount} unread)` : "";
+            notificationsList.innerHTML = notifications.length ? notifications.map(notification => `
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;background:${notification.isRead ? 'var(--gray-50)' : 'rgba(0,31,127,0.05)'};border-radius:10px;border:1px solid var(--gray-100);">
+                    <div style="min-width:0;"><strong style="display:block;font-size:13px;color:var(--gray-900);">${notification.title || notification.type}</strong><span style="display:block;font-size:13px;color:var(--gray-600);margin-top:3px;">${notification.message || ''}</span></div>
+                    <div style="display:flex;gap:6px;flex-shrink:0;"><button type="button" class="notification-read-btn" data-id="${notification.id}" style="padding:5px 7px;border:1px solid var(--gray-300);border-radius:6px;background:#fff;color:var(--gray-700);font-size:11px;cursor:pointer;">Read</button><button type="button" class="notification-delete-btn" data-id="${notification.id}" style="padding:5px 7px;border:1px solid var(--gray-300);border-radius:6px;background:#fff;color:var(--gray-700);font-size:11px;cursor:pointer;">Delete</button></div>
+                </div>`).join('') : `<p style="font-size:13px;color:var(--gray-500);">No notifications yet.</p>`;
         }
 
         function setFormBusy(form, busy, label) {
@@ -329,10 +360,12 @@
 
         window.addEventListener("clx:auth-changed", (event) => {
             renderAuth(event.detail?.user || null);
+            if (event.detail?.user) loadNotifications();
         });
 
         document.addEventListener("DOMContentLoaded", () => {
             renderAuth(AuthManager.user);
+            if (AuthManager.user) loadNotifications();
 
             const select = document.getElementById("acc-campus-select");
             if (select) {
@@ -411,6 +444,24 @@
             document.getElementById("logout-btn")?.addEventListener("click", () => {
                 api.auth.logout();
                 showAuthMessage("");
+            });
+
+            document.getElementById("mark-all-notifications")?.addEventListener("click", async () => {
+                const result = await api.notifications.markAllAsRead();
+                if (!result.success) return Utils.showToast("Unable to update notifications", "error");
+                loadNotifications();
+            });
+            notificationsList?.addEventListener("click", async (event) => {
+                const button = event.target.closest("button[data-id]");
+                if (!button) return;
+                const result = button.classList.contains("notification-read-btn")
+                    ? await api.notifications.markAsRead(button.dataset.id)
+                    : await api.notifications.delete(button.dataset.id);
+                if (!result.success) {
+                    Utils.showToast("Unable to update this notification", "error");
+                    return;
+                }
+                loadNotifications();
             });
         });
 

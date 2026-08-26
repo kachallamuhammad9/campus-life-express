@@ -864,28 +864,30 @@ export const api = {
     notifications: {
         async list() {
             const res = await fetchJson('/notifications');
-            if (res.success && Array.isArray(res.data)) {
-                return res;
+            if (res.success && Array.isArray(res.data?.notifications)) {
+                return { success: true, data: res.data.notifications, unreadCount: res.data.unreadCount };
             }
+            if (!res.success) return res;
             return {
                 success: true,
-                data: [
-                    { id: 'notif-1', title: 'Welcome to CLX', body: 'Discover verified campus food, shopping, services and deliveries!', read: false, createdAt: new Date().toISOString() }
-                ]
+                data: []
             };
         },
         async getUnreadCount() {
             const res = await fetchJson('/notifications/unread-count');
-            if (res.success && res.data?.count !== undefined) {
-                return res.data.count;
+            if (res.success && res.data?.unreadCount !== undefined) {
+                return { success: true, data: res.data.unreadCount };
             }
-            return 1;
+            return res.success ? { success: true, data: 0 } : res;
         },
         async markAsRead(id) {
             return fetchJson(`/notifications/${id}/read`, { method: 'PATCH' });
         },
         async markAllAsRead() {
             return fetchJson('/notifications/read-all', { method: 'PATCH' });
+        },
+        async delete(id) {
+            return fetchJson(`/notifications/${encodeURIComponent(id)}`, { method: 'DELETE' });
         }
     },
 
@@ -894,11 +896,31 @@ export const api = {
     // ----------------------------------------------------
     admin: {
         async getSummary() {
-            return fetchJson('/admin/summary');
+            return fetchJson('/admin/stats');
         },
         async getAuditLogs(params = {}) {
             const q = new URLSearchParams(params).toString();
             return fetchJson(`/admin/audit-logs${q ? `?${q}` : ''}`);
+        },
+        async listMarketplaceListings(params = {}) {
+            const q = new URLSearchParams(params).toString();
+            return fetchJson(`/admin/marketplace/listings${q ? `?${q}` : ''}`);
+        },
+        async moderateMarketplaceListing(id, status, reason = '') {
+            return fetchJson(`/admin/marketplace/listings/${encodeURIComponent(id)}/moderate`, {
+                method: 'POST',
+                body: { status, rejectionReason: reason }
+            });
+        },
+        async listVendors(params = {}) {
+            const q = new URLSearchParams(params).toString();
+            return fetchJson(`/admin/vendors${q ? `?${q}` : ''}`);
+        },
+        async updateVendorStatus(id, status) {
+            return fetchJson(`/admin/vendors/${encodeURIComponent(id)}/status`, {
+                method: 'PATCH',
+                body: { status }
+            });
         }
     },
 
