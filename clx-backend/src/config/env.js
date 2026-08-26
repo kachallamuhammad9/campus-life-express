@@ -3,7 +3,9 @@
  * Loads and validates environment variables
  */
 
-require('dotenv').config();
+const path = require('node:path');
+
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const config = {
   port: process.env.PORT || 3000,
@@ -44,6 +46,16 @@ const config = {
   isTest: () => config.nodeEnv === 'test' || process.env.NODE_ENV === 'test',
 };
 
+const validateProductionConfig = () => {
+  if (!config.isProduction()) return [];
+
+  const missing = [];
+  if (!config.databaseUrl) missing.push('DATABASE_URL');
+  if (!config.jwtSecret) missing.push('SUPABASE_JWT_SECRET or JWT_SECRET');
+  if (!config.frontendUrl || !/^https:\/\//i.test(config.frontendUrl)) missing.push('FRONTEND_URL');
+  return missing;
+};
+
 // Validate required environment variables
 if (!config.databaseUrl && config.isProduction() && !process.env.BUILD_PHASE && process.env.STRICT_DB_CHECK === 'true') {
   console.error('ERROR: DATABASE_URL environment variable is required in production');
@@ -55,3 +67,4 @@ if (!config.databaseUrl && config.isProduction() && !process.env.BUILD_PHASE && 
 }
 
 module.exports = config;
+module.exports.validateProductionConfig = validateProductionConfig;

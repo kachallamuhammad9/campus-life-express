@@ -17,7 +17,8 @@ const STORAGE_KEYS = {
     NOTIFICATIONS: "clx_user_notifications"
 };
 
-const API_BASE = "http://localhost:3000/api/v1";
+const configuredApiBase = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const API_BASE = configuredApiBase.replace(/\/$/, '');
 
 /**
  * Normalization helpers to ensure dual compatibility between backend database fields

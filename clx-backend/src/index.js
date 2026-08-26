@@ -8,26 +8,25 @@ const config = require('./config/env');
 const database = require('./config/database');
 
 const PORT = config.port;
+let server = null;
 
-// ====================================
-// SERVER STARTUP
-// ====================================
+const startServer = async () => {
+  const missingConfig = config.validateProductionConfig();
+  if (missingConfig.length > 0) {
+    throw new Error(`Missing required production configuration: ${missingConfig.join(', ')}`);
+  }
 
-const server = app.listen(PORT, () => {
-  console.log('');
-  console.log('═══════════════════════════════════════════════════════════════');
-  console.log('  Campus Life Express (CLX) - Backend API Server');
-  console.log('  Powered by Dandalin Sauki Ltd');
-  console.log('═══════════════════════════════════════════════════════════════');
-  console.log(`  Status: RUNNING`);
-  console.log(`  Environment: ${config.nodeEnv}`);
-  console.log(`  Port: ${PORT}`);
-  console.log(`  URL: http://localhost:${PORT}`);
-  console.log(`  Health: http://localhost:${PORT}/api/v1/health`);
-  console.log(`  Frontend Origin: ${config.frontendUrl}`);
-  console.log('───────────────────────────────────────────────────────────────');
-  console.log('');
-});
+  if (config.isProduction() && !(await database.testConnection())) {
+    throw new Error('Production database connectivity check failed');
+  }
+
+  return new Promise((resolve) => {
+    server = app.listen(PORT, () => {
+      console.log(`CLX API listening on port ${PORT} (${config.nodeEnv})`);
+      resolve(server);
+    });
+  });
+};
 
 // ====================================
 // GRACEFUL SHUTDOWN
@@ -35,6 +34,11 @@ const server = app.listen(PORT, () => {
 
 const gracefulShutdown = async (signal) => {
   console.log(`\nReceived ${signal}, shutting down gracefully...`);
+
+  if (!server) {
+    await database.closePool();
+    process.exit(0);
+  }
 
   server.close(async () => {
     console.log('Server closed');
@@ -67,3 +71,10 @@ process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
   process.exit(1);
 });
+
+startServer().catch((error) => {
+  console.error('CLX API failed to start:', error.message);
+  process.exit(1);
+});
+
+module.exports = { startServer };

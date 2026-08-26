@@ -10,7 +10,13 @@ const config = require('../config/env');
  * CORS options configuration
  */
 const corsOptions = {
-  origin: config.frontendUrl,
+  origin: (origin, callback) => {
+    if (!origin || origin === config.frontendUrl) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
