@@ -34,29 +34,18 @@ const login = async (req, res) => {
 };
 
 const register = async (req, res) => {
-  const { email, fullName, phoneNumber, campusId } = req.body || {};
-  if (!email || typeof email !== 'string') {
-    throw new AppError(400, 'INVALID_INPUT', 'Valid email address is required');
-  }
-
-  const cleanEmail = email.trim().toLowerCase();
+  const { email, password, fullName, phoneNumber, campusId } = req.body || {};
+  const account = await authService.registerAccount({ email, password, fullName, phoneNumber, campusId });
+  const currentUser = await authService.getCurrentUser(account.id, account.email);
   const token = authService.generateToken({
-    sub: '00000000-0000-4000-8000-000000000088',
-    email: cleanEmail,
-    fullName: fullName || 'Student User',
+    sub: account.id,
+    email: account.email,
+    fullName: currentUser.profile?.full_name,
   });
 
   return sendSuccess(res, {
     token,
-    user: {
-      id: '00000000-0000-4000-8000-000000000088',
-      email: cleanEmail,
-      fullName: fullName || 'Student User',
-      phoneNumber: phoneNumber || null,
-      campusId: campusId || 'unimaid',
-      role: 'CUSTOMER',
-      roles: ['CUSTOMER'],
-    },
+    user: currentUser,
   }, 201);
 };
 

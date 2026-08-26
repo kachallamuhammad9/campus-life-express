@@ -177,6 +177,39 @@ const authenticateCredentials = async (email, password) => {
   return user;
 };
 
+const registerAccount = async ({ email, password, fullName, phoneNumber, campusId }) => {
+  if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
+    throw new AppError(400, 'INVALID_INPUT', 'Email and password are required');
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    throw new AppError(400, 'INVALID_INPUT', 'Valid email address is required');
+  }
+  if (password.length < 8) {
+    throw new AppError(400, 'INVALID_INPUT', 'Password must be at least 8 characters long');
+  }
+  if (!fullName || typeof fullName !== 'string' || fullName.trim().length < 2) {
+    throw new AppError(400, 'INVALID_INPUT', 'Full name must be at least 2 characters long');
+  }
+
+  try {
+    return await userRepository.createUserAccount({
+      email: email.trim().toLowerCase(),
+      password,
+      fullName: fullName.trim(),
+      phoneNumber,
+      campusId,
+    });
+  } catch (error) {
+    if (error.code === '23505') {
+      throw new AppError(409, 'ACCOUNT_UNAVAILABLE', 'Unable to create this account');
+    }
+    if (error.code === 'INVALID_CAMPUS') {
+      throw new AppError(400, 'INVALID_CAMPUS', 'Selected campus is not available');
+    }
+    throw error;
+  }
+};
+
 module.exports = {
   ROLE_HIERARCHY,
   VALID_ROLES,
@@ -186,4 +219,5 @@ module.exports = {
   resolveUserContext,
   getCurrentUser,
   authenticateCredentials,
+  registerAccount,
 };

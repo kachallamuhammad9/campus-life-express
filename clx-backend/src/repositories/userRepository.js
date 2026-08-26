@@ -80,6 +80,54 @@ const getUserByCredentials = async (email, password) => {
   return result.rows[0] || null;
 };
 
+const createUserAccount = async ({ email, password, fullName, phoneNumber, campusId }) => {
+  return database.withTransaction(async (client) => {
+    const campusResult = await client.query(
+      `SELECT id
+         FROM public.campuses
+        WHERE is_active = true
+          AND (id::text = $1 OR slug = $1 OR legacy_key = $1)
+        LIMIT 1`,
+      [campusId || 'unimaid']
+    );
+    const campus = campusResult.rows[0];
+    if (!campus) {
+      const error = new Error('Selected campus was not found');
+      error.code = 'INVALID_CAMPUS';
+      throw error;
+    }
+
+    const userResult = await client.query(
+      `INSERT INTO auth.users (
+         id, aud, role, email, encrypted_password, email_confirmed_at,
+         raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+       ) VALUES (
+         gen_random_uuid(), 'authenticated', 'authenticated', $1,
+         crypt($2, gen_salt('bf')), now(),
+         '{"provider":"email","providers":["email"]}'::jsonb,
+         jsonb_build_object('full_name', $3::text), now(), now()
+       )
+       RETURNING id, email`,
+      [email, password, fullName]
+    );
+    const user = userResult.rows[0];
+
+    await client.query(
+      `INSERT INTO public.profiles (id, email, full_name, phone_number, default_campus_id, is_active)
+       VALUES ($1, $2, $3, $4, $5, true)`,
+      [user.id, user.email, fullName, phoneNumber || null, campus.id]
+    );
+
+    await client.query(
+      `INSERT INTO public.user_roles (user_id, role)
+       VALUES ($1, 'CUSTOMER')`,
+      [user.id]
+    );
+
+    return user;
+  });
+};
+
 const getUserRoles = async (userId) => {
   const result = await database.query(
     `SELECT role
@@ -96,5 +144,6 @@ module.exports = {
   getUserProfileById,
   getUserProfileByEmail,
   getUserByCredentials,
+  createUserAccount,
   getUserRoles,
 };
