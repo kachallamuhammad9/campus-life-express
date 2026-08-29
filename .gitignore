@@ -34,3 +34,6 @@ temp/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Supabase CLI local state
+supabase/.temp/

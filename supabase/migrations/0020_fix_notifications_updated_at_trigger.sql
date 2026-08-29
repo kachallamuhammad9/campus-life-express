@@ -1,0 +1,1 @@
+drop trigger if exists notifications_updated_at on public.notifications;
