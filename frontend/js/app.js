@@ -11,7 +11,20 @@ import { api } from './api.js';
 // ==================================================
 export const Utils = {
     fallbackImage: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
-    
+
+    /**
+     * Escape HTML special characters to prevent XSS when interpolating
+     * API-controlled or user-controlled values into innerHTML templates.
+     */
+    escapeHtml(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    },
+
     formatPrice(amount) {
         return `${CLX_CONFIG.currency}${Number(amount || 0).toLocaleString()}`;
     },
@@ -25,7 +38,7 @@ export const Utils = {
         toast.innerHTML = `
             <div class="toast-content" style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:#0F172A;color:#FFF;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.25);position:fixed;bottom:24px;right:24px;z-index:99999;font-size:14px;font-weight:500;">
                 <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}" style="color:${type === 'success' ? '#10B981' : '#F59E0B'}"></i>
-                <span>${message}</span>
+                <span>${Utils.escapeHtml(message)}</span>
             </div>
         `;
         document.body.appendChild(toast);
@@ -61,7 +74,7 @@ export const CampusManager = {
 
     renderCampusOptions() {
         if (this.select) {
-            this.select.innerHTML = CAMPUSES.map(c => 
+            this.select.innerHTML = CAMPUSES.map(c =>
                 `<option value="${c.id}" ${c.id === this.selectedCampus ? 'selected' : ''}>${c.shortName} - ${c.name}</option>`
             ).join('');
         }
@@ -431,9 +444,9 @@ export const CartManager = {
             } else {
                 container.innerHTML = this.items.map(item => `
                     <div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--gray-200);align-items:center;">
-                        <img src="${item.image}" alt="${item.name}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;">
+                        <img src="${Utils.escapeHtml(item.image)}" alt="${Utils.escapeHtml(item.name)}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;">
                         <div style="flex-grow:1;min-width:0;">
-                            <h5 style="font-size:14px;font-weight:600;margin:0 0 4px;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</h5>
+                            <h5 style="font-size:14px;font-weight:600;margin:0 0 4px;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${Utils.escapeHtml(item.name)}</h5>
                             <span style="font-size:13px;font-weight:700;color:var(--color-primary);">${Utils.formatPrice(item.price)}</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;background:var(--gray-100);padding:4px 8px;border-radius:8px;flex-shrink:0;">
@@ -553,7 +566,7 @@ export const SearchController = {
         const hasVendors = res.vendors.length > 0;
 
         if (!hasProducts && !hasServices && !hasMarketplace && !hasVendors) {
-            this.resultsContainer.innerHTML = `<div style="text-align:center;padding:32px;color:var(--gray-500);">No results found for "<strong>${query}</strong>" on ${CampusManager.getCampusShortName()}.</div>`;
+            this.resultsContainer.innerHTML = `<div style="text-align:center;padding:32px;color:var(--gray-500);">No results found for "<strong>${Utils.escapeHtml(query)}</strong>" on ${CampusManager.getCampusShortName()}.</div>`;
             return;
         }
 
@@ -562,10 +575,10 @@ export const SearchController = {
             html += `<h4 style="font-size:13px;text-transform:uppercase;color:var(--gray-500);margin:16px 0 8px;font-weight:700;">Products & Food (${res.products.length})</h4>`;
             html += res.products.map(p => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);">
-                    <img src="${p.image}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
+                    <img src="${Utils.escapeHtml(p.image)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
                     <div style="flex-grow:1;">
-                        <a href="${p.category === 'food' ? 'food.html' : 'shopping.html'}" style="font-weight:600;font-size:14px;color:var(--gray-900);">${p.name}</a>
-                        <div style="font-size:12px;color:var(--gray-500);">${p.vendorName} • <span style="color:var(--color-primary);font-weight:700;">${Utils.formatPrice(p.price)}</span></div>
+                        <a href="${p.category === 'food' ? 'food.html' : 'shopping.html'}" style="font-weight:600;font-size:14px;color:var(--gray-900);">${Utils.escapeHtml(p.name)}</a>
+                        <div style="font-size:12px;color:var(--gray-500);">${Utils.escapeHtml(p.vendorName)} • <span style="color:var(--color-primary);font-weight:700;">${Utils.formatPrice(p.price)}</span></div>
                     </div>
                 </div>
             `).join('');
@@ -576,10 +589,10 @@ export const SearchController = {
             html += `<h4 style="font-size:13px;text-transform:uppercase;color:var(--gray-500);margin:16px 0 8px;font-weight:700;">Campus Services (${res.services.length})</h4>`;
             html += res.services.map(s => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);">
-                    <img src="${s.image}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
+                    <img src="${Utils.escapeHtml(s.image)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
                     <div style="flex-grow:1;">
-                        <a href="services.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${s.name}</a>
-                        <div style="font-size:12px;color:var(--gray-500);">${s.providerName} • <span style="color:var(--color-primary);font-weight:700;">${s.priceLabel}</span></div>
+                        <a href="services.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${Utils.escapeHtml(s.name)}</a>
+                        <div style="font-size:12px;color:var(--gray-500);">${Utils.escapeHtml(s.providerName)} • <span style="color:var(--color-primary);font-weight:700;">${s.priceLabel}</span></div>
                     </div>
                 </div>
             `).join('');
@@ -590,10 +603,10 @@ export const SearchController = {
             html += `<h4 style="font-size:13px;text-transform:uppercase;color:var(--gray-500);margin:16px 0 8px;font-weight:700;">Student Marketplace (${res.marketplace.length})</h4>`;
             html += res.marketplace.map(m => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);">
-                    <img src="${m.image}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
+                    <img src="${Utils.escapeHtml(m.image)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
                     <div style="flex-grow:1;">
-                        <a href="marketplace.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${m.title}</a>
-                        <div style="font-size:12px;color:var(--gray-500);">${m.condition} • Seller: ${m.sellerName} • <span style="color:var(--color-primary);font-weight:700;">${Utils.formatPrice(m.price)}</span></div>
+                        <a href="marketplace.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${Utils.escapeHtml(m.title)}</a>
+                        <div style="font-size:12px;color:var(--gray-500);">${Utils.escapeHtml(m.condition)} • Seller: ${Utils.escapeHtml(m.sellerName)} • <span style="color:var(--color-primary);font-weight:700;">${Utils.formatPrice(m.price)}</span></div>
                     </div>
                 </div>
             `).join('');
@@ -604,10 +617,10 @@ export const SearchController = {
             html += `<h4 style="font-size:13px;text-transform:uppercase;color:var(--gray-500);margin:16px 0 8px;font-weight:700;">Campus Businesses (${res.vendors.length})</h4>`;
             html += res.vendors.map(v => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);">
-                    <img src="${v.image}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
+                    <img src="${Utils.escapeHtml(v.image)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
                     <div style="flex-grow:1;">
-                        <a href="vendors.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${v.name}</a>
-                        <div style="font-size:12px;color:var(--gray-500);">${v.location} • ⭐ ${v.rating}</div>
+                        <a href="vendors.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${Utils.escapeHtml(v.name)}</a>
+                        <div style="font-size:12px;color:var(--gray-500);">${Utils.escapeHtml(v.location)} • ⭐ ${v.rating}</div>
                     </div>
                 </div>
             `).join('');

@@ -21,7 +21,9 @@ const { formatErrorResponse } = require('./errorHandler');
  */
 const createRateLimiter = (options = {}) => {
   const isTest = config.isTest();
-  const isDisabled = process.env.RATE_LIMIT_DISABLED === 'true';
+  // Production-safe rate limiting: the disable flag is honored only outside
+  // production so RATE_LIMIT_DISABLED=true can never silently weaken prod security.
+  const isDisabled = process.env.RATE_LIMIT_DISABLED === 'true' && !config.isProduction();
 
   const defaultWindowMs = options.windowMs || 15 * 60 * 1000;
   const defaultMax = options.max !== undefined ? options.max : 100;

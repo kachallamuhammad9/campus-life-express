@@ -531,8 +531,8 @@ export const api = {
                 list = list.filter(s => s.campus === filters.campus);
             }
             if (filters.search) {
-                const s = filters.search.toLowerCase();
-                list = list.filter(s => s.name.toLowerCase().includes(s) || s.description.toLowerCase().includes(s) || s.providerName.toLowerCase().includes(s));
+                const search = filters.search.toLowerCase();
+                list = list.filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search) || s.providerName.toLowerCase().includes(search));
             }
             return { success: true, data: list, count: list.length };
         },

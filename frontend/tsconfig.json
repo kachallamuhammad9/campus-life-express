@@ -14,6 +14,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["js/**/*", "assets/**/*", "vite.config.ts"],
+  "include": ["js/**/*", "assets/**/*"],
   "exclude": ["node_modules", "dist", "clx-backend"]
 }
