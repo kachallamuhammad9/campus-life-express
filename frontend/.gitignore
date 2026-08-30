@@ -41,3 +41,4 @@ temp/
 
 # OS files
 .DS_Store
+.vercel

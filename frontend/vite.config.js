@@ -1,9 +1,27 @@
 import { defineConfig } from 'vite';
-import { createRequire } from 'module';
+import { resolve } from 'node:path';
+import { readdirSync } from 'node:fs';
 
-const require = createRequire(import.meta.url);
+// Multi-page build: every top-level .html file in frontend/ is a real page
+// (CLX is a multi-page app, not an SPA).
+const htmlPages = readdirSync(__dirname)
+  .filter((f) => f.endsWith('.html'))
+  .reduce(
+    (inputs, page) => {
+      inputs[page.replace(/\.html$/, '')] = resolve(__dirname, page);
+      return inputs;
+    },
+    { main: resolve(__dirname, 'index.html') }
+  );
 
 export default defineConfig({
+  appType: 'mpa',
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      input: htmlPages,
+    },
+  },
   server: {
     port: 3000,
     host: '0.0.0.0',
@@ -12,41 +30,4 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
   },
-  plugins: [
-    {
-      name: 'clx-backend-api',
-      configureServer(server) {
-        let backendApp = null;
-        try {
-          backendApp = require('./clx-backend/src/app.js');
-        } catch (e) {
-          console.error('[Vite] Error loading backend app:', e);
-        }
-
-        server.middlewares.use((req, res, next) => {
-          if (backendApp && req.url && (req.url.startsWith('/api/') || req.url === '/api' || req.url.startsWith('/api?'))) {
-            backendApp(req, res, next);
-          } else {
-            next();
-          }
-        });
-      },
-      configurePreviewServer(server) {
-        let backendApp = null;
-        try {
-          backendApp = require('./clx-backend/src/app.js');
-        } catch (e) {
-          console.error('[Vite] Error loading backend app for preview:', e);
-        }
-
-        server.middlewares.use((req, res, next) => {
-          if (backendApp && req.url && (req.url.startsWith('/api/') || req.url === '/api' || req.url.startsWith('/api?'))) {
-            backendApp(req, res, next);
-          } else {
-            next();
-          }
-        });
-      }
-    }
-  ]
 });
