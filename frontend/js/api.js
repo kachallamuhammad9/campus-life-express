@@ -922,6 +922,51 @@ export const api = {
                 method: 'PATCH',
                 body: { status }
             });
+        },
+        async listProducts(params = {}) {
+            const q = new URLSearchParams(params).toString();
+            return fetchJson(`/admin/products${q ? `?${q}` : ''}`);
+        },
+        async updateProduct(id, fields = {}) {
+            return fetchJson(`/admin/products/${encodeURIComponent(id)}`, {
+                method: 'PATCH',
+                body: fields
+            });
+        },
+        async deleteProduct(id) {
+            return fetchJson(`/admin/products/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        },
+        async listServices(params = {}) {
+            const q = new URLSearchParams(params).toString();
+            return fetchJson(`/admin/services${q ? `?${q}` : ''}`);
+        },
+        async updateService(id, fields = {}) {
+            return fetchJson(`/admin/services/${encodeURIComponent(id)}`, {
+                method: 'PATCH',
+                body: fields
+            });
+        },
+        async listVendorApplications(params = {}) {
+            const q = new URLSearchParams(params).toString();
+            return fetchJson(`/onboarding/vendor${q ? `?${q}` : ''}`);
+        },
+        async reviewVendorApplication(id, action, rejectionReason = '') {
+            return fetchJson(`/onboarding/vendor/${encodeURIComponent(id)}/review`, {
+                method: 'POST',
+                body: { action, rejectionReason }
+            });
+        }
+    },
+
+    // ----------------------------------------------------
+    // VENDOR / PRODUCT / SERVICE ONBOARDING (/api/v1/onboarding)
+    // ----------------------------------------------------
+    onboarding: {
+        async submitVendorApplication(data) {
+            return fetchJson('/onboarding/vendor', {
+                method: 'POST',
+                body: data
+            });
         }
     },
 

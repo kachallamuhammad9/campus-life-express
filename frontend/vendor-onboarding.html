@@ -29,7 +29,7 @@
                     <a href="vendors.html" class="btn btn-outline" style="font-size:13px;padding:8px 16px;border-radius:10px;border:1px solid var(--gray-300);">
                         View Directory
                     </a>
-                
+
                     <!-- Mobile Toggle -->
                     <button id="mobile-toggle" type="button" class="mobile-toggle" aria-label="Open Menu" style="font-size:20px;color:var(--gray-800);">
                         <i class="fa-solid fa-bars"></i>
@@ -68,7 +68,7 @@
     <!-- Onboarding Form Section -->
     <section style="padding:60px 0;background:#F8FAFC;">
         <div class="container" style="max-width:740px;">
-            
+
             <div style="background:#fff;border-radius:24px;padding:36px;border:1px solid var(--gray-200);box-shadow:0 10px 30px rgba(0,0,0,0.04);">
                 <div style="display:inline-block;font-size:12px;font-weight:700;color:var(--color-primary);background:rgba(0,31,127,0.08);padding:4px 10px;border-radius:6px;margin-bottom:8px;">
                     Merchant Application
@@ -77,18 +77,18 @@
                 <p style="font-size:14px;color:var(--gray-600);margin-bottom:28px;">Connect directly with thousands of campus students for meals, products, and skilled services.</p>
 
                 <form id="vendor-onboard-form">
-                    
+
                     <!-- Business Info -->
                     <div style="margin-bottom:18px;">
                         <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Business / Brand Name *</label>
-                        <input type="text" required placeholder="e.g. Al-Bukhari Suya & Shawarma / QuickPrint Hub" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                        <input type="text" id="onboard-name" required placeholder="e.g. Al-Bukhari Suya & Shawarma / QuickPrint Hub" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
                     </div>
 
                     <!-- Category & Campus -->
                     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:18px;">
                         <div>
                             <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Business Category *</label>
-                            <select style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                            <select id="onboard-category" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
                                 <option value="food">Campus Food Vendor / Restaurant</option>
                                 <option value="shopping">Student Shopping & Retail Store</option>
                                 <option value="services">Campus Service Provider (Printing, Laundry, Repair, Grooming)</option>
@@ -97,11 +97,10 @@
                         </div>
                         <div>
                             <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Target Campus *</label>
-                            <select id="onboard-campus-select" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                            <select id="onboard-campus" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
                                 <option value="unimaid">University of Maiduguri (UNIMAID)</option>
-                                <option value="kiu">Kampala International University (KIU)</option>
-                                <option value="unilag">University of Lagos (UNILAG)</option>
-                                <option value="abu">Ahmadu Bello University (ABU)</option>
+                                <option value="kiu">Kashim Ibrahim University (KIU)</option>
+                                <option value="buk">Borno State University (BUK)</option>
                             </select>
                         </div>
                     </div>
@@ -109,25 +108,25 @@
                     <!-- Physical Location on Campus -->
                     <div style="margin-bottom:18px;">
                         <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Campus Physical Location / Shop Address *</label>
-                        <input type="text" required placeholder="e.g. Commercial Center, Shop 14, Opposite Faculty of Arts" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                        <input type="text" id="onboard-location" required placeholder="e.g. Commercial Center, Shop 14, Opposite Faculty of Arts" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
                     </div>
 
                     <!-- Contact Person & Phone -->
                     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:18px;">
                         <div>
                             <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Contact Person / Owner *</label>
-                            <input type="text" required placeholder="e.g. Mallam Garba Mohammed" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                            <input type="text" id="onboard-contact" required placeholder="e.g. Mallam Garba Mohammed" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
                         </div>
                         <div>
                             <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Phone / WhatsApp *</label>
-                            <input type="text" required placeholder="e.g. 08023456789" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                            <input type="text" id="onboard-phone" required placeholder="e.g. 08023456789" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
                         </div>
                     </div>
 
                     <!-- Description -->
                     <div style="margin-bottom:24px;">
                         <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Summary of Products / Services Offered *</label>
-                        <textarea required placeholder="Briefly describe your menu items, products, or service offerings..." rows="3" style="width:100%;border:1px solid var(--gray-300);border-radius:10px;padding:12px;font-size:13px;font-family:inherit;"></textarea>
+                        <textarea id="onboard-desc" required placeholder="Briefly describe your menu items, products, or service offerings..." rows="3" style="width:100%;border:1px solid var(--gray-300);border-radius:10px;padding:12px;font-size:13px;font-family:inherit;"></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary" style="width:100%;height:50px;border-radius:12px;font-size:16px;font-weight:700;background:var(--color-primary);color:#fff;cursor:pointer;">
@@ -214,10 +213,27 @@
 
     <!-- Scripts -->
     <script type="module">
+        import { api } from './js/api.js';
         import { Utils } from './js/app.js';
 
-        document.getElementById("vendor-onboard-form").addEventListener("submit", (e) => {
+        document.getElementById("vendor-onboard-form").addEventListener("submit", async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+            const res = await api.onboarding.submitVendorApplication({
+                businessName: document.getElementById("onboard-name").value,
+                categorySlug: document.getElementById("onboard-category").value,
+                campusSlug: document.getElementById("onboard-campus").value,
+                location: document.getElementById("onboard-location").value,
+                contactName: document.getElementById("onboard-contact").value,
+                phoneNumber: document.getElementById("onboard-phone").value,
+                description: document.getElementById("onboard-desc").value
+            });
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Vendor Application'; }
+            if (!res.success) {
+                Utils.showToast(res.error?.message || "We couldn't submit your application", "error");
+                return;
+            }
             Utils.showToast("Application submitted successfully! Our campus verification team will contact you shortly.");
             setTimeout(() => {
                 window.location.href = "vendors.html";

@@ -18,6 +18,7 @@ const paymentRoutes = require('./payments');
 const gasRoutes = require('./gas');
 const notificationRoutes = require('./notifications');
 const adminRoutes = require('./admin');
+const onboardingRoutes = require('./onboarding');
 const authRoutes = require('./auth');
 const { sendSuccess } = require('../utils/response');
 
@@ -27,6 +28,7 @@ const router = express.Router();
 router.use('/api/v1', healthRoutes);
 router.use('/api/v1/auth', authRoutes);
 router.use('/api/v1/admin', adminRoutes);
+router.use('/api/v1/onboarding', onboardingRoutes);
 router.use('/api/v1/campuses', campusRoutes);
 router.use('/api/v1/categories', categoryRoutes);
 router.use('/api/v1/vendors', vendorRoutes);
