@@ -1,6 +1,4 @@
 const marketplaceRepository = require('../repositories/marketplaceRepository');
-const campusRepository = require('../repositories/campusRepository');
-const categoryRepository = require('../repositories/categoryRepository');
 const { AppError } = require('../utils/AppError');
 
 const VALID_CONDITIONS = new Set(['NEW', 'LIKE_NEW', 'GOOD', 'FAIR']);
@@ -187,21 +185,6 @@ const createListing = async (listingData = {}, userContext = null) => {
   }
   const condition = rawCondition.toUpperCase();
 
-  // Resolve campus/category by slug or id (clients may send slugs like 'unimaid')
-  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  let resolvedCampusId = campusId.trim();
-  if (!UUID_RE.test(resolvedCampusId)) {
-    const campus = await campusRepository.findBySlug(resolvedCampusId.toLowerCase());
-    if (!campus) throw new AppError(400, 'VALIDATION_ERROR', `Unknown campus: ${resolvedCampusId}`);
-    resolvedCampusId = campus.id;
-  }
-  let resolvedCategoryId = categoryId.trim();
-  if (!UUID_RE.test(resolvedCategoryId)) {
-    const category = await categoryRepository.findBySlug(resolvedCategoryId.toLowerCase());
-    if (!category) throw new AppError(400, 'VALIDATION_ERROR', `Unknown category: ${resolvedCategoryId}`);
-    resolvedCategoryId = category.id;
-  }
-
   const slug = generateSlug(title);
   const description = listingData.description ? String(listingData.description).trim() : null;
   const sellerDepartment = listingData.sellerDepartment || listingData.seller_department || null;
@@ -212,8 +195,8 @@ const createListing = async (listingData = {}, userContext = null) => {
     legacyKey: listingData.legacyKey || listingData.legacy_key || null,
     slug,
     sellerUserId: sellerUserId.trim(),
-    campusId: resolvedCampusId,
-    categoryId: resolvedCategoryId,
+    campusId: campusId.trim(),
+    categoryId: categoryId.trim(),
     subcategoryId: subcategoryId ? String(subcategoryId).trim() : null,
     title: title.trim(),
     description,
