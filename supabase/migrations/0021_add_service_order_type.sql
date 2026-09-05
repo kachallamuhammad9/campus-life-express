@@ -1,0 +1,1 @@
+alter type public.order_type add value if not exists 'SERVICE';
