@@ -13,6 +13,61 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="./css/main.css">
+    <style>
+        @media (max-width: 767px) {
+            body.category-delivery section:nth-of-type(2) {
+                padding: 12px 0 24px !important;
+            }
+
+            body.category-delivery section:nth-of-type(2) > .container {
+                padding: 0 10px !important;
+            }
+
+            body.category-delivery .delivery-calculator-box {
+                padding: 16px 12px 18px !important;
+            }
+
+            body.category-delivery .delivery-calculator-box h2 {
+                margin-bottom: 10px !important;
+                text-align: left !important;
+            }
+
+            body.category-delivery .delivery-type-selector {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 6px !important;
+                margin-bottom: 12px !important;
+            }
+
+            body.category-delivery .delivery-type-btn {
+                min-height: 58px !important;
+                padding: 7px 2px !important;
+            }
+
+            body.category-delivery .delivery-type-btn i {
+                font-size: 15px !important;
+                margin-bottom: 3px !important;
+            }
+
+            body.category-delivery .delivery-type-btn span {
+                font-size: 9.5px !important;
+                white-space: normal !important;
+            }
+
+            body.category-delivery #delivery-request-form > div[style*="margin-bottom:16px"] {
+                margin-bottom: 10px !important;
+            }
+
+            body.category-delivery #delivery-request-form textarea {
+                min-height: 60px !important;
+            }
+
+            body.category-delivery #delivery-request-form > a.btn {
+                height: 44px !important;
+                line-height: 44px !important;
+                font-size: 13.5px !important;
+            }
+        }
+    </style>
 </head>
 
 <body class="category-page category-delivery">
