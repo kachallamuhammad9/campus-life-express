@@ -8,11 +8,11 @@
     <meta name="description" content="Track your food orders, shopping purchases, campus service requests, and deliveries in real-time.">
     <meta name="theme-color" content="#001F7F">
 
-    <link rel="icon" href="images/clx.png" type="image/png">
+    <link rel="icon" href="./images/clx.png" type="image/png">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="./css/main.css">
 </head>
 
 <body class="orders-page">
@@ -28,20 +28,20 @@
 
         <div class="navbar" style="background:#ffffff;border-bottom:1px solid var(--gray-200);">
             <div class="container header-container" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">
-                <a href="index.html" class="logo" aria-label="Campus Life Express Home">
-                    <img src="images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-img">
+                <a href="/" class="logo" aria-label="Campus Life Express Home">
+                    <img src="./images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-img">
                 </a>
 
                 <nav class="desktop-nav">
                     <ul class="nav-list" style="display:flex;align-items:center;gap:20px;margin:0;list-style:none;">
-                        <li><a href="index.html" style="font-weight:500;color:var(--gray-700);">Home</a></li>
-                        <li><a href="categories.html" style="font-weight:500;color:var(--gray-700);">Categories</a></li>
-                        <li><a href="food.html" style="font-weight:500;color:var(--gray-700);">Food</a></li>
-                        <li><a href="shopping.html" style="font-weight:500;color:var(--gray-700);">Shopping</a></li>
-                        <li><a href="services.html" style="font-weight:500;color:var(--gray-700);">Services</a></li>
-                        <li><a href="marketplace.html" style="font-weight:500;color:var(--gray-700);">Marketplace</a></li>
-                        <li><a href="delivery.html" style="font-weight:500;color:var(--gray-700);">Delivery</a></li>
-                        <li><a href="orders.html" class="active" style="font-weight:600;color:var(--color-primary);">Orders</a></li>
+                        <li><a href="/" style="font-weight:500;color:var(--gray-700);">Home</a></li>
+                        <li><a href="/categories" style="font-weight:500;color:var(--gray-700);">Categories</a></li>
+                        <li><a href="/food" style="font-weight:500;color:var(--gray-700);">Food</a></li>
+                        <li><a href="/shopping" style="font-weight:500;color:var(--gray-700);">Shopping</a></li>
+                        <li><a href="/services" style="font-weight:500;color:var(--gray-700);">Services</a></li>
+                        <li><a href="/marketplace" style="font-weight:500;color:var(--gray-700);">Marketplace</a></li>
+                        <li><a href="/delivery" style="font-weight:500;color:var(--gray-700);">Delivery</a></li>
+                        <li><a href="/orders" class="active" style="font-weight:600;color:var(--color-primary);">Orders</a></li>
                     </ul>
                 </nav>
 
@@ -50,10 +50,10 @@
                         <i class="fa-solid fa-location-dot"></i>
                         <span>Serving: <strong>UNIMAID</strong></span>
                     </button>
-                    <a href="account.html" style="width:40px;height:40px;border-radius:50%;background:rgba(0,31,127,0.08);display:flex;align-items:center;justify-content:center;color:var(--color-primary);">
+                    <a href="/account" style="width:40px;height:40px;border-radius:50%;background:rgba(0,31,127,0.08);display:flex;align-items:center;justify-content:center;color:var(--color-primary);">
                         <i class="fa-regular fa-user"></i>
                     </a>
-                
+
                     <!-- Mobile Toggle -->
                     <button id="mobile-toggle" type="button" class="mobile-toggle" aria-label="Open Menu" style="font-size:20px;color:var(--gray-800);">
                         <i class="fa-solid fa-bars"></i>
@@ -71,19 +71,19 @@
                     <button id="close-menu" type="button" class="close-menu" style="font-size:20px;color:var(--gray-500);"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <ul style="padding:20px;list-style:none;">
-                    <li style="margin-bottom:14px;"><a href="index.html" style="font-weight:600;color:var(--color-primary);"><i class="fa-solid fa-house" style="margin-right:10px;"></i> Home</a></li>
-                    <li style="margin-bottom:14px;"><a href="categories.html"><i class="fa-solid fa-layer-group" style="margin-right:10px;"></i> All Categories</a></li>
-                    <li style="margin-bottom:14px;"><a href="food.html"><i class="fa-solid fa-utensils" style="margin-right:10px;"></i> Food & Vendors</a></li>
-                    <li style="margin-bottom:14px;"><a href="shopping.html"><i class="fa-solid fa-bag-shopping" style="margin-right:10px;"></i> Student Shopping</a></li>
-                    <li style="margin-bottom:14px;"><a href="services.html"><i class="fa-solid fa-screwdriver-wrench" style="margin-right:10px;"></i> Campus Services</a></li>
-                    <li style="margin-bottom:14px;"><a href="marketplace.html"><i class="fa-solid fa-handshake" style="margin-right:10px;"></i> Student Marketplace</a></li>
-                    <li style="margin-bottom:14px;"><a href="delivery.html"><i class="fa-solid fa-truck-fast" style="margin-right:10px;"></i> Delivery & Errands</a></li>
-                    <li style="margin-bottom:14px;"><a href="vendors.html"><i class="fa-solid fa-store" style="margin-right:10px;"></i> Campus Businesses</a></li>
-                    <li style="margin-bottom:14px;"><a href="orders.html"><i class="fa-solid fa-box-open" style="margin-right:10px;"></i> My Orders & Requests</a></li>
-                    <li style="margin-bottom:14px;"><a href="account.html"><i class="fa-solid fa-user" style="margin-right:10px;"></i> Student Account</a></li>
+                    <li style="margin-bottom:14px;"><a href="/" style="font-weight:600;color:var(--color-primary);"><i class="fa-solid fa-house" style="margin-right:10px;"></i> Home</a></li>
+                    <li style="margin-bottom:14px;"><a href="/categories"><i class="fa-solid fa-layer-group" style="margin-right:10px;"></i> All Categories</a></li>
+                    <li style="margin-bottom:14px;"><a href="/food"><i class="fa-solid fa-utensils" style="margin-right:10px;"></i> Food & Vendors</a></li>
+                    <li style="margin-bottom:14px;"><a href="/shopping"><i class="fa-solid fa-bag-shopping" style="margin-right:10px;"></i> Student Shopping</a></li>
+                    <li style="margin-bottom:14px;"><a href="/services"><i class="fa-solid fa-screwdriver-wrench" style="margin-right:10px;"></i> Campus Services</a></li>
+                    <li style="margin-bottom:14px;"><a href="/marketplace"><i class="fa-solid fa-handshake" style="margin-right:10px;"></i> Student Marketplace</a></li>
+                    <li style="margin-bottom:14px;"><a href="/delivery"><i class="fa-solid fa-truck-fast" style="margin-right:10px;"></i> Delivery & Errands</a></li>
+                    <li style="margin-bottom:14px;"><a href="/vendors"><i class="fa-solid fa-store" style="margin-right:10px;"></i> Campus Businesses</a></li>
+                    <li style="margin-bottom:14px;"><a href="/orders"><i class="fa-solid fa-box-open" style="margin-right:10px;"></i> My Orders & Requests</a></li>
+                    <li style="margin-bottom:14px;"><a href="/account"><i class="fa-solid fa-user" style="margin-right:10px;"></i> Student Account</a></li>
                     <li style="margin-top:24px;border-top:1px solid var(--gray-200);padding-top:16px;">
-                        <a href="sell.html" class="btn btn-outline" style="width:100%;margin-bottom:10px;text-align:center;display:block;">Sell on CLX</a>
-                        <a href="vendor-onboarding.html" class="btn btn-primary" style="width:100%;text-align:center;display:block;background:var(--color-primary);color:#fff;">Become a Vendor</a>
+                        <a href="/sell" class="btn btn-outline" style="width:100%;margin-bottom:10px;text-align:center;display:block;">Sell on CLX</a>
+                        <a href="/vendor-onboarding" class="btn btn-primary" style="width:100%;text-align:center;display:block;background:var(--color-primary);color:#fff;">Become a Vendor</a>
                     </li>
                 </ul>
             </aside>
@@ -100,7 +100,7 @@
     <!-- Orders Dashboard -->
     <section style="padding:48px 0;background:#F8FAFC;">
         <div class="container" style="max-width:920px;">
-            
+
             <!-- Checkout Confirmation Alert (if direct from cart) -->
             <div id="checkout-box" style="display:none;background:#fff;border-radius:20px;padding:28px;border:2px solid var(--color-primary);margin-bottom:32px;box-shadow:0 10px 30px rgba(0,31,127,0.08);">
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
@@ -109,24 +109,46 @@
                     </div>
                     <div>
                         <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--gray-900);">Complete Your Campus Order</h3>
-                        <span style="font-size:13px;color:var(--gray-500);">Provide delivery details to dispatch your order</span>
+                        <span style="font-size:13px;color:var(--gray-500);">Choose pickup from the vendor or delivery to your location</span>
                     </div>
                 </div>
 
+                <!-- Multi-Vendor Order Summary (one checkout, all vendors) -->
+                <div id="checkout-summary" style="border:1px solid var(--gray-200);border-radius:14px;padding:18px;margin-bottom:20px;background:#F8FAFC;"></div>
+
                 <form id="checkout-form" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px;">
                     <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Delivery Location *</label>
-                        <input type="text" id="chk-location" required placeholder="e.g. Hostel B Room 18 / FASS building" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                        <label for="chk-name" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Customer Name *</label>
+                        <input type="text" id="chk-name" required placeholder="e.g. Aisha Mohammed" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                    </div>
+                    <div id="chk-zone-field" style="display:none;">
+                        <label for="chk-zone" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Delivery Zone *</label>
+                        <select id="chk-zone" disabled style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;"><option value="">Loading delivery zones...</option></select>
+                    </div>
+                    <div id="chk-location-field" style="display:none;">
+                        <label for="chk-location" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Delivery Location *</label>
+                        <input type="text" id="chk-location" disabled placeholder="e.g. Hostel B Room 18 / FASS building" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
                     </div>
                     <div>
                         <label style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Phone Number *</label>
                         <input type="text" id="chk-phone" required placeholder="e.g. 08034567890" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
                     </div>
+                    <div>
+                        <label for="chk-fulfillment" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Fulfillment Method</label>
+                        <select id="chk-fulfillment" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                            <option value="pickup">Pickup - collect from vendor(s)</option>
+                            <option value="delivery">Delivery - deliver to my location</option>
+                        </select>
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label for="chk-note" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Order Note (optional)</label>
+                        <input type="text" id="chk-note" placeholder="e.g. Call when you arrive at the gate" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                    </div>
                     <div style="grid-column:1/-1;">
                         <label style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Payment Method</label>
                         <select id="chk-payment" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
-                            <option value="cod">Cash on Delivery / Direct Bank Transfer on Receipt</option>
-                            <option value="card">Instant Campus Card / Transfer</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="cod">Cash on Delivery</option>
                         </select>
                     </div>
                     <div style="grid-column:1/-1;display:flex;gap:12px;margin-top:8px;">
@@ -135,6 +157,19 @@
                         </button>
                     </div>
                 </form>
+            </div>
+
+            <div id="customer-order-confirmation" style="display:none;background:#fff;border-radius:20px;padding:28px;border:2px solid #16A34A;margin-bottom:32px;box-shadow:0 10px 30px rgba(22,163,74,0.08);"></div>
+
+            <div style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:22px;margin-bottom:28px;">
+                <div style="margin-bottom:14px;"><h3 style="font-size:17px;margin:0;color:var(--gray-900);">Track a CLX Order</h3><span style="font-size:13px;color:var(--gray-500);">Use your order number and tracking token.</span></div>
+                <form id="tracking-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;">
+                    <input id="tracking-order-number" required placeholder="CLX-2026-0001" style="height:42px;border:1px solid var(--gray-300);border-radius:8px;padding:0 12px;">
+                    <input id="tracking-token" required type="password" placeholder="Tracking token" style="height:42px;border:1px solid var(--gray-300);border-radius:8px;padding:0 12px;">
+                    <button class="btn btn-primary" type="submit" style="background:var(--color-primary);color:#fff;">Track Order</button>
+                </form>
+                <div id="recent-tracking-orders" style="margin-top:14px;"></div>
+                <div id="tracking-result" style="margin-top:16px;"></div>
             </div>
 
             <!-- Filter tabs -->
@@ -159,7 +194,7 @@
                 <!-- Col 1: Brand -->
                 <div>
                     <div style="margin-bottom:16px;">
-                        <img src="images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-footer">
+                        <img src="./images/clx.png" alt="Campus Life Express (CLX)" class="brand-logo-footer">
                     </div>
                     <p style="font-size:13px;line-height:1.6;color:#94A3B8;margin-bottom:16px;text-align:justify;">
                         The official campus commerce platform connecting food, shopping, services, peer marketplace, and delivery.
@@ -173,11 +208,11 @@
                 <div>
                     <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Core Categories</h4>
                     <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
-                        <li><a href="food.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Food & Vendors</a></li>
-                        <li><a href="shopping.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Shopping</a></li>
-                        <li><a href="services.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Services</a></li>
-                        <li><a href="marketplace.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Marketplace</a></li>
-                        <li><a href="delivery.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Delivery & Errands</a></li>
+                        <li><a href="/food" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Food & Vendors</a></li>
+                        <li><a href="/shopping" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Shopping</a></li>
+                        <li><a href="/services" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Services</a></li>
+                        <li><a href="/marketplace" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Marketplace</a></li>
+                        <li><a href="/delivery" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Delivery & Errands</a></li>
                     </ul>
                 </div>
 
@@ -185,11 +220,11 @@
                 <div>
                     <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Portals & Orders</h4>
                     <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
-                        <li><a href="orders.html" style="color:#FCC501;font-weight:600;text-decoration:none;">Track Orders & Requests</a></li>
-                        <li><a href="account.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Account</a></li>
-                        <li><a href="vendors.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Business Directory</a></li>
-                        <li><a href="sell.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Sell on Student Marketplace</a></li>
-                        <li><a href="vendor-onboarding.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Become a Vendor</a></li>
+                        <li><a href="/orders" style="color:#FCC501;font-weight:600;text-decoration:none;">Track Orders & Requests</a></li>
+                        <li><a href="/account" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Student Account</a></li>
+                        <li><a href="/vendors" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Business Directory</a></li>
+                        <li><a href="/sell" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Sell on Student Marketplace</a></li>
+                        <li><a href="/vendor-onboarding" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Become a Vendor</a></li>
                     </ul>
                 </div>
 
@@ -197,22 +232,22 @@
                 <div>
                     <h4 style="font-size:14px;color:#fff;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">About & Support</h4>
                     <ul style="list-style:none;padding:0;font-size:13px;line-height:2.2;">
-                        <li><a href="about.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">About CLX</a></li>
-                        <li><a href="contact.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Customer & Vendor Support</a></li>
-                        <li><a href="contact.html#faqs" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Commerce FAQs</a></li>
-                        <li><a href="about.html#safety" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Trust & Moderation</a></li>
-                        <li><a href="contact.html#feedback" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Submit Feedback</a></li>
+                        <li><a href="/about" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">About CLX</a></li>
+                        <li><a href="/contact" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Customer & Vendor Support</a></li>
+                        <li><a href="/contact#faqs" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Campus Commerce FAQs</a></li>
+                        <li><a href="/about#safety" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Trust & Moderation</a></li>
+                        <li><a href="/contact#feedback" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Submit Feedback</a></li>
                     </ul>
                 </div>
             </div>
 
             <div style="border-top:1px solid #1E293B;padding-top:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:12px;color:#64748B;text-align:center;">
                 <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
-                    <a href="privacy.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Privacy Policy</a>
+                    <a href="/privacy" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Privacy Policy</a>
                     <span style="color:#334155;">•</span>
-                    <a href="terms.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Terms of Service</a>
+                    <a href="/terms" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Terms of Service</a>
                     <span style="color:#334155;">•</span>
-                    <a href="marketplace-rules.html" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Marketplace Rules</a>
+                    <a href="/marketplace-rules" style="color:#94A3B8;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FCC501'" onmouseout="this.style.color='#94A3B8'">Marketplace Rules</a>
                 </div>
                 <div>
                     © 2026 Campus Life Express (CLX) — Developed by Dandalin Sauki Ltd. All rights reserved.
@@ -225,6 +260,7 @@
     <script type="module">
         import { api } from './js/api.js';
         import { Utils, CampusManager, CartManager } from './js/app.js';
+        import { buildCustomerOrderItems, buildTrackingTimeline, buildWhatsAppOrderUrl, customerStatusLabel, formatKobo, getSavedTrackingOrders, paymentStatusLabel, saveTrackingOrder } from './js/customer-orders.js';
 
         let allOrders = [];
         let activeFilter = "all";
@@ -233,23 +269,9 @@
             const container = document.getElementById("orders-list-container");
             if (!container) return;
 
-            const [res, deliveries] = await Promise.all([api.orders.list(), api.delivery.list()]);
-            allOrders = res.data || [];
-            if (deliveries.success) {
-                allOrders = allOrders.concat((deliveries.data || []).map(delivery => ({
-                    id: delivery.id,
-                    type: "delivery",
-                    title: delivery.taskType || "Campus Delivery",
-                    vendor: "CLX Express Dispatch",
-                    campus: delivery.campus?.slug || "unimaid",
-                    total: Number(delivery.estimatedFeeKobo || 0) / 100,
-                    status: delivery.status || "REQUESTED",
-                    statusStep: delivery.status === "DELIVERED" ? 4 : delivery.status === "IN_TRANSIT" ? 3 : delivery.status === "ACCEPTED" ? 2 : 1,
-                    date: delivery.createdAt ? new Date(delivery.createdAt).toLocaleDateString() : "Today",
-                    fulfillment: `${delivery.pickupLocation} → ${delivery.dropoffLocation}`
-                })));
-            }
-
+            // Customer orders are tracked by the secure Supabase RPC below.
+            // Do not query the retired Express order or delivery APIs on page load.
+            allOrders = [];
             renderOrdersList();
         }
 
@@ -269,7 +291,7 @@
                         <i class="fa-solid fa-box-open" style="font-size:48px;color:var(--gray-300);margin-bottom:16px;"></i>
                         <h3 style="font-size:18px;color:var(--gray-800);margin-bottom:6px;">No orders found</h3>
                         <p style="font-size:14px;color:var(--gray-500);margin-bottom:20px;">You don't have any orders or requests in this tab.</p>
-                        <a href="categories.html" class="btn" style="background:var(--color-primary);color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;">Explore Campus Commerce</a>
+                        <a href="/categories" class="btn" style="background:var(--color-primary);color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;">Explore Campus Commerce</a>
                     </div>
                 `;
                 return;
@@ -320,6 +342,112 @@
             }).join('');
         }
 
+        let checkoutCampus = null;
+        let deliveryZones = [];
+
+        function renderCheckoutSummary() {
+            const summaryEl = document.getElementById("checkout-summary");
+            if (!summaryEl) return;
+            if (CartManager.items.length === 0) {
+                summaryEl.innerHTML = `<p style="font-size:13px;color:var(--gray-500);margin:0;">Your cart is empty.</p>`;
+                return;
+            }
+
+            const groups = CartManager.getVendorGroups();
+            const fulfillment = document.getElementById("chk-fulfillment")?.value || "pickup";
+            const productsSubtotal = CartManager.getSubtotal();
+            const selectedZone = deliveryZones.find(zone => zone.id === document.getElementById("chk-zone")?.value);
+            const deliveryEstimate = fulfillment === "delivery" && selectedZone ? Number(selectedZone.base_delivery_fee_kobo || 0) / 100 : 0;
+
+            summaryEl.innerHTML = `
+                <h4 style="font-size:14px;font-weight:700;margin:0 0 12px;color:var(--gray-900);">Order Summary</h4>
+                ${groups.map(group => `
+                    <div style="margin-bottom:14px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:2px solid var(--gray-200);">
+                            <strong style="font-size:12px;text-transform:uppercase;letter-spacing:0.4px;color:var(--gray-600);"><i class="fa-solid fa-store" style="color:var(--color-primary);margin-right:6px;"></i>${group.vendorName}</strong>
+                            <span style="font-size:12px;font-weight:700;color:var(--color-primary);">${Utils.formatPrice(group.subtotal)}</span>
+                        </div>
+                        ${group.items.map(item => `
+                            <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:13px;color:var(--gray-700);">
+                                <span style="min-width:0;">${item.name} <span style="color:var(--gray-500);">× ${item.quantity}</span></span>
+                                <span style="font-weight:600;flex-shrink:0;">${Utils.formatPrice(item.price * item.quantity)}</span>
+                            </div>
+                        `).join('')}
+                        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;font-weight:600;color:var(--gray-500);">
+                            <span>Vendor subtotal</span><span>${Utils.formatPrice(group.subtotal)}</span>
+                        </div>
+                    </div>
+                `).join('')}
+                <div style="border-top:1px solid var(--gray-200);padding-top:10px;font-size:13px;">
+                    <div style="display:flex;justify-content:space-between;padding:3px 0;color:var(--gray-700);">
+                        <span>Products subtotal</span><span style="font-weight:600;">${Utils.formatPrice(productsSubtotal)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:3px 0;color:var(--gray-700);">
+                        <span>Delivery fee${fulfillment === "pickup" ? " (pickup)" : " estimate"}</span><span style="font-weight:600;">${Utils.formatPrice(deliveryEstimate)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:8px 0 0;margin-top:6px;border-top:1px solid var(--gray-200);font-size:15px;font-weight:800;color:var(--color-primary);">
+                        <span>Items total</span><span>${Utils.formatPrice(productsSubtotal)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateFulfillmentFields() {
+            const isDelivery = document.getElementById("chk-fulfillment")?.value === "delivery";
+            const zone = document.getElementById("chk-zone");
+            const location = document.getElementById("chk-location");
+            document.getElementById("chk-zone-field").style.display = isDelivery ? "block" : "none";
+            document.getElementById("chk-location-field").style.display = isDelivery ? "block" : "none";
+            zone.required = isDelivery;
+            location.required = isDelivery;
+            zone.disabled = !isDelivery;
+            location.disabled = !isDelivery;
+            if (!isDelivery) {
+                zone.value = "";
+                location.value = "";
+            }
+            renderCheckoutSummary();
+        }
+
+        async function loadCheckoutContext() {
+            checkoutCampus = await api.orders.getCheckoutCampus(api.campuses.getSelectedCampus());
+            if (!checkoutCampus.success) return;
+            const zones = await api.campuses.getDeliveryZones(checkoutCampus.data.id);
+            deliveryZones = zones.success ? zones.data : [];
+            const zoneSelect = document.getElementById("chk-zone");
+            zoneSelect.innerHTML = `<option value="">Select a delivery zone</option>${deliveryZones.map(zone => `<option value="${zone.id}">${zone.name} (${formatKobo(zone.base_delivery_fee_kobo)})</option>`).join("")}`;
+            document.getElementById("chk-fulfillment").value = "pickup";
+            updateFulfillmentFields();
+        }
+
+        function renderRecentOrders() {
+            const host = document.getElementById("recent-tracking-orders");
+            const saved = getSavedTrackingOrders();
+            host.innerHTML = saved.length ? `<div style="font-size:12px;color:var(--gray-500);margin-bottom:7px;">My Recent Orders</div>${saved.map(order => `<button type="button" class="recent-order-btn" data-order="${order.orderNumber}" style="margin:0 7px 7px 0;padding:6px 9px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;color:var(--color-primary);font-size:12px;cursor:pointer;">${order.orderNumber}</button>`).join("")}` : "";
+            host.querySelectorAll(".recent-order-btn").forEach(button => button.addEventListener("click", () => {
+                const savedOrder = saved.find(order => order.orderNumber === button.dataset.order);
+                document.getElementById("tracking-order-number").value = savedOrder.orderNumber;
+                document.getElementById("tracking-token").value = savedOrder.trackingToken;
+                document.getElementById("tracking-form").requestSubmit();
+            }));
+        }
+
+        function renderTrackingResult(order) {
+            const result = document.getElementById("tracking-result");
+            const timeline = buildTrackingTimeline(order);
+            const delivery = order.fulfillment_type === 'DELIVERY' ? `<div style="margin-top:12px;font-size:13px;color:var(--gray-700);">Delivery: ${customerStatusLabel(order.delivery_status || 'REQUESTED')}${order.rider_name ? ` · Rider: ${order.rider_name}` : ''}</div>` : '';
+            const history = timeline.length ? `<ol style="margin:12px 0 0;padding-left:20px;font-size:13px;color:var(--gray-700);">${timeline.map((entry) => `<li style="padding:3px 0;"><strong>${entry.label}</strong>${entry.timestamp ? ` <span style="color:var(--gray-500);">${entry.timestamp}</span>` : ''}</li>`).join('')}</ol>` : '';
+            result.innerHTML = `<div style="border-top:1px solid var(--gray-200);padding-top:15px;"><strong style="color:var(--color-primary);">${order.order_number}</strong><span style="font-size:13px;color:var(--gray-600);"> · ${customerStatusLabel(order.status)} · ${paymentStatusLabel(order.payment_status)}</span>${delivery}${history}${(order.vendor_groups || []).map(group => `<div style="margin-top:12px;font-size:13px;"><strong>${group.vendor_name}</strong> · ${customerStatusLabel(group.status)}${(group.items || []).map(item => `<div style="color:var(--gray-600);padding-top:4px;">${item.product_name} x ${item.quantity} · ${formatKobo(item.line_total_kobo)}</div>`).join("")}</div>`).join("")}</div>`;
+        }
+
+        function renderConfirmation(response, customer, campusName) {
+            const confirmation = document.getElementById("customer-order-confirmation");
+            const whatsappUrl = buildWhatsAppOrderUrl(response, customer, campusName);
+            confirmation.innerHTML = `<div style="display:flex;gap:12px;align-items:flex-start;"><i class="fa-solid fa-circle-check" style="font-size:32px;color:#16A34A;"></i><div><div style="font-size:13px;color:#15803D;font-weight:700;">ORDER RECEIVED</div><h2 style="margin:3px 0;color:var(--gray-900);font-size:24px;">${response.order_number}</h2><p style="margin:0;color:var(--gray-600);font-size:14px;">${customerStatusLabel(response.fulfillment_type)} · Payment: Awaiting Payment</p></div></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:18px 0;font-size:13px;"><span>Subtotal<br><strong>${formatKobo(response.subtotal_kobo)}</strong></span><span>Delivery<br><strong>${formatKobo(response.delivery_fee_kobo)}</strong></span><span>Service fee<br><strong>${formatKobo(response.service_fee_kobo)}</strong></span><span>Total<br><strong>${formatKobo(response.total_kobo)}</strong></span></div><p style="font-size:13px;color:var(--gray-600);">Payment is not automatically confirmed. Send your confirmed order details to CLX on WhatsApp at ${window.CLX.config.supportPhone}. A CLX agent will provide and confirm official payment instructions.</p><a href="${whatsappUrl}" target="_blank" rel="noopener" class="btn" style="display:inline-block;background:#25D366;color:#fff;"><i class="fa-brands fa-whatsapp"></i> Continue Order on WhatsApp</a>`;
+            confirmation.style.display = "block";
+            confirmation.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
         async function initOrdersPage() {
             if (api.auth.getToken()) {
                 await CartManager.syncFromBackend();
@@ -328,7 +456,15 @@
             if (urlParams.get("checkout") === "direct" && CartManager.items.length > 0) {
                 const chkBox = document.getElementById("checkout-box");
                 if (chkBox) chkBox.style.display = "block";
+                renderCheckoutSummary();
             }
+
+            await loadCheckoutContext();
+            const fulfillmentSelect = document.getElementById("chk-fulfillment");
+            if (fulfillmentSelect) fulfillmentSelect.addEventListener("change", updateFulfillmentFields);
+            document.getElementById("chk-zone")?.addEventListener("change", renderCheckoutSummary);
+            window.addEventListener("clx:campus-changed", loadCheckoutContext);
+            renderRecentOrders();
 
             loadOrders();
 
@@ -354,61 +490,79 @@
                     const items = CartManager.items;
                     if (items.length === 0) return;
 
-                    const newOrderData = {
-                        type: items[0].category === "shopping" ? "SHOPPING" : "FOOD",
-                        deliveryAddress: document.getElementById("chk-location").value.trim(),
+                    if (!checkoutCampus?.success) {
+                        Utils.showToast("Secure checkout is unavailable for the selected campus. Your cart has not been changed.", "error");
+                        return;
+                    }
+                    const fulfillmentType = document.getElementById("chk-fulfillment").value.toUpperCase();
+                    const customer = {
+                        name: document.getElementById("chk-name").value.trim(),
                         phone: document.getElementById("chk-phone").value.trim(),
-                        paymentMethod: document.getElementById("chk-payment").value === "cod" ? "CASH_ON_DELIVERY" : "CARD",
-                        notes: ""
+                        notes: document.getElementById("chk-note").value.trim()
                     };
-
-                    const orderResult = await api.orders.create(newOrderData);
+                    let payload;
+                    try {
+                        payload = {
+                            items: buildCustomerOrderItems(items),
+                            campusId: checkoutCampus.data.id,
+                            fulfillmentType,
+                            customerName: customer.name,
+                            customerPhone: customer.phone,
+                            paymentMethod: document.getElementById("chk-payment").value === "cod" ? "CASH_ON_DELIVERY" : "BANK_TRANSFER",
+                            deliveryLocation: fulfillmentType === "DELIVERY" ? document.getElementById("chk-location").value.trim() : null,
+                            deliveryZoneId: fulfillmentType === "DELIVERY" ? document.getElementById("chk-zone").value || null : null,
+                            notes: customer.notes || null
+                        };
+                    } catch (error) {
+                        Utils.showToast(error.message, "error");
+                        return;
+                    }
+                    const submitButton = checkoutForm.querySelector("button[type='submit']");
+                    submitButton.disabled = true;
+                    submitButton.textContent = "Creating secure order...";
+                    const orderResult = await api.orders.createCustomerOrder(payload);
+                    submitButton.disabled = false;
+                    submitButton.textContent = "Confirm & Dispatch Order";
                     if (!orderResult.success) {
-                        Utils.showToast(orderResult.error?.message || "We couldn't place your order", "error");
+                        const code = orderResult.error?.code;
+                        if (code === "PRICE_CHANGED") {
+                            Utils.showToast("The catalogue price changed. Please review your cart before trying again.", "error");
+                            const refreshed = await api.products.list({ campus: api.campuses.getSelectedCampus() });
+                            if (refreshed.source === "supabase") {
+                                CartManager.items = CartManager.items.map(item => {
+                                    const live = refreshed.data.find(product => product.id === item.id);
+                                    return live ? { ...item, price: live.price, priceKobo: live.priceKobo } : item;
+                                });
+                                CartManager.save();
+                                CartManager.updateUI();
+                                renderCheckoutSummary();
+                            }
+                        } else {
+                            Utils.showToast(orderResult.error?.message || "We couldn't place your order. Your cart has not been changed.", "error");
+                        }
                         return;
                     }
-
-                    const orderId = orderResult.data.id;
-                    const paymentMethod = newOrderData.paymentMethod;
-                    const paymentResult = paymentMethod === "CASH_ON_DELIVERY"
-                        ? await api.payments.getForOrder(orderId)
-                        : await api.payments.initialize(orderId, paymentMethod);
-
-                    if (paymentMethod === "CARD" && !paymentResult.success) {
-                        Utils.showToast(paymentResult.error?.message || "We couldn't start secure card checkout", "error");
-                        loadOrders();
-                        return;
-                    }
-
-                    if (api.auth.getToken()) {
-                        await CartManager.syncFromBackend();
-                    } else {
-                        CartManager.items = [];
-                        CartManager.save();
-                        CartManager.updateUI();
-                    }
-
+                    saveTrackingOrder({ orderNumber: orderResult.data.order_number, trackingToken: orderResult.data.tracking_token });
+                    await CartManager.clear();
                     document.getElementById("checkout-box").style.display = "none";
-                    if (paymentMethod === "CARD" && paymentResult.data?.authorizationUrl) {
-                        window.location.assign(paymentResult.data.authorizationUrl);
-                        return;
-                    }
-
-                    Utils.showToast("Order placed. Payment is pending.");
-                    loadOrders();
+                    const selectedZone = deliveryZones.find((zone) => zone.id === payload.deliveryZoneId);
+                    renderConfirmation({ ...orderResult.data, delivery_location: payload.deliveryLocation, delivery_zone_name: selectedZone?.name || null }, customer, checkoutCampus.data.name);
+                    renderRecentOrders();
+                    Utils.showToast("Order received. Payment is awaiting confirmation.");
                 });
             }
 
-            document.addEventListener("click", async (event) => {
-                const button = event.target.closest(".payment-status-btn");
-                if (!button) return;
-                const result = await api.payments.getForOrder(button.dataset.orderId);
+            document.getElementById("tracking-form")?.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const result = await api.orders.trackCustomerOrder(
+                    document.getElementById("tracking-order-number").value.trim(),
+                    document.getElementById("tracking-token").value.trim()
+                );
                 if (!result.success) {
-                    Utils.showToast(result.error?.message || "Unable to load payment status", "error");
+                    document.getElementById("tracking-result").textContent = "Order not found. Please check your tracking details.";
                     return;
                 }
-                const status = result.data.orderPaymentStatus || "PENDING";
-                Utils.showToast(`Payment status: ${status}`);
+                renderTrackingResult(result.data);
             });
         }
 

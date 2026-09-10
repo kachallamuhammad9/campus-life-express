@@ -11,9 +11,9 @@ export const CLX_CONFIG = {
     defaultCampus: "unimaid",
     currency: "₦",
     tagline: "Everything you need around campus, in one place.",
-    supportPhone: "+234 800 000 2590",
+    supportPhone: "+234 915 073 6638",
     supportEmail: "support@campuslifeexpress.com",
-    whatsappNumber: "2348000002590"
+    whatsappNumber: "2349150736638"
 };
 
 export const CAMPUSES = [
@@ -53,7 +53,7 @@ export const CATEGORIES = [
         description: "Campus restaurants, student food vendors, quick snacks, and refreshing drinks.",
         subcategories: ["Restaurants", "Campus Food Vendors", "Snacks", "Drinks"],
         image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
-        path: "food.html"
+        path: "/food"
     },
     {
         id: "shopping",
@@ -64,7 +64,7 @@ export const CATEGORIES = [
         description: "Fashion, footwear, phone accessories, beauty products, books, and campus stationery.",
         subcategories: ["Fashion", "Shoes", "Phones & Accessories", "Beauty", "Books", "Stationery"],
         image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&auto=format&fit=crop&q=80",
-        path: "shopping.html"
+        path: "/shopping"
     },
     {
         id: "services",
@@ -75,7 +75,7 @@ export const CATEGORIES = [
         description: "Printing, document binding, graphics design, laundry, barbing, tailoring, and phone repairs.",
         subcategories: ["Printing", "Graphics", "Photography", "Laundry", "Barbing", "Tailoring", "Phone Repair"],
         image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&auto=format&fit=crop&q=80",
-        path: "services.html"
+        path: "/services"
     },
     {
         id: "marketplace",
@@ -86,7 +86,7 @@ export const CATEGORIES = [
         description: "Buy and sell used textbooks, electronics, room furniture, and hostel items directly with students.",
         subcategories: ["Used Textbooks", "Used Electronics", "Furniture", "Hostel Items", "Student-to-Student Sales"],
         image: "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=600&auto=format&fit=crop&q=80",
-        path: "marketplace.html"
+        path: "/marketplace"
     },
     {
         id: "delivery",
@@ -97,7 +97,7 @@ export const CATEGORIES = [
         description: "Campus parcel delivery, vendor order collection, and reliable errand assistance across faculties and hostels.",
         subcategories: ["Campus Delivery", "Vendor Pickup", "Errands"],
         image: "https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?w=600&auto=format&fit=crop&q=80",
-        path: "delivery.html"
+        path: "/delivery"
     }
 ];
 

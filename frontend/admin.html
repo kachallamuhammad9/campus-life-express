@@ -4,55 +4,462 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLX Admin Console</title>
-    <link rel="icon" href="images/clx.png" type="image/png">
+    <link rel="icon" href="./images/clx.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="./css/main.css">
 </head>
 <body>
     <main style="padding:48px 0;background:#F8FAFC;min-height:100vh;">
         <div class="container" style="max-width:1080px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
-                <div><span style="font-size:12px;font-weight:700;color:var(--color-primary);text-transform:uppercase;">CLX Operations</span><h1 style="font-size:28px;font-weight:800;color:var(--gray-900);margin:4px 0;">Admin Console</h1><p style="font-size:14px;color:var(--gray-600);margin:0;">Dashboard, audit, and moderation controls.</p></div>
-                <div style="display:flex;gap:10px;"><a href="index.html" class="btn btn-outline" style="padding:9px 14px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);">Back to CLX</a><button id="admin-logout" class="btn btn-outline" style="padding:9px 14px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);cursor:pointer;">Logout</button></div>
+                <div><span style="font-size:12px;font-weight:700;color:var(--color-primary);text-transform:uppercase;">CLX Operations</span><h1 style="font-size:28px;font-weight:800;color:var(--gray-900);margin:4px 0;">Admin Console</h1><p style="font-size:14px;color:var(--gray-600);margin:0;">Authorized CLX team access only.</p></div>
+                <a href="/" class="btn btn-outline" style="padding:9px 14px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);">Back to CLX</a>
             </div>
-            <div id="admin-message" role="alert" style="display:none;margin-bottom:20px;padding:12px;border-radius:9px;background:rgba(220,38,38,0.08);color:#B91C1C;font-size:13px;"></div>
+
+            <!-- State 1: Loading -->
+            <section id="admin-loading" style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:36px;text-align:center;">
+                <p style="font-size:14px;color:var(--gray-600);margin:0;">Checking authorization...</p>
+            </section>
+
+            <!-- State 2: Signed Out (login) -->
+            <section id="admin-login" hidden style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:32px;max-width:420px;margin:0 auto;">
+                <h2 style="font-size:20px;font-weight:800;color:var(--gray-900);margin:0 0 4px;">CLX Operations</h2>
+                <p style="font-size:13px;color:var(--gray-600);margin:0 0 20px;">Authorized CLX team access only.</p>
+                <form id="admin-login-form" novalidate>
+                    <label for="admin-email" style="display:block;font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:6px;">Email address</label>
+                    <input id="admin-email" name="email" type="email" autocomplete="username" required style="width:100%;padding:10px 12px;border:1px solid var(--gray-300);border-radius:9px;font-size:14px;margin-bottom:14px;box-sizing:border-box;">
+                    <label for="admin-password" style="display:block;font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:6px;">Password</label>
+                    <input id="admin-password" name="password" type="password" autocomplete="current-password" required style="width:100%;padding:10px 12px;border:1px solid var(--gray-300);border-radius:9px;font-size:14px;margin-bottom:18px;box-sizing:border-box;">
+                    <button id="admin-signin" type="submit" class="btn btn-primary" style="width:100%;padding:11px;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">Sign In</button>
+                </form>
+                <p id="admin-login-status" role="status" style="display:none;margin:14px 0 0;padding:10px;border-radius:9px;background:rgba(220,38,38,0.08);color:#B91C1C;font-size:13px;"></p>
+            </section>
+
+            <!-- State 3: Authenticated but Unauthorized -->
+            <section id="admin-denied" hidden style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:36px;text-align:center;">
+                <h2 style="font-size:18px;font-weight:800;color:#B91C1C;margin:0 0 8px;">Access denied</h2>
+                <p style="font-size:14px;color:var(--gray-600);margin:0 0 20px;">Your account does not have permission to access CLX Operations.</p>
+                <button id="admin-denied-signout" class="btn btn-outline" style="padding:9px 16px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);cursor:pointer;">Sign Out</button>
+            </section>
+
+            <!-- State 4: Authorized admin shell (Phase 4A: access only) -->
             <section id="admin-content" hidden>
-                <div id="admin-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;"></div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;">
-                    <section style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:22px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h2 style="font-size:17px;margin:0;color:var(--gray-900);">Vendor moderation</h2><button id="refresh-vendors" class="btn btn-outline" style="padding:6px 9px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;cursor:pointer;">Refresh</button></div><div id="admin-vendors"></div></section>
-                    <section style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:22px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h2 style="font-size:17px;margin:0;color:var(--gray-900);">Audit logs</h2><button id="refresh-audit" class="btn btn-outline" style="padding:6px 9px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;cursor:pointer;">Refresh</button></div><div id="admin-audit"></div></section>
+                <div style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:28px;">
+                    <h2 style="font-size:18px;font-weight:800;color:var(--gray-900);margin:0 0 8px;">CLX Operations</h2>
+                    <p style="font-size:14px;color:#15803D;margin:0 0 6px;font-weight:700;">Authentication successful.</p>
+                    <p style="font-size:13px;color:var(--gray-600);margin:0 0 20px;">Read-only operations dashboard: incoming customer orders, vendor groups, payments and delivery state. No operational actions.</p>
+
+                <section style="border:1px solid var(--gray-200);border-radius:8px;padding:16px;margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;"><h3 style="font-size:15px;margin:0;color:var(--gray-900);">Rider Management</h3><button id="rider-new" type="button" style="padding:7px 10px;border:0;border-radius:6px;background:var(--color-primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Add Rider</button></div>
+                    <div id="rider-editor" hidden style="margin-top:12px;"></div>
+                    <div id="rider-list" style="margin-top:12px;font-size:13px;color:var(--gray-600);"></div>
+                </section>
+
+                <!-- Phase 4B: operations toolbar (filters + search) -->
+                <div id="ops-toolbar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+                    <div id="ops-filter-buttons" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;"></div>
+                    <input id="ops-search" type="search" placeholder="Search order #, customer, vendor…" aria-label="Search orders" style="padding:8px 12px;border:1px solid var(--gray-300);border-radius:9px;font-size:13px;min-width:220px;box-sizing:border-box;">
+                </div>
+
+                <!-- Phase 4B: order queue (read-only, newest first) -->
+                <div id="ops-state" role="status" style="display:none;margin-bottom:14px;padding:10px 12px;border-radius:9px;font-size:13px;"></div>
+                <div id="ops-queue" aria-live="polite"></div>
+
+                <!-- Phase 4B: read-only order detail modal -->
+                <div id="ops-detail-overlay" hidden style="position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;">
+                    <div id="ops-detail-modal" role="dialog" aria-modal="true" aria-label="Order details" style="background:#fff;border-radius:16px;max-width:760px;width:100%;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,0.25);position:relative;">
+                        <button id="ops-detail-close" type="button" aria-label="Close details" style="position:absolute;top:14px;right:14px;width:32px;height:32px;border:none;border-radius:8px;background:var(--gray-100);color:var(--gray-700);font-size:16px;cursor:pointer;">✕</button>
+                        <div id="ops-detail-content"></div>
+                    </div>
+                </div>
+
+                </div>
+
+                <section id="vendor-applications-admin" style="background:#fff;border:1px solid #CBD5E1;border-radius:16px;padding:24px;margin:24px 0"></section>
+                <section id="admin-products-section" style="background:#fff;border:1px solid #CBD5E1;border-radius:16px;padding:24px;margin:24px 0"></section>
+                <div id="admin-session-info" style="border-top:1px solid var(--gray-100);padding-top:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <div style="font-size:13px;color:var(--gray-600);">
+                            <div>Signed in as <strong id="admin-user-email" style="color:var(--gray-900);"></strong></div>
+                            <div style="margin-top:2px;">Role: <span id="admin-user-role" style="font-weight:700;color:var(--gray-900);">ADMIN</span></div>
+                        </div>
+                        <button id="admin-logout" class="btn btn-outline" style="padding:9px 14px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);cursor:pointer;">Sign Out</button>
+                    </div>
                 </div>
             </section>
         </div>
     </main>
     <script type="module">
-        import { api } from './js/api.js';
-        import { AuthManager } from './js/app.js';
+        import { getSessionUser, isAuthorizedAdmin, getUserRoles, signIn, signOut, onAuthChange } from './js/admin-auth.js';
+        import { fetchOperationsQueue, verifyCustomerOrderPayment, advanceVendorOrder, createRider, updateRider, assignDeliveryRider, advanceDelivery, completePickup, completeDelivery, filterQueue, QUEUE_FILTERS, formatKobo, orderStatusLabel, paymentStatusLabel, isQaOrder } from './js/operations.js';
 
-        const message = document.getElementById('admin-message');
+        import { createVendorApplicationsAdmin } from './js/vendor-applications-admin.js';
+        import { createAdminProducts } from './js/admin-products.js';
+        import { createAdminServices } from './js/admin-services.js';
+        const applicationAdmin = createVendorApplicationsAdmin(document.getElementById('vendor-applications-admin'));
+        const productsAdmin = createAdminProducts(document.getElementById('admin-products-section'));
+        const servicesSection = document.createElement('section');
+        servicesSection.id = 'admin-services-section';
+        servicesSection.style.cssText = 'background:#fff;border:1px solid #CBD5E1;border-radius:16px;padding:24px;margin:24px 0';
+        document.getElementById('admin-products-section').after(servicesSection);
+        const servicesAdmin = createAdminServices(servicesSection);
+        const loading = document.getElementById('admin-loading');
+        const loginPanel = document.getElementById('admin-login');
+        const deniedPanel = document.getElementById('admin-denied');
         const content = document.getElementById('admin-content');
-        const showError = text => { message.textContent = text; message.style.display = 'block'; };
-        const statValue = (value, label) => `<div style="background:#fff;border:1px solid var(--gray-200);border-radius:14px;padding:18px;"><div style="font-size:24px;font-weight:800;color:var(--color-primary);">${value ?? 0}</div><div style="font-size:12px;color:var(--gray-500);margin-top:4px;">${label}</div></div>`;
+        const loginStatus = document.getElementById('admin-login-status');
+        const emailInput = document.getElementById('admin-email');
+        const passwordInput = document.getElementById('admin-password');
+        const signinButton = document.getElementById('admin-signin');
 
-        async function loadDashboard() {
-            const [summary, vendors, audit] = await Promise.all([api.admin.getSummary(), api.admin.listVendors({ limit: 20 }), api.admin.getAuditLogs({ limit: 10 })]);
-            if (!summary.success || !vendors.success || !audit.success) { showError('Admin data is unavailable or your session lacks permission.'); return; }
-            content.hidden = false;
-            message.style.display = 'none';
-            const stats = summary.data || {};
-            document.getElementById('admin-stats').innerHTML = statValue(stats.users?.total, 'Users') + statValue(stats.vendors?.total, 'Vendors') + statValue(stats.products?.total, 'Products') + statValue(stats.orders?.total, 'Orders');
-            const vendorRows = vendors.data?.vendors || vendors.data || [];
-            document.getElementById('admin-vendors').innerHTML = vendorRows.length ? vendorRows.map(v => `<div style="padding:11px 0;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;gap:10px;"><div><strong style="display:block;font-size:13px;color:var(--gray-900);">${v.name || 'Vendor'}</strong><span style="font-size:12px;color:var(--gray-500);">${v.status || 'UNKNOWN'}</span></div><button class="vendor-status" data-id="${v.id}" data-status="${v.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE'}" style="padding:6px 8px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;color:var(--gray-700);font-size:11px;cursor:pointer;">${v.status === 'ACTIVE' ? 'Suspend' : 'Activate'}</button></div>`).join('') : '<p style="font-size:13px;color:var(--gray-500);">No vendors found.</p>';
-            const auditRows = audit.data?.logs || audit.data || [];
-            document.getElementById('admin-audit').innerHTML = auditRows.length ? auditRows.map(log => `<div style="padding:10px 0;border-bottom:1px solid var(--gray-100);"><strong style="display:block;font-size:12px;color:var(--gray-900);">${log.action || 'AUDIT EVENT'}</strong><span style="font-size:12px;color:var(--gray-500);">${log.resource_type || log.resourceType || ''} ${log.created_at || log.createdAt || ''}</span></div>`).join('') : '<p style="font-size:13px;color:var(--gray-500);">No audit logs found.</p>';
+        const show = (panel) => {
+            if (panel !== content) { applicationAdmin.reset(); productsAdmin.reset(); servicesAdmin.reset(); }
+            [loading, loginPanel, deniedPanel, content].forEach((el) => { el.hidden = el !== panel; });
+        };
+        const showLoginError = (text) => {
+            loginStatus.textContent = text;
+            loginStatus.style.display = text ? 'block' : 'none';
+        };
+        const showLogin = (message) => {
+            show(loginPanel);
+            showLoginError(message || '');
+        };
+
+        // ==================================================
+        // PHASE 4B — READ-ONLY OPERATIONS DASHBOARD
+        // No mutation functions exist below: fetch + render only.
+        // ==================================================
+        let opsOrders = [];
+        let opsLoaded = false;
+        let opsLoadPromise = null;
+        let opsActiveFilter = 'all';
+        let opsSearch = '';
+        let opsRiders = [];
+        let opsCampuses = [];
+
+        const opsState = document.getElementById('ops-state');
+        const opsQueueEl = document.getElementById('ops-queue');
+        const opsFilterButtons = document.getElementById('ops-filter-buttons');
+        const opsSearchInput = document.getElementById('ops-search');
+        const opsOverlay = document.getElementById('ops-detail-overlay');
+        const opsDetailContent = document.getElementById('ops-detail-content');
+        const riderList = document.getElementById('rider-list');
+        const riderEditor = document.getElementById('rider-editor');
+
+        const esc = (text) => String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const setOpsState = (text, kind) => {
+            if (!text) { opsState.style.display = 'none'; opsState.textContent = ''; return; }
+            opsState.textContent = text;
+            opsState.style.display = 'block';
+            opsState.style.background = kind === 'error' ? 'rgba(220,38,38,0.08)' : 'rgba(22,163,74,0.08)';
+            opsState.style.color = kind === 'error' ? '#B91C1C' : '#15803D';
+        };
+
+        function renderFilterButtons() {
+            opsFilterButtons.innerHTML = QUEUE_FILTERS.map((f) =>
+                `<button type="button" data-filter="${f.id}" style="padding:6px 12px;border:1px solid ${opsActiveFilter === f.id ? 'var(--color-primary)' : 'var(--gray-300)'};border-radius:999px;background:${opsActiveFilter === f.id ? 'var(--color-primary)' : '#fff'};color:${opsActiveFilter === f.id ? '#fff' : 'var(--gray-700)'};font-size:12px;font-weight:600;cursor:pointer;">${esc(f.label)}</button>`
+            ).join('');
         }
 
-        document.getElementById('admin-logout').addEventListener('click', () => { api.auth.logout(); window.location.href = 'account.html'; });
-        document.getElementById('refresh-vendors').addEventListener('click', loadDashboard);
-        document.getElementById('refresh-audit').addEventListener('click', loadDashboard);
-        document.getElementById('admin-vendors').addEventListener('click', async event => { const button = event.target.closest('.vendor-status'); if (!button) return; const result = await api.admin.updateVendorStatus(button.dataset.id, button.dataset.status); if (!result.success) showError('Vendor update was rejected by the server.'); else loadDashboard(); });
-        window.addEventListener('clx:auth-changed', event => { if (event.detail?.user) loadDashboard(); });
-        if (api.auth.getToken()) { const result = await api.auth.getMe(); if (result.success && ['ADMIN', 'SUPER_ADMIN'].includes(result.data.role)) loadDashboard(); else showError('Admin access is required.'); } else showError('Sign in with an admin account to continue.');
+        function renderRiders() {
+            riderList.innerHTML = opsRiders.length ? opsRiders.map((rider) => `<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--gray-100);"><span><strong>${esc(rider.name)}</strong> <span style="color:var(--gray-500);">${esc(opsCampuses.find((campus) => campus.id === rider.campus_id)?.name || 'Campus')}</span></span><span style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:${rider.is_active && rider.is_available ? '#15803D' : 'var(--gray-500)'};">${rider.is_active ? (rider.is_available ? 'Available' : 'Assigned') : 'Inactive'}</span><button type="button" class="rider-edit" data-rider-id="${esc(rider.id)}" style="padding:5px 8px;border:1px solid var(--gray-300);border-radius:6px;background:#fff;font-size:11px;cursor:pointer;">Edit</button></span></div>`).join('') : 'No riders added yet.';
+        }
+
+        function showRiderEditor(rider = null) {
+            const campusOptions = opsCampuses.map((campus) => `<option value="${esc(campus.id)}" ${rider?.campus_id === campus.id ? 'selected' : ''}>${esc(campus.name)}</option>`).join('');
+            riderEditor.hidden = false;
+            riderEditor.innerHTML = `<form id="rider-form" data-rider-id="${esc(rider?.id || '')}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;align-items:end;"><label style="font-size:12px;">Name<input name="name" required maxlength="120" value="${esc(rider?.name || '')}" style="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:7px;border:1px solid var(--gray-300);border-radius:6px;"></label><label style="font-size:12px;">Phone<input name="phone" required value="" placeholder="080..." style="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:7px;border:1px solid var(--gray-300);border-radius:6px;"></label><label style="font-size:12px;">Campus<select name="campus" ${rider ? 'disabled' : ''} style="display:block;width:100%;margin-top:4px;padding:7px;border:1px solid var(--gray-300);border-radius:6px;">${campusOptions}</select></label><label style="font-size:12px;"><input name="active" type="checkbox" ${rider?.is_active !== false ? 'checked' : ''}> Active</label><label style="font-size:12px;"><input name="available" type="checkbox" ${rider?.is_available !== false ? 'checked' : ''}> Available</label><button type="submit" style="padding:8px;border:0;border-radius:6px;background:var(--color-primary);color:#fff;font-weight:700;cursor:pointer;">Save</button><button id="rider-cancel" type="button" style="padding:8px;border:1px solid var(--gray-300);border-radius:6px;background:#fff;cursor:pointer;">Cancel</button></form>`;
+        }
+
+        function renderQueue() {
+            const rows = filterQueue(opsOrders, opsActiveFilter, opsSearch);
+            if (rows.length === 0) {
+                opsQueueEl.innerHTML = '<p style="font-size:14px;color:var(--gray-500);padding:24px 0;">No customer orders found.</p>';
+                return;
+            }
+            opsQueueEl.innerHTML = rows.map((o) => `
+                <div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:grid;grid-template-columns:1.1fr 1.4fr 0.8fr 1fr 1fr 0.9fr;gap:10px;align-items:center;font-size:13px;">
+                    <div><strong style="color:var(--gray-900);">${esc(o.order_number)}</strong>${isQaOrder(o) ? '<span style="display:inline-block;margin-left:6px;padding:2px 5px;border-radius:4px;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:800;">QA / TEST</span>' : ''}<div style="font-size:11px;color:var(--gray-500);margin-top:2px;">${esc(o.created_label)}</div></div>
+                    <div>${esc(o.customer_name)}<div style="font-size:11px;color:var(--gray-500);margin-top:2px;">${esc(o.campus_name)}</div></div>
+                    <div>${esc(o.fulfillment_label)}</div>
+                    <div><span style="padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;background:${o.payment_status === 'PAID' ? 'rgba(22,163,74,0.12);color:#15803D' : 'rgba(217,119,6,0.12);color:#B45309'};">${esc(o.payment_status_label)}</span></div>
+                    <div>${esc(o.status_label)}<div style="font-size:11px;color:var(--gray-500);margin-top:2px;">${o.vendor_groups.length} vendor${o.vendor_groups.length === 1 ? '' : 's'}</div></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><strong>${esc(formatKobo(o.total_kobo))}</strong><button type="button" class="ops-view-detail" data-order="${esc(o.order_number)}" style="padding:6px 10px;border:1px solid var(--gray-300);border-radius:8px;background:#fff;color:var(--gray-700);font-size:11px;font-weight:700;cursor:pointer;">View Details</button></div>
+                </div>`).join('');
+        }
+
+        function renderDetail(order) {
+            const canVerifyPayment = order.payment_status === 'PENDING'
+                && ['ORDER_RECEIVED', 'AWAITING_PAYMENT'].includes(order.status);
+            const vendorAction = (group) => ({
+                PENDING: ['CONFIRMED', 'Confirm Vendor Order'],
+                CONFIRMED: ['PREPARING', 'Start Preparing'],
+                PREPARING: ['READY', 'Mark Ready']
+            }[group.status]);
+            const groups = order.vendor_groups.map((g) => {
+                const action = vendorAction(g);
+                return `
+                <div style="border:1px solid var(--gray-200);border-radius:12px;padding:14px;margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                        <strong style="font-size:14px;color:var(--gray-900);">${esc(g.vendor_name)}</strong>
+                        <span style="font-size:12px;color:var(--gray-600);">${esc(g.status_label)} · ${esc(formatKobo(g.subtotal_kobo))}</span>
+                    </div>
+                    ${action ? `<button type="button" class="ops-advance-vendor-order" data-vendor-order="${esc(g.id)}" data-target-status="${action[0]}" style="margin:0 0 10px;padding:7px 10px;border:1px solid var(--color-primary);border-radius:8px;background:#fff;color:var(--color-primary);font-size:12px;font-weight:700;cursor:pointer;">${action[1]}</button>` : ''}
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead><tr style="color:var(--gray-500);text-align:left;"><th style="padding:4px 0;">Item</th><th>Qty</th><th>Unit</th><th style="text-align:right;">Line Total</th></tr></thead>
+                        <tbody>${g.items.map((i) => `<tr style="border-top:1px solid var(--gray-100);"><td style="padding:5px 0;">${esc(i.product_name)}</td><td>${i.quantity}</td><td>${esc(formatKobo(i.unit_price_kobo))}</td><td style="text-align:right;">${esc(formatKobo(i.line_total_kobo))}</td></tr>`).join('')}</tbody>
+                    </table>
+                </div>`;
+            }).join('') || '<p style="font-size:13px;color:var(--gray-500);">No vendor groups.</p>';
+
+            const eligibleRiders = opsRiders.filter((rider) => rider.campus_id === order.campus_id && rider.is_active && rider.is_available);
+            const deliveryAction = order.delivery?.status === 'ACCEPTED' ? ['PICKED_UP', 'Mark Picked Up']
+                : order.delivery?.status === 'PICKED_UP' ? ['IN_TRANSIT', 'Start Transit']
+                : order.delivery?.status === 'IN_TRANSIT' ? ['DELIVERED', 'Mark Delivered'] : null;
+            const deliveryBlock = order.fulfillment_type === 'DELIVERY' ? `
+                <div style="border:1px solid var(--gray-200);border-radius:12px;padding:14px;margin-bottom:14px;">
+                    <strong style="font-size:13px;color:var(--gray-900);">Delivery</strong>
+                    ${order.delivery ? `
+                    <div style="font-size:13px;color:var(--gray-600);margin-top:6px;display:grid;gap:2px;">
+                        <div>Status: ${esc(order.delivery.status_label)}</div>
+                        <div>Destination: ${esc(order.delivery.dropoff_location || order.delivery_location || '—')}</div>
+                        <div>Pickup: ${esc(order.delivery.pickup_location || '—')}</div>
+                        <div>Fee: ${esc(formatKobo(order.delivery.estimated_fee_kobo))}</div>
+                        ${order.delivery.rider_name ? `<div>Rider: ${esc(order.delivery.rider_name)}</div>` : ''}
+                    </div>` : '<p style="font-size:13px;color:var(--gray-500);margin:6px 0 0;">No delivery request record.</p>'}
+                    ${order.status === 'READY_FOR_DISPATCH' && order.delivery?.status === 'REQUESTED' ? `<div style="display:flex;gap:8px;margin-top:10px;"><select class="ops-rider-select" style="flex:1;padding:7px;border:1px solid var(--gray-300);border-radius:6px;"><option value="">Assign available rider</option>${eligibleRiders.map((rider) => `<option value="${esc(rider.id)}">${esc(rider.name)}</option>`).join('')}</select><button type="button" class="ops-assign-rider" data-order="${esc(order.order_number)}" style="padding:7px 10px;border:0;border-radius:6px;background:var(--color-primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Assign</button></div>` : ''}
+                    ${deliveryAction ? `<button type="button" class="ops-advance-delivery" data-order="${esc(order.order_number)}" data-target-status="${deliveryAction[0]}" style="margin-top:10px;padding:7px 10px;border:1px solid var(--color-primary);border-radius:6px;background:#fff;color:var(--color-primary);font-size:12px;font-weight:700;cursor:pointer;">${deliveryAction[1]}</button>` : ''}
+                    ${order.status === 'DELIVERED' && order.delivery?.status === 'DELIVERED' ? `<button type="button" class="ops-complete-delivery" data-order="${esc(order.order_number)}" style="margin-top:10px;padding:7px 10px;border:0;border-radius:6px;background:#15803D;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Complete Delivery Order</button>` : ''}
+                </div>` : '';
+            const pickupAction = order.fulfillment_type === 'PICKUP' && order.status === 'READY_FOR_PICKUP' ? `<button type="button" class="ops-complete-pickup" data-order="${esc(order.order_number)}" style="margin:0 0 14px;padding:9px 14px;border:0;border-radius:8px;background:#15803D;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Complete Pickup Order</button>` : '';
+
+            opsDetailContent.innerHTML = `
+                <h3 style="font-size:17px;font-weight:800;color:var(--gray-900);margin:0 0 4px;">${esc(order.order_number)}${isQaOrder(order) ? ' <span style="display:inline-block;padding:2px 5px;border-radius:4px;background:#FEF3C7;color:#92400E;font-size:10px;vertical-align:middle;">QA / TEST</span>' : ''}</h3>
+                <p style="font-size:12px;color:var(--gray-500);margin:0 0 14px;">${esc(order.created_label)}</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                    <div style="font-size:13px;color:var(--gray-700);"><strong>Customer</strong><div>${esc(order.customer_name)}</div><div>${esc(order.customer_phone)}</div>${order.notes ? `<div style="margin-top:4px;color:var(--gray-600);">Note: ${esc(order.notes)}</div>` : ''}</div>
+                    <div style="font-size:13px;color:var(--gray-700);"><strong>Order</strong><div>${esc(order.campus_name)}</div><div>${esc(order.fulfillment_label)}${order.delivery_zone_name ? ` · ${esc(order.delivery_zone_name)}` : ''}${order.delivery_location ? ` · ${esc(order.delivery_location)}` : ''}</div></div>
+                </div>
+                <div style="border:1px solid var(--gray-200);border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px;color:var(--gray-700);">
+                    <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><strong>${esc(formatKobo(order.subtotal_kobo))}</strong></div>
+                    <div style="display:flex;justify-content:space-between;"><span>Delivery fee</span><span>${esc(formatKobo(order.delivery_fee_kobo))}</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span>Service fee</span><span>${esc(formatKobo(order.service_fee_kobo))}</span></div>
+                    <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-100);margin-top:6px;padding-top:6px;"><span>Total · ${esc(order.payment_status_label)}${order.payment_method_label ? ` · ${esc(order.payment_method_label)}` : ''}${order.provider_reference ? ` · Ref ${esc(order.provider_reference)}` : ''}</span><strong>${esc(formatKobo(order.total_kobo))}</strong></div>
+                </div>
+                ${canVerifyPayment ? `<button type="button" class="ops-verify-payment" data-order="${esc(order.order_number)}" style="margin:0 0 14px;padding:9px 14px;border:0;border-radius:8px;background:var(--color-primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Verify Payment</button>` : ''}
+                ${pickupAction}
+                ${deliveryBlock}
+                ${groups}`;
+            opsOverlay.hidden = false;
+        }
+
+        async function loadOperationsData() {
+            // Gate: only ever called after is_admin() authorization succeeded.
+            if (opsLoaded) { renderFilterButtons(); renderQueue(); return; }
+            if (opsLoadPromise) return opsLoadPromise;
+            opsLoadPromise = (async () => {
+                setOpsState('Loading operations data...', 'ok');
+                const result = await fetchOperationsQueue();
+                if (!result.success) { setOpsState(result.error || 'Unable to load CLX operations data. Please try again.', 'error'); return; }
+                opsOrders = result.orders || [];
+                opsRiders = result.riders || [];
+                opsCampuses = result.campuses || [];
+                opsLoaded = true;
+                setOpsState(opsOrders.length ? `${opsOrders.length} order${opsOrders.length === 1 ? '' : 's'} (newest first)` : '', 'ok');
+                if (opsOrders.length === 0) setOpsState('', '');
+                renderFilterButtons();
+                renderQueue();
+                renderRiders();
+            })();
+            try {
+                await opsLoadPromise;
+            } finally {
+                opsLoadPromise = null;
+            }
+        }
+
+        opsFilterButtons.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-filter]');
+            if (!button) return;
+            opsActiveFilter = button.dataset.filter;
+            renderFilterButtons();
+            renderQueue();
+        });
+        opsSearchInput.addEventListener('input', () => { opsSearch = opsSearchInput.value; renderQueue(); });
+        document.getElementById('rider-new').addEventListener('click', () => showRiderEditor());
+        riderList.addEventListener('click', (event) => {
+            const button = event.target.closest('.rider-edit');
+            const rider = opsRiders.find((item) => item.id === button?.dataset.riderId);
+            if (rider) showRiderEditor(rider);
+        });
+        riderEditor.addEventListener('click', (event) => { if (event.target.id === 'rider-cancel') { riderEditor.hidden = true; riderEditor.innerHTML = ''; } });
+        riderEditor.addEventListener('submit', async (event) => {
+            event.preventDefault(); const form = event.target; const riderId = form.dataset.riderId;
+            const name = form.name.value.trim(); const phone = form.phone.value.trim();
+            const patch = { name, is_active: form.active.checked, is_available: form.available.checked };
+            if (phone) patch.phone = phone;
+            if (!name || (!riderId && !phone) || !window.confirm(`Save rider ${name}?`)) return;
+            const result = riderId ? await updateRider(riderId, patch) : await createRider({ p_name: name, p_phone: phone, p_campus_id: form.campus.value, p_is_active: patch.is_active, p_is_available: patch.is_available });
+            if (!result.success) { window.alert(result.error); return; }
+            riderEditor.hidden = true; riderEditor.innerHTML = ''; opsLoaded = false; await loadOperationsData(); setOpsState('Rider saved.', 'ok');
+        });
+        opsQueueEl.addEventListener('click', (event) => {
+            const button = event.target.closest('.ops-view-detail');
+            if (!button) return;
+            const order = opsOrders.find((o) => o.order_number === button.dataset.order);
+            if (order) renderDetail(order);
+        });
+        opsDetailContent.addEventListener('click', async (event) => {
+            const button = event.target.closest('.ops-verify-payment');
+            if (!button) return;
+            const order = opsOrders.find((item) => item.order_number === button.dataset.order);
+            if (!order || !window.confirm(`Confirm that you have manually verified payment of ${formatKobo(order.total_kobo)} for order ${order.order_number} for ${order.customer_name}? Current payment status: ${order.payment_status_label}.`)) return;
+
+            button.disabled = true;
+            button.textContent = 'Verifying...';
+            const result = await verifyCustomerOrderPayment(order.id);
+            if (!result.success) {
+                button.disabled = false;
+                button.textContent = 'Verify Payment';
+                window.alert(result.error);
+                return;
+            }
+
+            opsLoaded = false;
+            await loadOperationsData();
+            const refreshedOrder = opsOrders.find((item) => item.id === order.id);
+            if (refreshedOrder) renderDetail(refreshedOrder);
+            setOpsState(result.alreadyVerified ? 'Payment was already verified.' : 'Payment verified.', 'ok');
+        });
+        opsDetailContent.addEventListener('click', async (event) => {
+            const button = event.target.closest('.ops-assign-rider, .ops-advance-delivery, .ops-complete-delivery, .ops-complete-pickup');
+            if (!button) return;
+            const order = opsOrders.find((item) => item.order_number === button.dataset.order);
+            const riderId = button.closest('div')?.querySelector('.ops-rider-select')?.value;
+            if (!order) return;
+            const action = button.classList.contains('ops-assign-rider') ? 'assign this rider' : button.textContent;
+            if ((button.classList.contains('ops-assign-rider') && !riderId) || !window.confirm(`Confirm ${action} for ${order.order_number}?`)) return;
+            button.disabled = true;
+            const result = button.classList.contains('ops-assign-rider') ? await assignDeliveryRider(order.id, riderId)
+                : button.classList.contains('ops-advance-delivery') ? await advanceDelivery(order.id, button.dataset.targetStatus)
+                : button.classList.contains('ops-complete-delivery') ? await completeDelivery(order.id) : await completePickup(order.id);
+            if (!result.success) { button.disabled = false; window.alert(result.error); return; }
+            opsLoaded = false; await loadOperationsData();
+            const refreshedOrder = opsOrders.find((item) => item.id === order.id);
+            if (refreshedOrder) renderDetail(refreshedOrder);
+            setOpsState(result.alreadyApplied ? 'Action was already applied.' : 'Order updated.', 'ok');
+        });
+        opsDetailContent.addEventListener('click', async (event) => {
+            const button = event.target.closest('.ops-advance-vendor-order');
+            if (!button) return;
+            const order = opsOrders.find((item) => item.vendor_groups.some((group) => group.id === button.dataset.vendorOrder));
+            const group = order?.vendor_groups.find((item) => item.id === button.dataset.vendorOrder);
+            const targetStatus = button.dataset.targetStatus;
+            if (!order || !group || !targetStatus || !window.confirm(`Confirm vendor order update for CLX order ${order.order_number}: ${group.vendor_name}, ${group.status_label} to ${orderStatusLabel(targetStatus)}?`)) return;
+
+            button.disabled = true;
+            button.textContent = 'Updating...';
+            const result = await advanceVendorOrder(group.id, targetStatus);
+            if (!result.success) {
+                button.disabled = false;
+                button.textContent = 'Try Again';
+                window.alert(result.error);
+                return;
+            }
+
+            opsLoaded = false;
+            await loadOperationsData();
+            const refreshedOrder = opsOrders.find((item) => item.id === order.id);
+            if (refreshedOrder) renderDetail(refreshedOrder);
+            setOpsState(result.alreadyApplied ? 'Vendor order was already in that status.' : 'Vendor order updated.', 'ok');
+        });
+        document.getElementById('ops-detail-close').addEventListener('click', () => { opsOverlay.hidden = true; });
+        opsOverlay.addEventListener('click', (event) => { if (event.target === opsOverlay) opsOverlay.hidden = true; });
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !opsOverlay.hidden) opsOverlay.hidden = true; });
+
+        async function enterAuthorizedState(user) {
+            document.getElementById('admin-user-email').textContent = user.email || 'CLX admin';
+            const roles = await getUserRoles(user.id);
+            document.getElementById('admin-user-role').textContent = roles.length ? roles.join(', ') : 'ADMIN';
+            if (typeof loadFailsafe !== 'undefined') clearTimeout(loadFailsafe);
+            show(content);
+            // Phase 4B/4E.3: load real data ONLY after authorization succeeded.
+            loadOperationsData();
+            applicationAdmin.load();
+            productsAdmin.init();
+            servicesAdmin.init();
+        }
+
+        /**
+         * Decide UI state from the live session + database role.
+         * Fail-safe: any error resolves to the SIGNED-OUT login state —
+         * the page can never remain stuck on 'Checking authorization...'.
+         */
+        async function resolveState() {
+            try {
+                const { user, error, timeout } = await getSessionUser();
+                if (!user) { showLogin(error || (timeout ? 'Unable to verify session. Please sign in again.' : '')); return; }
+                const auth = await isAuthorizedAdmin();
+                if (!auth.authorized) { clearTimeout(loadFailsafe); show(deniedPanel); return; }
+                await enterAuthorizedState(user);
+            } catch (err) {
+                console.error('Admin auth initialization failed:', err);
+                showLogin('Unable to verify session. Please sign in again.');
+            }
+        }
+
+        /**
+         * Hard fail-safe: if initialization is still unresolved after 10s
+         * (e.g. a hung network request), drop the loading state and show the
+         * login form. This NEVER grants access — admin content stays hidden.
+         */
+        const LOAD_FAILSAFE_MS = 10000;
+        const loadFailsafe = setTimeout(() => {
+            const stuck = [loading, loginPanel, deniedPanel, content].every((el) => el.hidden);
+            if (stuck || (!loading.hidden && loginPanel.hidden && deniedPanel.hidden && content.hidden)) {
+                console.error('Admin auth initialization timed out; showing sign-in.');
+                showLogin('Session check timed out. Please sign in.');
+            }
+        }, LOAD_FAILSAFE_MS);
+
+        // ---- Sign in (Supabase Auth; credentials never stored or logged) ----
+        document.getElementById('admin-login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            if (!email || !password) { showLoginError('Enter your email and password to continue.'); return; }
+            if (!emailInput.checkValidity()) { showLoginError('Enter a valid email address to continue.'); return; }
+            signinButton.disabled = true;
+            signinButton.textContent = 'Signing in...';
+            showLoginError('');
+            const result = await signIn(email, password);
+            passwordInput.value = '';
+            signinButton.disabled = false;
+            signinButton.textContent = 'Sign In';
+            if (result.success && result.user) {
+                await enterAuthorizedState(result.user);
+            } else if (result.denied) {
+                show(deniedPanel);
+            } else {
+                showLoginError(result.message || 'Sign in failed. Please try again.');
+            }
+        });
+
+        // ---- Sign out (Supabase Auth; cart/tracking/campus storage preserved) ----
+        async function handleSignOut() {
+            await signOut();
+            show(loginPanel);
+        }
+        document.getElementById('admin-logout').addEventListener('click', handleSignOut);
+        document.getElementById('admin-denied-signout').addEventListener('click', handleSignOut);
+
+        // ---- Auth state listener (single listener, no redirect loops) ----
+        onAuthChange(async (event) => {
+            if (event === 'SIGNED_OUT') { show(loginPanel); return; }
+            await resolveState();
+        });
+
+        // ---- Initial resolution on page load (session restoration) ----
+        resolveState();
     </script>
 </body>
 </html>

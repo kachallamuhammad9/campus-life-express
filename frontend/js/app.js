@@ -12,19 +12,6 @@ import { api } from './api.js';
 export const Utils = {
     fallbackImage: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
 
-    /**
-     * Escape HTML special characters to prevent XSS when interpolating
-     * API-controlled or user-controlled values into innerHTML templates.
-     */
-    escapeHtml(value) {
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
-    },
-
     formatPrice(amount) {
         return `${CLX_CONFIG.currency}${Number(amount || 0).toLocaleString()}`;
     },
@@ -38,7 +25,7 @@ export const Utils = {
         toast.innerHTML = `
             <div class="toast-content" style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:#0F172A;color:#FFF;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.25);position:fixed;bottom:24px;right:24px;z-index:99999;font-size:14px;font-weight:500;">
                 <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}" style="color:${type === 'success' ? '#10B981' : '#F59E0B'}"></i>
-                <span>${Utils.escapeHtml(message)}</span>
+                <span>${message}</span>
             </div>
         `;
         document.body.appendChild(toast);
@@ -167,7 +154,7 @@ export const CampusManager = {
 
 // ==================================================
 // ==================================================
-// CART MANAGER (Single-Vendor MVP Model)
+// CART MANAGER (Multi-Vendor Cart Model)
 // ==================================================
 export const CartManager = {
     items: [],
@@ -187,42 +174,35 @@ export const CartManager = {
 
         this.bindEvents();
         this.updateUI();
-        this.syncFromBackend();
+        // ---------------------------------------------------------------
+        // SERVER CART SYNC — DEFERRED (Multi-Vendor Supabase MVP)
+        // The existing Express /cart backend still uses a SINGLE-VENDOR
+        // cart model. Synchronizing with it would reject or overwrite the
+        // multi-vendor local cart, so all backend cart sync is bypassed.
+        // CartManager + clx_cart_items is the AUTHORITATIVE cart for both
+        // guest and authenticated customers. The backend cart methods in
+        // api.js are intentionally KEPT (not deleted) for future use.
+        // Do NOT reintroduce this without upgrading the server cart model.
+        // ---------------------------------------------------------------
         window.addEventListener("clx:auth-changed", () => {
-            if (api.auth.getToken()) {
-                this.syncFromBackend();
-                return;
-            }
-            this.remoteCart = null;
-            this.items = [];
-            this.save();
-            this.updateUI();
+            // Authentication no longer touches the cart at all:
+            // no hydration, no merge, no clearing. The customer's
+            // multi-vendor cart survives login and logout unchanged.
         });
     },
 
+    // DEFERRED: backend cart hydration (single-vendor Express model).
+    // Kept for reference; not called anywhere in the MVP.
     async syncFromBackend() {
-        if (!api.auth.getToken()) return;
-        const res = await api.cart.get();
-        if (res.success && res.data?.cart) {
-            this.applyRemoteCart(res.data.cart);
-            this.updateUI();
-        }
+        /* Server cart sync is deferred for the multi-vendor MVP.
+           Kept as a no-op so existing callers remain safe. */
+        return { success: true, deferred: true };
     },
 
     applyRemoteCart(cart) {
-        this.remoteCart = cart;
-        this.items = (cart.items || []).map(item => ({
-            id: item.productId,
-            cartItemId: item.id,
-            name: item.productName,
-            price: Number(item.unitPriceKobo || 0) / 100,
-            vendorId: cart.vendorId || "v-general",
-            vendorName: cart.vendor?.name || "Campus Vendor",
-            image: item.productImageUrl || Utils.fallbackImage,
-            campus: cart.campus?.slug || CampusManager.selectedCampus,
-            quantity: item.quantity,
-            totalPriceKobo: item.totalPriceKobo
-        }));
+        // DEFERRED (multi-vendor MVP): server cart hydration is set aside.
+        // Deliberately a no-op so an old single-vendor backend cart can
+        // never overwrite the authoritative local multi-vendor cart.
     },
 
     bindEvents() {
@@ -274,6 +254,21 @@ export const CartManager = {
                     const card = addBtn.closest("[data-id]");
                     if (!card) return;
 
+                    // PHASE 1 validation: purchasable checks for live catalogue data
+                    if (!card.dataset.id || !card.dataset.vendorId) {
+                        Utils.showToast("This product cannot be added right now.", "error");
+                        return;
+                    }
+                    const unitPrice = Number(card.dataset.price);
+                    if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+                        Utils.showToast("This product has an invalid price and cannot be ordered.", "error");
+                        return;
+                    }
+                    if (card.dataset.inStock === "false" || card.dataset.available === "false") {
+                        Utils.showToast("This product is currently unavailable.", "error");
+                        return;
+                    }
+
                     const item = {
                         id: card.dataset.id,
                         name: card.dataset.name,
@@ -282,6 +277,7 @@ export const CartManager = {
                         vendorName: card.dataset.vendorName || "Campus Vendor",
                         image: card.dataset.image || Utils.fallbackImage,
                         campus: card.dataset.campus || (CampusManager.selectedCampus || "unimaid"),
+                        isLiveProduct: card.dataset.liveProduct === "true",
                         quantity: 1
                     };
                     this.addItem(item);
@@ -291,24 +287,19 @@ export const CartManager = {
     },
 
     async addItem(item) {
-        if (api.auth.getToken()) {
-            const res = await api.cart.addItem(item.id, 1);
-            if (!res.success) {
-                Utils.showToast(res.error?.message || "Unable to add this item", "error");
+        // ---------------------------------------------------------------
+        // MVP: local cart only. No Express /cart call — the backend cart
+        // is single-vendor and would reject multi-vendor items.
+        // ---------------------------------------------------------------
+
+        // Campus safety: multi-vendor within ONE campus is allowed,
+        // but a cart must never mix products from different campuses.
+        if (this.items.length > 0) {
+            const cartCampus = this.items[0].campus;
+            if (cartCampus && item.campus && cartCampus !== item.campus) {
+                Utils.showToast(`This item belongs to a different campus. Clear your cart or switch campus to order from ${item.vendorName}.`, "error");
                 return;
             }
-            this.applyRemoteCart(res.data?.cart || {});
-            this.updateUI();
-            Utils.showToast(`Added "${item.name}" to cart`);
-            this.open();
-            return;
-        }
-
-        // Enforce 1 vendor per cart constraint
-        if (this.items.length > 0 && this.items[0].vendorId !== item.vendorId) {
-            const confirmChange = confirm(`Your cart contains items from "${this.items[0].vendorName}". CLX supports 1 vendor per checkout.\n\nWould you like to clear your cart and add this item from "${item.vendorName}"?`);
-            if (!confirmChange) return;
-            this.items = [];
         }
 
         const existing = this.items.find(i => i.id === item.id);
@@ -325,17 +316,7 @@ export const CartManager = {
     },
 
     async removeItem(id) {
-        const item = this.items.find(i => i.id === id);
-        if (api.auth.getToken() && item?.cartItemId) {
-            const res = await api.cart.removeItem(item.cartItemId);
-            if (!res.success) {
-                Utils.showToast(res.error?.message || "Unable to remove this item", "error");
-                return;
-            }
-            this.applyRemoteCart(res.data?.cart || { items: [] });
-            this.updateUI();
-            return;
-        }
+        // MVP: local cart only (server cart sync deferred)
         this.items = this.items.filter(i => i.id !== id);
         this.save();
         this.updateUI();
@@ -344,16 +325,7 @@ export const CartManager = {
     async updateQuantity(id, delta) {
         const item = this.items.find(i => i.id === id);
         if (!item) return;
-        if (api.auth.getToken() && item.cartItemId) {
-            const res = await api.cart.updateItem(item.cartItemId, item.quantity + delta);
-            if (!res.success) {
-                Utils.showToast(res.error?.message || "Unable to update cart quantity", "error");
-                return;
-            }
-            this.applyRemoteCart(res.data?.cart || { items: [] });
-            this.updateUI();
-            return;
-        }
+        // MVP: local cart only (server cart sync deferred)
         item.quantity += delta;
         if (item.quantity <= 0) {
             this.removeItem(id);
@@ -368,25 +340,41 @@ export const CartManager = {
     },
 
     async clear() {
-        if (api.auth.getToken()) {
-            const res = await api.cart.clear();
-            if (!res.success) {
-                Utils.showToast(res.error?.message || "Unable to clear cart", "error");
-                return;
-            }
-            this.applyRemoteCart(res.data?.cart || { items: [] });
-            this.updateUI();
-            return;
-        }
+        // MVP: local cart only (server cart sync deferred)
         this.items = [];
         this.save();
         this.updateUI();
     },
 
+    // ---- MULTI-VENDOR GROUPING & CALCULATION ----
+    // Groups the flat cart collection by vendor for rendering / checkout.
+    // The underlying storage stays a single flat array (one cart).
+    getVendorGroups() {
+        const groups = [];
+        const index = {};
+        this.items.forEach(item => {
+            const vid = item.vendorId || "v-general";
+            if (!index[vid]) {
+                index[vid] = { vendorId: vid, vendorName: item.vendorName || "Campus Vendor", campus: item.campus || "", items: [], subtotal: 0 };
+                groups.push(index[vid]);
+            }
+            index[vid].items.push(item);
+            index[vid].subtotal += Number(item.price || 0) * Number(item.quantity || 0);
+        });
+        return groups;
+    },
+
+    getVendorSubtotal(vendorId) {
+        return this.items
+            .filter(i => (i.vendorId || "v-general") === vendorId)
+            .reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
+    },
+
+    getVendorCount() {
+        return new Set(this.items.map(i => i.vendorId || "v-general")).size;
+    },
+
     getSubtotal() {
-        if (api.auth.getToken() && this.remoteCart) {
-            return Number(this.remoteCart.subtotalKobo || 0) / 100;
-        }
         return this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     },
 
@@ -399,9 +387,6 @@ export const CartManager = {
     },
 
     getTotal() {
-        if (api.auth.getToken() && this.remoteCart) {
-            return this.getSubtotal();
-        }
         return this.getSubtotal() + this.getDeliveryFee() + this.getServiceFee();
     },
 
@@ -425,7 +410,10 @@ export const CartManager = {
         if (totalEl) totalEl.textContent = Utils.formatPrice(this.getTotal());
 
         if (vendorBadge) {
-            vendorBadge.textContent = this.items.length > 0 ? `Vendor: ${this.items[0].vendorName}` : "";
+            const vendorCount = this.getVendorCount();
+            vendorBadge.textContent = this.items.length > 0
+                ? (vendorCount > 1 ? `${vendorCount} vendors in cart` : `Vendor: ${this.items[0].vendorName}`)
+                : "";
         }
 
         if (checkoutBtn) {
@@ -442,17 +430,39 @@ export const CartManager = {
                     </div>
                 `;
             } else {
-                container.innerHTML = this.items.map(item => `
-                    <div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--gray-200);align-items:center;">
-                        <img src="${Utils.escapeHtml(item.image)}" alt="${Utils.escapeHtml(item.name)}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;">
-                        <div style="flex-grow:1;min-width:0;">
-                            <h5 style="font-size:14px;font-weight:600;margin:0 0 4px;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${Utils.escapeHtml(item.name)}</h5>
-                            <span style="font-size:13px;font-weight:700;color:var(--color-primary);">${Utils.formatPrice(item.price)}</span>
+                // Multi-vendor rendering: group items by vendor
+                const groups = this.getVendorGroups();
+                container.innerHTML = groups.map(group => `
+                    <div class="cart-vendor-group" style="margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0 6px;border-bottom:2px solid var(--gray-100);">
+                            <h4 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--gray-600);margin:0;display:flex;align-items:center;gap:6px;min-width:0;">
+                                <i class="fa-solid fa-store" style="color:var(--color-primary);font-size:11px;"></i>
+                                <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${group.vendorName}</span>
+                            </h4>
+                            <span style="font-size:12px;font-weight:700;color:var(--color-primary);flex-shrink:0;">${Utils.formatPrice(group.subtotal)}</span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:8px;background:var(--gray-100);padding:4px 8px;border-radius:8px;flex-shrink:0;">
-                            <button type="button" onclick="window.CLX.cart.updateQuantity('${item.id}', -1)" style="font-size:14px;font-weight:700;color:var(--gray-700);width:20px;background:none;border:none;cursor:pointer;">-</button>
-                            <span style="font-size:13px;font-weight:600;min-width:16px;text-align:center;">${item.quantity}</span>
-                            <button type="button" onclick="window.CLX.cart.updateQuantity('${item.id}', 1)" style="font-size:14px;font-weight:700;color:var(--gray-700);width:20px;background:none;border:none;cursor:pointer;">+</button>
+                        ${group.items.map(item => `
+                        <div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--gray-200);align-items:center;">
+                            <img src="${item.image}" alt="${item.name}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;">
+                            <div style="flex-grow:1;min-width:0;">
+                                <h5 style="font-size:14px;font-weight:600;margin:0 0 4px;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</h5>
+                                <span style="font-size:13px;font-weight:700;color:var(--color-primary);">${Utils.formatPrice(item.price)}</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                                <div style="display:flex;align-items:center;gap:8px;background:var(--gray-100);padding:4px 8px;border-radius:8px;">
+                                    <button type="button" aria-label="Decrease quantity of ${item.name}" onclick="window.CLX.cart.updateQuantity('${item.id}', -1)" style="font-size:14px;font-weight:700;color:var(--gray-700);width:20px;background:none;border:none;cursor:pointer;">-</button>
+                                    <span style="font-size:13px;font-weight:600;min-width:16px;text-align:center;">${item.quantity}</span>
+                                    <button type="button" aria-label="Increase quantity of ${item.name}" onclick="window.CLX.cart.updateQuantity('${item.id}', 1)" style="font-size:14px;font-weight:700;color:var(--gray-700);width:20px;background:none;border:none;cursor:pointer;">+</button>
+                                </div>
+                                <button type="button" aria-label="Remove ${item.name} from cart" title="Remove item" onclick="window.CLX.cart.removeItem('${item.id}')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,0.08);color:#DC2626;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                        `).join('')}
+                        <div style="display:flex;justify-content:space-between;padding:8px 0 4px;font-size:12px;font-weight:600;color:var(--gray-500);">
+                            <span>Vendor subtotal (${group.items.reduce((s, i) => s + i.quantity, 0)} items)</span>
+                            <span style="color:var(--gray-800);">${Utils.formatPrice(group.subtotal)}</span>
                         </div>
                     </div>
                 `).join('');
@@ -566,7 +576,7 @@ export const SearchController = {
         const hasVendors = res.vendors.length > 0;
 
         if (!hasProducts && !hasServices && !hasMarketplace && !hasVendors) {
-            this.resultsContainer.innerHTML = `<div style="text-align:center;padding:32px;color:var(--gray-500);">No results found for "<strong>${Utils.escapeHtml(query)}</strong>" on ${CampusManager.getCampusShortName()}.</div>`;
+            this.resultsContainer.innerHTML = `<div style="text-align:center;padding:32px;color:var(--gray-500);">No results found for "<strong>${query}</strong>" on ${CampusManager.getCampusShortName()}.</div>`;
             return;
         }
 
@@ -575,10 +585,10 @@ export const SearchController = {
             html += `<h4 style="font-size:13px;text-transform:uppercase;color:var(--gray-500);margin:16px 0 8px;font-weight:700;">Products & Food (${res.products.length})</h4>`;
             html += res.products.map(p => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);">
-                    <img src="${Utils.escapeHtml(p.image)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
+                    <img src="${p.image}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
                     <div style="flex-grow:1;">
-                        <a href="${p.category === 'food' ? 'food.html' : 'shopping.html'}" style="font-weight:600;font-size:14px;color:var(--gray-900);">${Utils.escapeHtml(p.name)}</a>
-                        <div style="font-size:12px;color:var(--gray-500);">${Utils.escapeHtml(p.vendorName)} • <span style="color:var(--color-primary);font-weight:700;">${Utils.formatPrice(p.price)}</span></div>
+                        <a href="${p.category === 'food' ? '/food' : '/shopping'}" style="font-weight:600;font-size:14px;color:var(--gray-900);">${p.name}</a>
+                        <div style="font-size:12px;color:var(--gray-500);">${p.vendorName} • <span style="color:var(--color-primary);font-weight:700;">${Utils.formatPrice(p.price)}</span></div>
                     </div>
                 </div>
             `).join('');
@@ -589,10 +599,10 @@ export const SearchController = {
             html += `<h4 style="font-size:13px;text-transform:uppercase;color:var(--gray-500);margin:16px 0 8px;font-weight:700;">Campus Services (${res.services.length})</h4>`;
             html += res.services.map(s => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);">
-                    <img src="${Utils.escapeHtml(s.image)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
+                    <img src="${s.image}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
                     <div style="flex-grow:1;">
-                        <a href="services.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${Utils.escapeHtml(s.name)}</a>
-                        <div style="font-size:12px;color:var(--gray-500);">${Utils.escapeHtml(s.providerName)} • <span style="color:var(--color-primary);font-weight:700;">${s.priceLabel}</span></div>
+                        <a href="/services" style="font-weight:600;font-size:14px;color:var(--gray-900);">${s.name}</a>
+                        <div style="font-size:12px;color:var(--gray-500);">${s.providerName} • <span style="color:var(--color-primary);font-weight:700;">${s.priceLabel}</span></div>
                     </div>
                 </div>
             `).join('');
@@ -603,10 +613,10 @@ export const SearchController = {
             html += `<h4 style="font-size:13px;text-transform:uppercase;color:var(--gray-500);margin:16px 0 8px;font-weight:700;">Student Marketplace (${res.marketplace.length})</h4>`;
             html += res.marketplace.map(m => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);">
-                    <img src="${Utils.escapeHtml(m.image)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
+                    <img src="${m.image}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
                     <div style="flex-grow:1;">
-                        <a href="marketplace.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${Utils.escapeHtml(m.title)}</a>
-                        <div style="font-size:12px;color:var(--gray-500);">${Utils.escapeHtml(m.condition)} • Seller: ${Utils.escapeHtml(m.sellerName)} • <span style="color:var(--color-primary);font-weight:700;">${Utils.formatPrice(m.price)}</span></div>
+                        <a href="/marketplace" style="font-weight:600;font-size:14px;color:var(--gray-900);">${m.title}</a>
+                        <div style="font-size:12px;color:var(--gray-500);">${m.condition} • Seller: ${m.sellerName} • <span style="color:var(--color-primary);font-weight:700;">${Utils.formatPrice(m.price)}</span></div>
                     </div>
                 </div>
             `).join('');
@@ -617,10 +627,10 @@ export const SearchController = {
             html += `<h4 style="font-size:13px;text-transform:uppercase;color:var(--gray-500);margin:16px 0 8px;font-weight:700;">Campus Businesses (${res.vendors.length})</h4>`;
             html += res.vendors.map(v => `
                 <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);">
-                    <img src="${Utils.escapeHtml(v.image)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
+                    <img src="${v.image}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;">
                     <div style="flex-grow:1;">
-                        <a href="vendors.html" style="font-weight:600;font-size:14px;color:var(--gray-900);">${Utils.escapeHtml(v.name)}</a>
-                        <div style="font-size:12px;color:var(--gray-500);">${Utils.escapeHtml(v.location)} • ⭐ ${v.rating}</div>
+                        <a href="/vendors" style="font-weight:600;font-size:14px;color:var(--gray-900);">${v.name}</a>
+                        <div style="font-size:12px;color:var(--gray-500);">${v.location} • ⭐ ${v.rating}</div>
                     </div>
                 </div>
             `).join('');

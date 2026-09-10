@@ -1,9 +1,12 @@
 /**
  * Campus Life Express (CLX 2.0) - Production API Client Layer
- * Full integration with Express / PostgreSQL backend endpoints (/api/v1/*)
+ * Supabase-first MVP client layer. Retired Express endpoints are inert.
  */
 
 import { CAMPUSES, CATEGORIES, VENDORS, PRODUCTS, SERVICES, MARKETPLACE_LISTINGS, INITIAL_ORDERS } from './data.js';
+import { getSupabaseClient, supabaseQuery } from './supabase.js';
+// Phase 1 live Supabase catalogue layer with controlled static browsing fallback.
+import * as catalogue from './catalogue.js';
 
 // Local storage keys for client state persistence & authentication
 const STORAGE_KEYS = {
@@ -16,9 +19,6 @@ const STORAGE_KEYS = {
     SERVICE_REQUESTS: "clx_user_service_requests",
     NOTIFICATIONS: "clx_user_notifications"
 };
-
-const configuredApiBase = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-const API_BASE = configuredApiBase.replace(/\/$/, '');
 
 /**
  * Normalization helpers to ensure dual compatibility between backend database fields
@@ -147,63 +147,11 @@ const normalizeOrder = (o) => {
 };
 
 /**
- * Core HTTP Request Wrapper with JWT Authorization Header Injection
+ * Retained legacy API surface. It intentionally performs no network request:
+ * the MVP uses public Supabase catalogue reads and customer-order RPCs only.
  */
 async function fetchJson(endpoint, options = {}) {
-    const headers = {
-        'Accept': 'application/json',
-        ...(options.headers || {})
-    };
-
-    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-        options.body = JSON.stringify(options.body);
-    }
-
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-    if (token && !headers['Authorization']) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-
-    try {
-        const response = await fetch(url, {
-            ...options,
-            headers
-        });
-
-        const data = await response.json().catch(() => null);
-
-        if (!response.ok) {
-            const errorMessage = data?.error?.message || data?.message || `Request failed with status ${response.status}`;
-            if (response.status === 401) {
-                localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-                localStorage.removeItem(STORAGE_KEYS.USER_PROFILE);
-                window.dispatchEvent(new CustomEvent("clx:auth-changed", { detail: { user: null } }));
-            }
-            return {
-                success: false,
-                status: response.status,
-                error: data?.error || { message: errorMessage, code: data?.code || 'REQUEST_FAILED' },
-                data: null
-            };
-        }
-
-        return {
-            success: true,
-            status: response.status,
-            data: data?.data !== undefined ? data.data : data
-        };
-    } catch (err) {
-        console.warn(`[API] Network error requesting ${url}:`, err.message);
-        return {
-            success: false,
-            status: 0,
-            error: { message: err.message, code: 'NETWORK_ERROR' },
-            data: null
-        };
-    }
+    return { success: false, status: 410, error: { code: 'RETIRED_API', message: 'This legacy CLX feature is not available in the current MVP.' }, data: null };
 }
 
 export const api = {
@@ -302,6 +250,10 @@ export const api = {
     // ----------------------------------------------------
     campuses: {
         async list() {
+            // 1) Live Supabase (preferred)
+            const sb = await catalogue.fetchCampuses();
+            if (sb.success && Array.isArray(sb.data) && sb.data.length > 0) return sb;
+            // 2) Express backend
             const res = await fetchJson('/campuses');
             if (res.success && Array.isArray(res.data) && res.data.length > 0) {
                 return {
@@ -326,6 +278,15 @@ export const api = {
             return fallback ? { success: true, data: fallback } : { success: false, message: "Campus not found" };
         },
         async getDeliveryZones(campusId) {
+            const live = await supabaseQuery(
+                (sb) => sb.from('delivery_zones')
+                    .select('id, name, base_delivery_fee_kobo, campus_id, is_active')
+                    .eq('campus_id', campusId)
+                    .eq('is_active', true)
+                    .order('name'),
+                'delivery_zones.list'
+            );
+            if (live.success) return { success: true, source: 'supabase', data: live.data || [] };
             const res = await fetchJson(`/campuses/${campusId}/delivery-zones`);
             if (res.success && Array.isArray(res.data)) {
                 return res;
@@ -347,6 +308,10 @@ export const api = {
     // ----------------------------------------------------
     categories: {
         async list() {
+            // 1) Live Supabase (preferred)
+            const sb = await catalogue.fetchCategories();
+            if (sb.success && Array.isArray(sb.data) && sb.data.length > 0) return sb;
+            // 2) Express backend
             const res = await fetchJson('/categories');
             if (res.success && Array.isArray(res.data) && res.data.length > 0) {
                 return { success: true, data: res.data };
@@ -368,6 +333,11 @@ export const api = {
     // ----------------------------------------------------
     vendors: {
         async list(filters = {}) {
+            // 1) Live Supabase (preferred)
+            const sb = await catalogue.fetchVendors(filters);
+            if (sb.success && Array.isArray(sb.data)) return sb;
+
+            // 2) Express backend
             const params = new URLSearchParams();
             if (filters.campus) params.append('campusId', filters.campus);
             if (filters.category && filters.category !== "all") params.append('categoryId', filters.category);
@@ -409,6 +379,10 @@ export const api = {
             return vendor ? { success: true, data: vendor } : { success: false, message: "Vendor not found" };
         },
         async getProducts(vendorId) {
+            // 1) Live Supabase (preferred)
+            const sb = await catalogue.fetchProducts({ vendorId });
+            if (sb.success && Array.isArray(sb.data)) return sb;
+            // 2) Express backend
             const res = await fetchJson(`/vendors/${vendorId}/products`);
             if (res.success && Array.isArray(res.data)) {
                 return { success: true, data: res.data.map(normalizeProduct) };
@@ -427,6 +401,10 @@ export const api = {
     // ----------------------------------------------------
     products: {
         async list(filters = {}) {
+            // 1) Live Supabase (preferred)
+            const sb = await catalogue.fetchProducts(filters);
+            if (sb.success && Array.isArray(sb.data)) return sb;
+            // 2) Express backend
             const res = await fetchJson('/products');
 
             if (res.success && Array.isArray(res.data)) {
@@ -479,13 +457,33 @@ export const api = {
                 return { success: true, data: list, count: list.length };
             }
 
-            return {
-                success: false,
-                data: [],
-                error: res.error || { message: "Unable to load products" }
-            };
+            // ----------------------------------------------------------
+            // 3) Controlled static fallback (development only).
+            // Never mixed with Supabase results — this branch only runs
+            // when BOTH Supabase and the Express backend are unavailable.
+            // ----------------------------------------------------------
+            let fallbackList = PRODUCTS.filter(p => !filters.campus || (p.campus || "unimaid") === String(filters.campus).toLowerCase());
+            if (filters.category && filters.category !== "all") {
+                fallbackList = fallbackList.filter(p => (p.category || p.categorySlug || "").toLowerCase() === String(filters.category).toLowerCase());
+            }
+            if (filters.subcategory && filters.subcategory !== "all") {
+                fallbackList = fallbackList.filter(p => (p.subcategory || "").toLowerCase() === filters.subcategory.toLowerCase());
+            }
+            if (filters.search) {
+                const search = filters.search.toLowerCase();
+                fallbackList = fallbackList.filter(p => `${p.name} ${p.description || ""} ${p.vendorName}`.toLowerCase().includes(search));
+            }
+            console.warn("[CLX] Live catalogue unavailable — serving controlled static fallback products (development mode).");
+            return { success: true, source: "fallback", data: fallbackList, count: fallbackList.length };
         },
         async getById(id) {
+            // 1) Live Supabase (preferred)
+            const sb = await catalogue.fetchProducts({});
+            if (sb.success && Array.isArray(sb.data)) {
+                const found = sb.data.find(p => p.id === String(id));
+                if (found) return { success: true, data: found };
+            }
+            // 2) Express backend
             const res = await fetchJson(`/products/${id}`);
             if (res.success && res.data) {
                 return { success: true, data: normalizeProduct(res.data) };
@@ -520,9 +518,7 @@ export const api = {
                 return { success: true, data: list, count: list.length };
             }
 
-            if (!res.success) return res;
-
-            // Resilient fallback
+            // Standalone service requests are deferred; browse the controlled catalogue.
             let list = [...SERVICES];
             if (filters.subcategory && filters.subcategory !== "all") {
                 list = list.filter(s => s.subcategory.toLowerCase() === filters.subcategory.toLowerCase());
@@ -531,8 +527,8 @@ export const api = {
                 list = list.filter(s => s.campus === filters.campus);
             }
             if (filters.search) {
-                const search = filters.search.toLowerCase();
-                list = list.filter(s => s.name.toLowerCase().includes(search) || s.description.toLowerCase().includes(search) || s.providerName.toLowerCase().includes(search));
+                const s = filters.search.toLowerCase();
+                list = list.filter(s => s.name.toLowerCase().includes(s) || s.description.toLowerCase().includes(s) || s.providerName.toLowerCase().includes(s));
             }
             return { success: true, data: list, count: list.length };
         },
@@ -626,9 +622,7 @@ export const api = {
                 return { success: true, data: combined, count: combined.length };
             }
 
-            if (!res.success) return res;
-
-            // Resilient fallback
+            // Marketplace browsing remains available from controlled local data.
             let list = [...customListings, ...MARKETPLACE_LISTINGS];
             if (filters.subcategory && filters.subcategory !== "all") {
                 list = list.filter(m => m.subcategory.toLowerCase() === filters.subcategory.toLowerCase());
@@ -809,6 +803,52 @@ export const api = {
     // ORDERS (/api/v1/orders)
     // ----------------------------------------------------
     orders: {
+        async getCheckoutCampus(campusRef) {
+            const live = await supabaseQuery(
+                (sb) => sb.from('campuses').select('id, slug, name, short_name').eq('slug', campusRef).eq('is_active', true).maybeSingle(),
+                'checkout.campus'
+            );
+            return live.success && live.data
+                ? { success: true, data: live.data }
+                : { success: false, error: live.error || { message: 'The selected campus is unavailable.' } };
+        },
+        async createCustomerOrder(order) {
+            const client = getSupabaseClient();
+            if (!client) {
+                return { success: false, error: { code: 'SUPABASE_UNAVAILABLE', message: 'Secure checkout is unavailable. Your cart has not been changed.' } };
+            }
+            const result = await supabaseQuery(
+                (sb) => sb.rpc('create_customer_order', {
+                    p_items: order.items,
+                    p_campus_id: order.campusId,
+                    p_fulfillment_type: order.fulfillmentType,
+                    p_customer_name: order.customerName,
+                    p_customer_phone: order.customerPhone,
+                    p_payment_method: order.paymentMethod,
+                    p_delivery_location: order.deliveryLocation,
+                    p_delivery_zone_id: order.deliveryZoneId,
+                    p_notes: order.notes
+                }),
+                'customer_order.create'
+            );
+            if (!result.success) return result;
+            if (!result.data?.success) {
+                return { success: false, data: result.data, error: { code: result.data?.code || 'ORDER_REJECTED', message: result.data?.message || 'We could not place your order.' } };
+            }
+            return { success: true, data: result.data };
+        },
+        async trackCustomerOrder(orderNumber, trackingToken) {
+            const client = getSupabaseClient();
+            if (!client) return { success: false, error: { code: 'SUPABASE_UNAVAILABLE', message: 'Order tracking is unavailable.' } };
+            const result = await supabaseQuery(
+                (sb) => sb.rpc('get_customer_order_tracking', { p_order_number: orderNumber, p_tracking_token: trackingToken }),
+                'customer_order.track'
+            );
+            if (!result.success) return result;
+            return result.data?.success
+                ? { success: true, data: result.data }
+                : { success: false, data: result.data, error: { code: 'ORDER_NOT_FOUND', message: 'Order not found. Please check your tracking details.' } };
+        },
         async list() {
             const res = await fetchJson('/orders');
             if (res.success && Array.isArray(res.data?.orders)) {
