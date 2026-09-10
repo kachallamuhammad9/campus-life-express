@@ -357,7 +357,7 @@ export const PRODUCTS = [
         vendorId: "v-gadget-hub",
         vendorName: "Apex Gadget Hub",
         campus: "unimaid",
-        image: "https://images.unsplash.com/photo-1609592426868-d069bfa7df68?w=600&auto=format&fit=crop&q=80",
+        image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&auto=format&fit=crop&q=80",
         description: "Dual USB + Type-C 22.5W fast charging power bank with digital LED battery display.",
         rating: 4.9,
         isPopular: true,
@@ -611,7 +611,7 @@ export const MARKETPLACE_LISTINGS = [
         sellerContact: "0809XXXXX34",
         campus: "unimaid",
         dateListed: "4 days ago",
-        image: "https://images.unsplash.com/photo-1594213114663-d94db9b17126?w=600&auto=format&fit=crop&q=80",
+        image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop&q=80",
         description: "Works 100%. Auto shut-off sensor intact. Upgraded to a multi-cooker so no longer needed.",
         status: "Published",
         isModerated: true
