@@ -50,18 +50,18 @@ export const CATEGORIES = [
         slug: "food",
         icon: "fa-utensils",
         badge: "Restaurants & Vendors",
-        description: "Campus restaurants, student food vendors, quick snacks, and refreshing drinks.",
+        description: "Campus restaurants, food vendors, quick snacks, and refreshing drinks for everyone on campus.",
         subcategories: ["Restaurants", "Campus Food Vendors", "Snacks", "Drinks"],
         image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
         path: "/food"
     },
     {
         id: "shopping",
-        name: "Student Shopping",
+        name: "Shopping",
         slug: "shopping",
         icon: "fa-bag-shopping",
         badge: "Fashion, Tech & Essentials",
-        description: "Fashion, footwear, phone accessories, beauty products, books, and campus stationery.",
+        description: "Fashion, footwear, phone accessories, beauty products, books, and campus stationery for students, staff, and visitors.",
         subcategories: ["Fashion", "Shoes", "Phones & Accessories", "Beauty", "Books", "Stationery"],
         image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&auto=format&fit=crop&q=80",
         path: "/shopping"
@@ -94,7 +94,7 @@ export const CATEGORIES = [
         slug: "delivery",
         icon: "fa-truck-fast",
         badge: "Fast Campus Dispatch",
-        description: "Campus parcel delivery, vendor order collection, and reliable errand assistance across faculties and hostels.",
+        description: "Campus parcel delivery, vendor order collection, and reliable errand assistance for the campus community.",
         subcategories: ["Campus Delivery", "Vendor Pickup", "Errands"],
         image: "https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?w=600&auto=format&fit=crop&q=80",
         path: "/delivery"
@@ -114,7 +114,7 @@ export const VENDORS = [
         reviewCount: 94,
         verified: true,
         image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=80",
-        description: "Specializes in traditional Jollof rice, fried rice, tender beef, and grilled chicken for students.",
+        description: "Specializes in traditional Jollof rice, fried rice, tender beef, and grilled chicken for campus customers.",
         phone: "+234 803 123 4567"
     },
     {
@@ -159,7 +159,7 @@ export const VENDORS = [
         reviewCount: 62,
         verified: true,
         image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&auto=format&fit=crop&q=80",
-        description: "Affordable streetwear, unisex sneakers, canvas shoes, tote bags, and plain tees for students.",
+        description: "Affordable streetwear, unisex sneakers, canvas shoes, tote bags, and plain tees for campus customers.",
         phone: "+234 805 444 8899"
     },
     {
@@ -479,7 +479,7 @@ export const SERVICES = [
     },
     {
         id: "s-laundry-bag",
-        name: "Standard Student Laundry & Ironing (Per Bag)",
+        name: "Standard Campus Laundry & Ironing (Per Bag)",
         category: "services",
         subcategory: "Laundry",
         startingPrice: 3500,
