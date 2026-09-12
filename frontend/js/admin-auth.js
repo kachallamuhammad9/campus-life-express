@@ -46,7 +46,7 @@ function toSigninMessage(error) {
         return 'This email address has not been confirmed yet.';
     }
     if (/failed to fetch|network/i.test(error?.message || '')) {
-        return 'Network error. Please check your connection and try again.';
+        return 'Unable to connect. Check your internet connection and try again.';
     }
     if (/too many requests/i.test(error?.message || '')) {
         return 'Too many attempts. Please wait a moment and try again.';
@@ -118,7 +118,7 @@ export async function getUserRoles(userId) {
  */
 export async function signIn(email, password) {
     const supabase = client();
-    if (!supabase) return { success: false, message: 'Authentication is not configured.' };
+    if (!supabase) return { success: false, message: 'Admin authentication is temporarily unavailable. Please contact the CLX administrator.' };
     if (!email || !password) return { success: false, message: 'Enter your email and password.' };
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -134,7 +134,7 @@ export async function signIn(email, password) {
         }
         return { success: true, user };
     } catch (err) {
-        return { success: false, message: 'Network error. Please check your connection and try again.' };
+        return { success: false, message: 'Unable to connect. Check your internet connection and try again.' };
     }
 }
 
