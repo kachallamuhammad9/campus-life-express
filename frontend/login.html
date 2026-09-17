@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Campus Life Express (CLX)</title>
+    <meta name="description" content="Sign in to your Campus Life Express customer account.">
+    <link rel="canonical" href="https://clx.dandalinsauki.com/login">
+    <link rel="icon" href="./images/clx.png" type="image/png">
+    <link rel="stylesheet" href="./css/main.css">
+    <style>
+        .auth-page{min-height:100vh;background:#F8FAFC;display:flex;align-items:center;padding:32px 16px}.auth-card{width:min(100%,480px);margin:auto;background:#fff;border:1px solid var(--gray-200);border-radius:20px;padding:32px;box-shadow:0 8px 24px rgba(0,0,0,.05)}.auth-card h1{text-align:center;color:var(--gray-900);font-size:25px;margin:0 0 8px}.auth-card .intro{text-align:center;color:var(--gray-500);font-size:14px;margin:0 0 24px}.auth-field{margin-bottom:16px}.auth-field label{display:block;font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:6px}.auth-field input,.auth-field select{width:100%;height:46px;border:1px solid var(--gray-300);border-radius:10px;padding:0 12px;font:inherit;background:#fff}.auth-actions{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:8px 0 20px;font-size:13px}.auth-message{display:none;padding:11px 12px;border-radius:9px;margin-bottom:16px;font-size:13px}.auth-message.error{display:block;background:#FEF2F2;color:#B91C1C}.auth-message.success{display:block;background:#F0FDF4;color:#166534}.auth-footer{text-align:center;color:var(--gray-500);font-size:13px;margin-top:20px}.auth-footer a,.auth-actions a{color:var(--color-primary);font-weight:700;text-decoration:none}.password-wrap{position:relative}.password-wrap input{padding-right:76px}.password-wrap button{position:absolute;right:8px;top:7px;height:32px;border:0;background:transparent;color:var(--color-primary);font-weight:700;cursor:pointer}
+    </style>
+</head>
+<body class="auth-page">
+    <main class="auth-card">
+        <a href="/" style="display:block;text-align:center;margin-bottom:20px;"><img src="./images/clx.png" alt="Campus Life Express" style="height:48px;max-width:180px;object-fit:contain;"></a>
+        <h1>Welcome back</h1>
+        <p class="intro">Sign in to access your account and order history.</p>
+        <div id="auth-message" class="auth-message" role="alert" aria-live="polite"></div>
+        <form id="login-form" novalidate>
+            <div class="auth-field"><label for="email">Email address</label><input id="email" type="email" autocomplete="email" required></div>
+            <div class="auth-field"><label for="password">Password</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password" required><button type="button" data-toggle-password="password">Show</button></div></div>
+            <div class="auth-actions"><label style="display:flex;gap:7px;align-items:center;color:var(--gray-600);"><input id="remember" type="checkbox" checked> Keep me signed in</label><a id="forgot-link" href="/forgot-password">Forgot password?</a></div>
+            <button id="submit-button" type="submit" class="btn btn-primary" style="width:100%;height:46px;border:0;border-radius:10px;background:var(--color-primary);color:#fff;font-weight:700;cursor:pointer;">Sign In</button>
+        </form>
+        <p class="auth-footer">New to CLX? <a id="signup-link" href="/signup">Create an account</a></p>
+    </main>
+    <script type="module">
+        import { signIn, getCurrentUser, authMessage, safeReturnTo } from './js/auth.js';
+        const form = document.getElementById('login-form'); const message = document.getElementById('auth-message'); const button = document.getElementById('submit-button');
+        const params = new URLSearchParams(location.search); const returnTo = safeReturnTo(params.get('returnTo'), '/account');
+        document.getElementById('signup-link').href = `/signup?returnTo=${encodeURIComponent(returnTo)}`;
+        function show(text, type = 'error') { message.textContent = text; message.className = `auth-message ${type}`; }
+        document.querySelectorAll('[data-toggle-password]').forEach(toggle => toggle.addEventListener('click', () => { const input = document.getElementById(toggle.dataset.togglePassword); input.type = input.type === 'password' ? 'text' : 'password'; toggle.textContent = input.type === 'password' ? 'Show' : 'Hide'; }));
+        getCurrentUser().then(user => { if (user) location.replace(returnTo); });
+        form.addEventListener('submit', async event => { event.preventDefault(); if (!form.checkValidity()) { show('Enter a valid email address and password.'); return; } button.disabled = true; button.textContent = 'Signing in...'; try { await signIn(document.getElementById('email').value, document.getElementById('password').value); show('Signed in successfully.', 'success'); location.replace(returnTo); } catch (error) { show(authMessage(error, 'Invalid email or password.')); button.disabled = false; button.textContent = 'Sign In'; } });
+    </script>
+</body>
+</html>

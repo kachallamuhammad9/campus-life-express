@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Marketplace | Campus Life Express (CLX)</title>
     <meta name="description" content="Buy and sell used textbooks, hostel appliances, electronics, and dorm furniture with fellow students safely on campus.">
+    <link rel="canonical" href="https://clx.dandalinsauki.com/marketplace">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BPY1QR6B2S"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-BPY1QR6B2S');
+    </script>
     <meta name="theme-color" content="#001F7F">
 
     <link rel="icon" href="./images/clx.png" type="image/png">
@@ -264,7 +275,7 @@
     <!-- Scripts -->
     <script type="module">
         import { api } from './js/api.js';
-        import { Utils, CampusManager } from './js/app.js';
+        import { Utils, CampusManager, trackGA4Event, analyticsValue } from './js/app.js';
 
         let currentSubcat = "all";
         let currentCondition = "all";
@@ -315,6 +326,20 @@
         window.showSellerModal = function(id) {
             const item = loadedListings.find(l => l.id === id);
             if (!item) return;
+
+            const itemDetails = {
+                item_id: String(item.id),
+                item_name: String(item.title),
+                price: analyticsValue(item.price),
+                quantity: 1
+            };
+            if (item.subcategory) itemDetails.item_category = String(item.subcategory);
+
+            trackGA4Event("view_item", {
+                currency: "NGN",
+                value: analyticsValue(item.price),
+                items: [itemDetails]
+            });
 
             document.getElementById("modal-seller-item-title").textContent = item.title;
             document.getElementById("modal-seller-price").textContent = Utils.formatPrice(item.price);

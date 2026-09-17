@@ -149,6 +149,7 @@
                             <span style="background:rgba(22,163,74,0.1);color:var(--color-success);font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;">Active</span>
                         </div>
                         <p id="account-user-email" style="font-size:13px;color:var(--gray-500);margin:0;">University of Maiduguri • Member since 2026</p>
+                        <p id="account-user-details" style="font-size:12px;color:var(--gray-500);margin:4px 0 0;"></p>
                     </div>
                 </div>
                 <div style="display:flex;gap:10px;">
@@ -164,6 +165,14 @@
                 <!-- Campus Preference Card -->
                 <div style="background:#fff;border-radius:20px;padding:24px;border:1px solid var(--gray-200);">
                     <h3 style="font-size:16px;font-weight:700;color:var(--gray-900);margin-bottom:14px;">Campus & Location Settings</h3>
+                    <div style="margin-bottom:16px;">
+                        <label for="acc-full-name" style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px;">Full Name</label>
+                        <input id="acc-full-name" type="text" autocomplete="name" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 12px;font-size:13px;background:#fff;">
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label for="acc-phone" style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px;">Phone / WhatsApp Number</label>
+                        <input id="acc-phone" type="tel" autocomplete="tel" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 12px;font-size:13px;background:#fff;">
+                    </div>
                     <div style="margin-bottom:16px;">
                         <label style="font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px;">Default Active Campus</label>
                         <select id="acc-campus-select" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 12px;font-size:13px;background:#fff;">
@@ -472,6 +481,33 @@
                 Utils.showToast("Account preferences saved!");
             }
         };
+    </script>
+    <script type="module">
+        import { getCurrentUser, loadProfile, requireAuth, signOut, updateProfile } from './js/auth.js';
+        const user = await requireAuth();
+        if (user) {
+            const profile = await loadProfile();
+            const authPanel = document.getElementById('account-auth-panel');
+            if (authPanel) authPanel.hidden = true;
+            document.getElementById('account-dashboard').hidden = false;
+            document.getElementById('account-settings').hidden = false;
+            document.getElementById('account-notifications').hidden = false;
+            document.getElementById('account-user-name').textContent = profile?.full_name || user.user_metadata?.full_name || 'Campus User';
+            document.getElementById('account-user-email').textContent = user.email || '';
+            document.getElementById('acc-full-name').value = profile?.full_name || user.user_metadata?.full_name || '';
+            document.getElementById('acc-phone').value = profile?.phone_number || user.user_metadata?.phone || '';
+            document.getElementById('account-user-details').textContent = `${user.user_metadata?.user_type || 'Customer'}${profile?.phone_number ? ` • ${profile.phone_number}` : ''}`;
+            document.getElementById('logout-btn')?.addEventListener('click', async () => { await signOut(); window.location.replace('/'); });
+            const campusSelect = document.getElementById('acc-campus-select');
+            window.saveAccountPrefs = async () => {
+                try {
+                    const updated = await updateProfile({ fullName: document.getElementById('acc-full-name').value, phone: document.getElementById('acc-phone').value, campusId: campusSelect?.value || null });
+                    document.getElementById('account-user-name').textContent = updated.full_name;
+                    document.getElementById('account-user-details').textContent = `${user.user_metadata?.user_type || 'Customer'}${updated.phone_number ? ` • ${updated.phone_number}` : ''}`;
+                    window.CLX?.utils?.showToast('Account preferences saved!');
+                } catch { window.CLX?.utils?.showToast('Unable to save account preferences.', 'error'); }
+            };
+        }
     </script>
 </body>
 </html>

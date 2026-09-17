@@ -44,7 +44,7 @@ if (isSupabaseConfigured) {
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
-                detectSessionInUrl: false
+                detectSessionInUrl: true
             }
         });
         console.info('[CLX Supabase] Live catalogue source active.');

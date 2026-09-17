@@ -7,14 +7,16 @@
     <link rel="icon" href="./images/clx.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/admin.css">
 </head>
-<body>
-    <main style="padding:48px 0;background:#F8FAFC;min-height:100vh;">
-        <div class="container" style="max-width:1080px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
-                <div><span style="font-size:12px;font-weight:700;color:var(--color-primary);text-transform:uppercase;">CLX Operations</span><h1 style="font-size:28px;font-weight:800;color:var(--gray-900);margin:4px 0;">Admin Console</h1><p style="font-size:14px;color:var(--gray-600);margin:0;">Authorized CLX team access only.</p></div>
-                <a href="/" class="btn btn-outline" style="padding:9px 14px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);">Back to CLX</a>
-            </div>
+<body class="admin-page">
+    <main class="admin-app-shell">
+        <div class="admin-container">
+            <header class="admin-topbar">
+                <button id="admin-menu-toggle" class="admin-menu-toggle" type="button" aria-label="Open admin navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+                <div class="admin-brand-lockup"><span class="admin-eyebrow">CLX Operations</span><h1>Admin Console</h1><p>Manage CLX orders, vendors, products, riders and fulfilment operations.</p></div>
+                <a href="/" class="admin-back-link"><i class="fa-solid fa-arrow-left"></i><span>Back to CLX</span></a>
+            </header>
 
             <!-- State 1: Loading -->
             <section id="admin-loading" style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:36px;text-align:center;">
@@ -44,18 +46,46 @@
 
             <!-- State 4: Authorized admin shell (Phase 4A: access only) -->
             <section id="admin-content" hidden>
-                <div style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:28px;">
-                    <h2 style="font-size:18px;font-weight:800;color:var(--gray-900);margin:0 0 8px;">CLX Operations</h2>
+                <div class="admin-shell">
+                    <aside id="admin-sidebar" class="admin-sidebar" aria-label="Admin navigation">
+                        <div class="admin-sidebar-heading"><span>Workspace</span><button id="admin-menu-close" class="admin-menu-close" type="button" aria-label="Close admin navigation"><i class="fa-solid fa-xmark"></i></button></div>
+                        <nav id="admin-nav" class="admin-nav">
+                            <button type="button" class="admin-nav-item is-active" data-admin-module="overview"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></button>
+                            <button type="button" class="admin-nav-item" data-admin-module="orders"><i class="fa-solid fa-receipt"></i><span>Orders</span></button>
+                            <button type="button" class="admin-nav-item" data-admin-module="vendors"><i class="fa-solid fa-store"></i><span>Vendors</span></button>
+                            <button type="button" class="admin-nav-item" data-admin-module="services"><i class="fa-solid fa-screwdriver-wrench"></i><span>Service Providers</span></button>
+                            <button type="button" class="admin-nav-item" data-admin-module="riders"><i class="fa-solid fa-motorcycle"></i><span>Riders</span></button>
+                            <button type="button" class="admin-nav-item" data-admin-module="products"><i class="fa-solid fa-box-open"></i><span>Products</span></button>
+                            <button type="button" class="admin-nav-item" data-admin-module="lifecycle"><i class="fa-solid fa-box-archive"></i><span>Archive &amp; Lifecycle</span></button>
+                        </nav>
+                        <div class="admin-sidebar-footer"><span>Security</span><strong><i class="fa-solid fa-shield-halved"></i> Authorized team access</strong></div>
+                    </aside>
+                    <div class="admin-main-column">
+                    <div class="admin-mobile-heading"><span class="admin-eyebrow">CLX Operations</span><h2 id="admin-module-title">Operations Overview</h2><p id="admin-module-description">Monitor attention items and move quickly into the right management workspace.</p></div>
                     <p style="font-size:14px;color:#15803D;margin:0 0 6px;font-weight:700;">Authentication successful.</p>
-                    <p style="font-size:13px;color:var(--gray-600);margin:0 0 20px;">Read-only operations dashboard: incoming customer orders, vendor groups, payments and delivery state. No operational actions.</p>
+                    <p class="admin-auth-note">Authorized CLX team access only.</p>
 
-                <section style="border:1px solid var(--gray-200);border-radius:8px;padding:16px;margin-bottom:16px;">
+                <section id="admin-overview" class="admin-module-panel is-active" data-admin-panel="overview">
+                    <h3 style="font-size:15px;margin:0 0 10px;color:var(--gray-900);">Operations overview</h3>
+                    <div id="ops-summary" class="admin-metric-groups"></div>
+                    <div class="admin-management-heading"><div><span class="admin-section-kicker">Workspace</span><h3>Quick management</h3></div><span class="admin-section-note">Open a focused module</span></div>
+                    <div class="admin-management-grid">
+                        <button type="button" class="admin-management-card" data-admin-module="orders"><i class="fa-solid fa-receipt"></i><span><strong>Orders</strong><small>Manage customer orders and fulfilment</small></span><i class="fa-solid fa-arrow-right admin-card-arrow"></i></button>
+                        <button type="button" class="admin-management-card" data-admin-module="vendors"><i class="fa-solid fa-store"></i><span><strong>Vendors</strong><small>Review vendor applications and status</small></span><i class="fa-solid fa-arrow-right admin-card-arrow"></i></button>
+                        <button type="button" class="admin-management-card" data-admin-module="services"><i class="fa-solid fa-screwdriver-wrench"></i><span><strong>Service Providers</strong><small>Manage campus services and availability</small></span><i class="fa-solid fa-arrow-right admin-card-arrow"></i></button>
+                        <button type="button" class="admin-management-card" data-admin-module="riders"><i class="fa-solid fa-motorcycle"></i><span><strong>Riders</strong><small>Manage riders and dispatch readiness</small></span><i class="fa-solid fa-arrow-right admin-card-arrow"></i></button>
+                        <button type="button" class="admin-management-card" data-admin-module="products"><i class="fa-solid fa-box-open"></i><span><strong>Products</strong><small>Manage catalogue and availability</small></span><i class="fa-solid fa-arrow-right admin-card-arrow"></i></button>
+                    </div>
+                </section>
+
+                <section id="admin-riders" class="admin-module-panel" data-admin-panel="riders">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;"><h3 style="font-size:15px;margin:0;color:var(--gray-900);">Rider Management</h3><button id="rider-new" type="button" style="padding:7px 10px;border:0;border-radius:6px;background:var(--color-primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Add Rider</button></div>
                     <div id="rider-editor" hidden style="margin-top:12px;"></div>
                     <div id="rider-list" style="margin-top:12px;font-size:13px;color:var(--gray-600);"></div>
                 </section>
 
-                <!-- Phase 4B: operations toolbar (filters + search) -->
+                <section id="admin-orders" class="admin-module-panel" data-admin-panel="orders">
+                <div class="admin-panel-heading"><div><span class="admin-section-kicker">Fulfilment</span><h2>Orders</h2><p>Filter, search and operate on customer orders.</p></div><span class="admin-panel-badge">Live operational queue</span></div>
                 <div id="ops-toolbar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
                     <div id="ops-filter-buttons" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;"></div>
                     <input id="ops-search" type="search" placeholder="Search order #, customer, vendor…" aria-label="Search orders" style="padding:8px 12px;border:1px solid var(--gray-300);border-radius:9px;font-size:13px;min-width:220px;box-sizing:border-box;">
@@ -72,11 +102,10 @@
                         <div id="ops-detail-content"></div>
                     </div>
                 </div>
+                </section>
 
-                </div>
-
-                <section id="vendor-applications-admin" style="background:#fff;border:1px solid #CBD5E1;border-radius:16px;padding:24px;margin:24px 0"></section>
-                <section id="admin-products-section" style="background:#fff;border:1px solid #CBD5E1;border-radius:16px;padding:24px;margin:24px 0"></section>
+                <section id="vendor-applications-admin" class="admin-module-panel" data-admin-panel="vendors"></section>
+                <section id="admin-products-section" class="admin-module-panel" data-admin-panel="products"></section>
                 <div id="admin-session-info" style="border-top:1px solid var(--gray-100);padding-top:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
                         <div style="font-size:13px;color:var(--gray-600);">
                             <div>Signed in as <strong id="admin-user-email" style="color:var(--gray-900);"></strong></div>
@@ -85,23 +114,40 @@
                         <button id="admin-logout" class="btn btn-outline" style="padding:9px 14px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--gray-700);cursor:pointer;">Sign Out</button>
                     </div>
                 </div>
+                </div>
             </section>
         </div>
     </main>
     <script type="module">
         import { getSessionUser, isAuthorizedAdmin, getUserRoles, signIn, signOut, onAuthChange } from './js/admin-auth.js';
-        import { fetchOperationsQueue, verifyCustomerOrderPayment, advanceVendorOrder, createRider, updateRider, assignDeliveryRider, advanceDelivery, completePickup, completeDelivery, filterQueue, QUEUE_FILTERS, formatKobo, orderStatusLabel, paymentStatusLabel, isQaOrder } from './js/operations.js';
+        import { fetchOperationsQueue, requestOrderRefund, confirmOrderRefund, verifyCustomerOrderPayment, cancelCustomerOrder, advanceVendorOrder, createRider, updateRider, assignDeliveryRider, advanceDelivery, completePickup, completeDelivery, filterQueue, QUEUE_FILTERS, formatKobo, formatDateTime, orderStatusLabel, paymentStatusLabel, buildDashboardMetrics, buildWhatsAppContactUrl, isQaOrder } from './js/operations.js';
 
         import { createVendorApplicationsAdmin } from './js/vendor-applications-admin.js';
         import { createAdminProducts } from './js/admin-products.js';
         import { createAdminServices } from './js/admin-services.js';
+        import { REFUND_REASONS, isRefundOrder, canRequestOrderRefund } from './js/order-refunds.js';
+        import { createAdminLifecycle } from './js/admin-lifecycle.js';
         const applicationAdmin = createVendorApplicationsAdmin(document.getElementById('vendor-applications-admin'));
-        const productsAdmin = createAdminProducts(document.getElementById('admin-products-section'));
+        const productsAdmin = createAdminProducts(document.getElementById('admin-products-section'), {
+            onProductChanged: () => lifecycleAdmin.init(),
+        });
         const servicesSection = document.createElement('section');
         servicesSection.id = 'admin-services-section';
+        servicesSection.className = 'admin-module-panel';
+        servicesSection.dataset.adminPanel = 'services';
         servicesSection.style.cssText = 'background:#fff;border:1px solid #CBD5E1;border-radius:16px;padding:24px;margin:24px 0';
         document.getElementById('admin-products-section').after(servicesSection);
         const servicesAdmin = createAdminServices(servicesSection);
+        const lifecycleSection = document.createElement('section');
+        lifecycleSection.id = 'admin-lifecycle-section';
+        lifecycleSection.className = 'admin-module-panel';
+        lifecycleSection.dataset.adminPanel = 'lifecycle';
+        lifecycleSection.style.cssText = 'background:#fff;border:1px solid #CBD5E1;border-radius:16px;padding:24px;margin:24px 0';
+        servicesSection.after(lifecycleSection);
+        const lifecycleAdmin = createAdminLifecycle(lifecycleSection, undefined, {
+            editProduct: id => productsAdmin.editProduct(id),
+            onProductChanged: () => productsAdmin.refresh(),
+        });
         const loading = document.getElementById('admin-loading');
         const loginPanel = document.getElementById('admin-login');
         const deniedPanel = document.getElementById('admin-denied');
@@ -112,7 +158,7 @@
         const signinButton = document.getElementById('admin-signin');
 
         const show = (panel) => {
-            if (panel !== content) { applicationAdmin.reset(); productsAdmin.reset(); servicesAdmin.reset(); }
+            if (panel !== content) { resetOperationsState(); applicationAdmin.reset(); productsAdmin.reset(); servicesAdmin.reset(); lifecycleAdmin.reset(); }
             [loading, loginPanel, deniedPanel, content].forEach((el) => { el.hidden = el !== panel; });
         };
         const showLoginError = (text) => {
@@ -135,6 +181,8 @@
         let opsSearch = '';
         let opsRiders = [];
         let opsCampuses = [];
+        let opsLoadVersion = 0;
+        let activeAdminUserId = null;
 
         const opsState = document.getElementById('ops-state');
         const opsQueueEl = document.getElementById('ops-queue');
@@ -144,15 +192,92 @@
         const opsDetailContent = document.getElementById('ops-detail-content');
         const riderList = document.getElementById('rider-list');
         const riderEditor = document.getElementById('rider-editor');
+        const opsSummary = document.getElementById('ops-summary');
+        const adminModuleTitle = document.getElementById('admin-module-title');
+        const adminModuleDescription = document.getElementById('admin-module-description');
+        const adminSidebar = document.getElementById('admin-sidebar');
+        const adminMenuToggle = document.getElementById('admin-menu-toggle');
+        const moduleCopy = {
+            overview: ['Operations Overview', 'Monitor attention items and move quickly into the right management workspace.'],
+            orders: ['Orders', 'Filter, search and operate on customer orders and fulfilment.'],
+            vendors: ['Vendors', 'Review vendor applications and manage campus vendor information.'],
+            services: ['Service Providers', 'Manage campus services, availability and provider information.'],
+            riders: ['Riders', 'Manage rider availability and delivery dispatch readiness.'],
+            products: ['Products', 'Manage the catalogue, stock availability and product information.'],
+            lifecycle: ['Archive & Lifecycle', 'Use guarded archive, restore and delete workflows for managed records.']
+        };
+
+        function activateAdminModule(module) {
+            const panel = document.querySelector(`[data-admin-panel="${module}"]`);
+            if (!panel) return;
+            document.querySelectorAll('[data-admin-panel]').forEach((item) => item.classList.toggle('is-active', item === panel));
+            document.querySelectorAll('[data-admin-module]').forEach((item) => item.classList.toggle('is-active', item.dataset.adminModule === module && item.classList.contains('admin-nav-item')));
+            const [title, description] = moduleCopy[module] || moduleCopy.overview;
+            adminModuleTitle.textContent = title;
+            adminModuleDescription.textContent = description;
+            adminSidebar.classList.remove('is-open');
+            adminMenuToggle.setAttribute('aria-expanded', 'false');
+        }
 
         const esc = (text) => String(text ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const setOpsState = (text, kind) => {
             if (!text) { opsState.style.display = 'none'; opsState.textContent = ''; return; }
             opsState.textContent = text;
+            if (kind === 'error') {
+                const retry = document.createElement('button');
+                retry.type = 'button';
+                retry.className = 'ops-retry';
+                retry.textContent = 'Retry';
+                retry.style.cssText = 'margin-left:10px;padding:4px 8px;border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;font-size:12px;font-weight:700;cursor:pointer;';
+                opsState.append(retry);
+            }
             opsState.style.display = 'block';
             opsState.style.background = kind === 'error' ? 'rgba(220,38,38,0.08)' : 'rgba(22,163,74,0.08)';
             opsState.style.color = kind === 'error' ? '#B91C1C' : '#15803D';
         };
+
+        function resetOperationsState() {
+            opsLoadVersion += 1;
+            opsOrders = [];
+            opsRiders = [];
+            opsCampuses = [];
+            opsLoaded = false;
+            opsLoadPromise = null;
+            opsActiveFilter = 'all';
+            opsSearch = '';
+            opsSearchInput.value = '';
+            opsQueueEl.innerHTML = '';
+            opsSummary.innerHTML = '';
+            opsOverlay.hidden = true;
+            setOpsState('', '');
+            riderList.innerHTML = '';
+            riderEditor.hidden = true;
+            riderEditor.innerHTML = '';
+        }
+
+        function renderSummary() {
+            const metrics = buildDashboardMetrics(opsOrders);
+            const refundPending = opsOrders.filter((order) => order.status === 'REFUND_PENDING').length;
+            const refunded = opsOrders.filter((order) => order.status === 'REFUNDED').length;
+            const groups = [
+                ['Needs attention', 'attention', [
+                    ['Awaiting Payment', metrics.awaitingPayment, 'awaiting_payment'],
+                    ['Ready for Pickup / Dispatch', metrics.ready, 'ready'],
+                    ['Refund Pending', refundPending, 'refund_pending']
+                ]],
+                ['In progress', 'progress', [
+                    ['Confirmed', metrics.paymentConfirmed, 'confirmed'],
+                    ['Preparing', metrics.preparing, 'preparing'],
+                    ['Delivery', metrics.outForDelivery, 'delivery']
+                ]],
+                ['Finished', 'finished', [
+                    ['Completed', metrics.completed, 'completed'],
+                    ['Cancelled', opsOrders.filter((order) => order.status === 'CANCELLED').length, 'cancelled'],
+                    ['Refunded', refunded, 'refunded']
+                ]]
+            ];
+            opsSummary.innerHTML = groups.map(([heading, tone, cards]) => `<div class="admin-metric-group"><div class="admin-metric-group-heading">${esc(heading)}</div>${cards.map(([label, value, filter]) => `<button type="button" class="admin-metric-card ${tone}" data-metric-filter="${filter}"><small>${esc(label)}</small><strong>${value}</strong></button>`).join('')}</div>`).join('');
+        }
 
         function renderFilterButtons() {
             opsFilterButtons.innerHTML = QUEUE_FILTERS.map((f) =>
@@ -177,7 +302,7 @@
                 return;
             }
             opsQueueEl.innerHTML = rows.map((o) => `
-                <div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:grid;grid-template-columns:1.1fr 1.4fr 0.8fr 1fr 1fr 0.9fr;gap:10px;align-items:center;font-size:13px;">
+                <div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;align-items:center;font-size:13px;">
                     <div><strong style="color:var(--gray-900);">${esc(o.order_number)}</strong>${isQaOrder(o) ? '<span style="display:inline-block;margin-left:6px;padding:2px 5px;border-radius:4px;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:800;">QA / TEST</span>' : ''}<div style="font-size:11px;color:var(--gray-500);margin-top:2px;">${esc(o.created_label)}</div></div>
                     <div>${esc(o.customer_name)}<div style="font-size:11px;color:var(--gray-500);margin-top:2px;">${esc(o.campus_name)}</div></div>
                     <div>${esc(o.fulfillment_label)}</div>
@@ -187,14 +312,20 @@
                 </div>`).join('');
         }
 
+            function renderHistory(order) {
+                const parentHistory = order.history.filter((entry) => entry.vendor_order_id == null);
+                if (!parentHistory.length) return '<p style="font-size:13px;color:var(--gray-500);">No status history recorded.</p>';
+                return `<div style="display:grid;gap:8px;">${parentHistory.map((entry) => `<div style="display:flex;gap:10px;align-items:baseline;border-left:2px solid var(--color-primary);padding:4px 0 4px 10px;"><strong style="font-size:12px;color:var(--gray-800);">${esc(orderStatusLabel(entry.status))}</strong><span style="font-size:12px;color:var(--gray-500);">${esc(formatDateTime(entry.created_at))}</span></div>`).join('')}</div>`;
+            }
+
         function renderDetail(order) {
             const canVerifyPayment = order.payment_status === 'PENDING'
                 && ['ORDER_RECEIVED', 'AWAITING_PAYMENT'].includes(order.status);
-            const vendorAction = (group) => ({
+            const vendorAction = (group) => order.payment_status === 'PAID' && !isRefundOrder(order.status) ? ({
                 PENDING: ['CONFIRMED', 'Confirm Vendor Order'],
                 CONFIRMED: ['PREPARING', 'Start Preparing'],
                 PREPARING: ['READY', 'Mark Ready']
-            }[group.status]);
+            }[group.status]) : null;
             const groups = order.vendor_groups.map((g) => {
                 const action = vendorAction(g);
                 return `
@@ -212,7 +343,7 @@
             }).join('') || '<p style="font-size:13px;color:var(--gray-500);">No vendor groups.</p>';
 
             const eligibleRiders = opsRiders.filter((rider) => rider.campus_id === order.campus_id && rider.is_active && rider.is_available);
-            const deliveryAction = order.delivery?.status === 'ACCEPTED' ? ['PICKED_UP', 'Mark Picked Up']
+            const deliveryAction = isRefundOrder(order.status) ? null : order.delivery?.status === 'ACCEPTED' ? ['PICKED_UP', 'Mark Picked Up']
                 : order.delivery?.status === 'PICKED_UP' ? ['IN_TRANSIT', 'Start Transit']
                 : order.delivery?.status === 'IN_TRANSIT' ? ['DELIVERED', 'Mark Delivered'] : null;
             const deliveryBlock = order.fulfillment_type === 'DELIVERY' ? `
@@ -239,6 +370,10 @@
                     <div style="font-size:13px;color:var(--gray-700);"><strong>Customer</strong><div>${esc(order.customer_name)}</div><div>${esc(order.customer_phone)}</div>${order.notes ? `<div style="margin-top:4px;color:var(--gray-600);">Note: ${esc(order.notes)}</div>` : ''}</div>
                     <div style="font-size:13px;color:var(--gray-700);"><strong>Order</strong><div>${esc(order.campus_name)}</div><div>${esc(order.fulfillment_label)}${order.delivery_zone_name ? ` · ${esc(order.delivery_zone_name)}` : ''}${order.delivery_location ? ` · ${esc(order.delivery_location)}` : ''}</div></div>
                 </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                    ${buildWhatsAppContactUrl(order) ? `<a href="${esc(buildWhatsAppContactUrl(order))}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:8px 12px;border-radius:8px;background:#25D366;color:#fff;font-size:12px;font-weight:700;text-decoration:none;">Contact Customer on WhatsApp</a>` : ''}
+                </div>
+                ${order.status === 'CANCELLED' ? `<div style="margin:0 0 14px;padding:10px;border-radius:8px;background:rgba(220,38,38,0.08);color:#991B1B;font-size:13px;"><strong>Cancelled</strong>${order.cancellation_reason ? ` · ${esc(order.cancellation_reason)}` : ''}${order.cancelled_at ? ` · ${esc(formatDateTime(order.cancelled_at))}` : ''}</div>` : ''}
                 <div style="border:1px solid var(--gray-200);border-radius:12px;padding:14px;margin-bottom:14px;font-size:13px;color:var(--gray-700);">
                     <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><strong>${esc(formatKobo(order.subtotal_kobo))}</strong></div>
                     <div style="display:flex;justify-content:space-between;"><span>Delivery fee</span><span>${esc(formatKobo(order.delivery_fee_kobo))}</span></div>
@@ -246,8 +381,13 @@
                     <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-100);margin-top:6px;padding-top:6px;"><span>Total · ${esc(order.payment_status_label)}${order.payment_method_label ? ` · ${esc(order.payment_method_label)}` : ''}${order.provider_reference ? ` · Ref ${esc(order.provider_reference)}` : ''}</span><strong>${esc(formatKobo(order.total_kobo))}</strong></div>
                 </div>
                 ${canVerifyPayment ? `<button type="button" class="ops-verify-payment" data-order="${esc(order.order_number)}" style="margin:0 0 14px;padding:9px 14px;border:0;border-radius:8px;background:var(--color-primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Verify Payment</button>` : ''}
+                ${canVerifyPayment ? `<div style="display:flex;gap:8px;align-items:end;margin:0 0 14px;"><label style="font-size:12px;flex:1;">Cancellation reason<select class="ops-cancel-reason" style="display:block;width:100%;margin-top:4px;padding:8px;border:1px solid var(--gray-300);border-radius:8px;"><option>Customer requested cancellation</option><option>Payment not received</option><option>Item unavailable</option><option>Vendor unavailable</option><option>Other</option></select></label><button type="button" class="ops-cancel-order" data-order="${esc(order.order_number)}" style="padding:9px 14px;border:0;border-radius:8px;background:#B91C1C;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Cancel Order</button></div>` : ''}
+                ${canRequestOrderRefund(order) ? `<div class="ops-refund-request" style="border:1px solid #FDBA74;padding:14px;border-radius:10px;margin-bottom:14px;"><strong>Paid order exception</strong><p style="font-size:13px;">Stops all vendor fulfilment and requires a manual refund of the whole paid amount. No money is returned by this action.</p><label>Reason<select class="ops-refund-reason" required style="display:block;padding:8px;margin:8px 0;"><option value="">Select a reason</option>${REFUND_REASONS.map(reason => `<option>${esc(reason)}</option>`).join('')}</select></label><button type="button" class="ops-request-refund" data-order="${esc(order.order_number)}">Unable to Fulfil</button></div>` : ''}
+                ${order.payment_status === 'PAID' && !isRefundOrder(order.status) && !canRequestOrderRefund(order) ? '<p style="font-size:13px;color:#92400E;">This order is outside the early whole-order refund boundary. An exception requires manual intervention; normal history will not be changed.</p>' : ''}
+                ${isRefundOrder(order.status) ? `<div class="ops-refund-summary" style="border:1px solid #FDBA74;background:#FFF7ED;padding:14px;border-radius:10px;margin-bottom:14px;font-size:13px;"><strong>${order.status === 'REFUNDED' ? 'Refund Confirmed' : 'Refund Required ? NOT yet refunded'}</strong><p>Normal fulfilment is permanently stopped.</p>${order.refund ? `<div>Order Number: ${esc(order.order_number)}</div><div>Customer: ${esc(order.customer_name)}</div><div>Original Paid Amount: ${esc(formatKobo(order.paid_amount_kobo))}</div><div>Refund Amount: ${esc(formatKobo(order.refund.amount_kobo))}</div><div>Reason: ${esc(order.refund.reason)}</div><div>Requested: ${esc(formatDateTime(order.refund.requested_at))}</div>${order.refund.confirmed_at ? `<div>Refund Confirmed: ${esc(formatDateTime(order.refund.confirmed_at))}</div>` : ''}${order.refund.admin_reference ? `<div>Admin reference: ${esc(order.refund.admin_reference)}</div>` : ''}${order.status === 'REFUND_PENDING' && order.refund.status === 'REFUND_PENDING' && order.payment_status === 'PAID' ? `<p>Return the money outside CLX first. This records a manual refund; it does not send money.</p><label>Optional receipt/reference (no bank credentials)<input class="ops-refund-reference" maxlength="120" style="display:block;margin:6px 0;padding:8px;"></label><label style="display:block;margin:10px 0;"><input type="checkbox" class="ops-refund-returned"> I have actually returned the full refund amount to the customer.</label><button type="button" class="ops-confirm-refund" data-order="${esc(order.order_number)}">Confirm Refund</button>` : ''}` : '<p>Refund record unavailable. Manual intervention is required.</p>'}</div>` : ''}
                 ${pickupAction}
                 ${deliveryBlock}
+                <div style="border-top:1px solid var(--gray-200);padding-top:14px;margin-top:14px;"><strong style="display:block;font-size:13px;color:var(--gray-900);margin-bottom:8px;">Status timeline</strong>${renderHistory(order)}</div>
                 ${groups}`;
             opsOverlay.hidden = false;
         }
@@ -256,14 +396,18 @@
             // Gate: only ever called after is_admin() authorization succeeded.
             if (opsLoaded) { renderFilterButtons(); renderQueue(); return; }
             if (opsLoadPromise) return opsLoadPromise;
+            const loadVersion = opsLoadVersion;
+            const userId = activeAdminUserId;
             opsLoadPromise = (async () => {
                 setOpsState('Loading operations data...', 'ok');
                 const result = await fetchOperationsQueue();
+                if (loadVersion !== opsLoadVersion || userId !== activeAdminUserId) return;
                 if (!result.success) { setOpsState(result.error || 'Unable to load CLX operations data. Please try again.', 'error'); return; }
                 opsOrders = result.orders || [];
                 opsRiders = result.riders || [];
                 opsCampuses = result.campuses || [];
                 opsLoaded = true;
+                renderSummary();
                 setOpsState(opsOrders.length ? `${opsOrders.length} order${opsOrders.length === 1 ? '' : 's'} (newest first)` : '', 'ok');
                 if (opsOrders.length === 0) setOpsState('', '');
                 renderFilterButtons();
@@ -273,7 +417,7 @@
             try {
                 await opsLoadPromise;
             } finally {
-                opsLoadPromise = null;
+                if (loadVersion === opsLoadVersion) opsLoadPromise = null;
             }
         }
 
@@ -284,7 +428,20 @@
             renderFilterButtons();
             renderQueue();
         });
+        opsSummary.addEventListener('click', (event) => {
+            const card = event.target.closest('[data-metric-filter]');
+            if (!card) return;
+            opsActiveFilter = card.dataset.metricFilter;
+            activateAdminModule('orders');
+            renderFilterButtons();
+            renderQueue();
+        });
         opsSearchInput.addEventListener('input', () => { opsSearch = opsSearchInput.value; renderQueue(); });
+        opsState.addEventListener('click', (event) => {
+            if (!event.target.closest('.ops-retry')) return;
+            opsLoaded = false;
+            loadOperationsData();
+        });
         document.getElementById('rider-new').addEventListener('click', () => showRiderEditor());
         riderList.addEventListener('click', (event) => {
             const button = event.target.closest('.rider-edit');
@@ -308,7 +465,44 @@
             const order = opsOrders.find((o) => o.order_number === button.dataset.order);
             if (order) renderDetail(order);
         });
+        let refundBusy = false;
+        opsDetailContent.addEventListener('click', async event => {
+            const button = event.target.closest('.ops-request-refund,.ops-confirm-refund');
+            if (!button || refundBusy) return;
+            const order = opsOrders.find(item => item.order_number === button.dataset.order);
+            if (!order) return;
+            const requesting = button.classList.contains('ops-request-refund');
+            const reason = opsDetailContent.querySelector('.ops-refund-reason')?.value;
+            const reference = opsDetailContent.querySelector('.ops-refund-reference')?.value.trim() || null;
+            if (requesting && (!canRequestOrderRefund(order) || !REFUND_REASONS.includes(reason))) { window.alert('Select a refund reason.'); return; }
+            if (!requesting && (!opsDetailContent.querySelector('.ops-refund-returned')?.checked || order.status !== 'REFUND_PENDING' || order.refund?.status !== 'REFUND_PENDING')) { window.alert('Confirm only after you have actually returned the full refund amount.'); return; }
+            const confirmation = requesting
+                ? `Unable to fulfil ${order.order_number} for ${order.customer_name}? Reason: ${reason}. Stop ALL vendor fulfilment and require a manual refund of ${formatKobo(order.paid_amount_kobo)}? This does NOT return any money.`
+                : `Confirm MANUAL refund for ${order.order_number} ? ${order.customer_name}. Original paid amount: ${formatKobo(order.paid_amount_kobo)}. Refund amount: ${formatKobo(order.refund.amount_kobo)}. Reason: ${order.refund.reason}. Confirm that the full money has ALREADY been returned. This action only records it.`;
+            if (!window.confirm(confirmation)) return;
+            refundBusy = true; button.disabled = true;
+            const old = button.textContent; button.textContent = 'Recording...';
+            try {
+                const result = requesting ? await requestOrderRefund(order.id, reason) : await confirmOrderRefund(order.id, reference);
+                if (!result.success) { window.alert(result.error); return; }
+                opsLoaded = false; await loadOperationsData();
+                const refreshed = opsOrders.find(item => item.id === order.id);
+                if (refreshed) renderDetail(refreshed);
+            } finally { refundBusy = false; button.disabled = false; button.textContent = old; }
+        });
         opsDetailContent.addEventListener('click', async (event) => {
+            const cancelButton = event.target.closest('.ops-cancel-order');
+            if (cancelButton) {
+                const order = opsOrders.find((item) => item.order_number === cancelButton.dataset.order);
+                const reason = cancelButton.closest('div')?.querySelector('.ops-cancel-reason')?.value;
+                if (!order || !reason || !window.confirm(`Cancel unpaid order ${order.order_number} for: ${reason}? This cannot be undone.`)) return;
+                cancelButton.disabled = true; cancelButton.textContent = 'Cancelling...';
+                const result = await cancelCustomerOrder(order.id, reason);
+                if (!result.success) { cancelButton.disabled = false; cancelButton.textContent = 'Cancel Order'; window.alert(result.error); return; }
+                opsLoaded = false; await loadOperationsData();
+                const refreshedOrder = opsOrders.find((item) => item.id === order.id); if (refreshedOrder) renderDetail(refreshedOrder);
+                setOpsState('Order cancelled.', 'ok'); return;
+            }
             const button = event.target.closest('.ops-verify-payment');
             if (!button) return;
             const order = opsOrders.find((item) => item.order_number === button.dataset.order);
@@ -376,17 +570,38 @@
         opsOverlay.addEventListener('click', (event) => { if (event.target === opsOverlay) opsOverlay.hidden = true; });
         document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !opsOverlay.hidden) opsOverlay.hidden = true; });
 
+        document.getElementById('admin-nav').addEventListener('click', (event) => {
+            const item = event.target.closest('[data-admin-module]');
+            if (item) activateAdminModule(item.dataset.adminModule);
+        });
+        document.querySelector('.admin-management-grid').addEventListener('click', (event) => {
+            const item = event.target.closest('[data-admin-module]');
+            if (item) activateAdminModule(item.dataset.adminModule);
+        });
+        adminMenuToggle.addEventListener('click', () => {
+            const open = adminSidebar.classList.toggle('is-open');
+            adminMenuToggle.setAttribute('aria-expanded', String(open));
+        });
+        document.getElementById('admin-menu-close').addEventListener('click', () => {
+            adminSidebar.classList.remove('is-open');
+            adminMenuToggle.setAttribute('aria-expanded', 'false');
+        });
+
         async function enterAuthorizedState(user) {
+            if (activeAdminUserId !== user.id) resetOperationsState();
+            activeAdminUserId = user.id;
             document.getElementById('admin-user-email').textContent = user.email || 'CLX admin';
             const roles = await getUserRoles(user.id);
             document.getElementById('admin-user-role').textContent = roles.length ? roles.join(', ') : 'ADMIN';
             if (typeof loadFailsafe !== 'undefined') clearTimeout(loadFailsafe);
             show(content);
-            // Phase 4B/4E.3: load real data ONLY after authorization succeeded.
+            activateAdminModule('overview');
             loadOperationsData();
+            // Phase 4B/4E.3: load real data ONLY after authorization succeeded.
             applicationAdmin.load();
             productsAdmin.init();
             servicesAdmin.init();
+            lifecycleAdmin.init();
         }
 
         /**
@@ -397,7 +612,7 @@
         async function resolveState() {
             try {
                 const { user, error, timeout } = await getSessionUser();
-                if (!user) { showLogin(error || (timeout ? 'Unable to verify session. Please sign in again.' : '')); return; }
+                if (!user) { showLogin(error || (timeout ? 'Unable to verify session. Please sign in again.' : '')); activeAdminUserId = null; return; }
                 const auth = await isAuthorizedAdmin();
                 if (!auth.authorized) { clearTimeout(loadFailsafe); show(deniedPanel); return; }
                 await enterAuthorizedState(user);

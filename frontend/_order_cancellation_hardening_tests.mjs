@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { customerProgressForOrder, mapCustomerOrder } from './js/api.js';
+
+const root = new URL('.', import.meta.url);
+const migration = readFileSync(new URL('../supabase/migrations/20260916134345_admin_unpaid_order_cancellation.sql', root), 'utf8');
+const admin = readFileSync(new URL('./admin.html', root), 'utf8');
+const operations = readFileSync(new URL('./js/operations.js', root), 'utf8');
+const orders = readFileSync(new URL('./orders.html', root), 'utf8');
+
+assert.match(migration, /add column if not exists cancellation_reason/);
+assert.match(migration, /function public\.admin_cancel_customer_order\(p_customer_order_id uuid, p_reason text\)/);
+assert.match(migration, /p_reason not in \('Customer requested cancellation','Payment not received','Item unavailable','Vendor unavailable','Other'\)/);
+assert.match(migration, /v_payment\.status<>'PENDING' or v_order\.status not in \('ORDER_RECEIVED','AWAITING_PAYMENT'\)/);
+assert.match(migration, /v_payment\.status='PAID'.*PAID_ORDER_REQUIRES_REFUND/s);
+assert.match(migration, /v_order\.status='CANCELLED'.*ALREADY_CANCELLED/s);
+assert.match(migration, /set status='CANCELLED',cancellation_reason=p_reason,cancelled_at=now\(\),cancelled_by_user_id=v_actor/);
+assert.match(migration, /values\(v_order\.id,'CANCELLED',v_actor\)/);
+assert.match(migration, /v_parent\.status in \('CANCELLED'/);
+assert.match(migration, /v_payment_status<>'PAID'/);
+assert.ok(migration.indexOf("v_parent.status in ('CANCELLED'") < migration.indexOf("v_child.status=p_target_status"));
+assert.match(migration, /'cancellation_reason',o\.cancellation_reason/);
+assert.match(migration, /revoke all on function public\.admin_cancel_customer_order\(uuid,text\) from public,anon/);
+assert.match(migration, /grant execute on function public\.admin_cancel_customer_order\(uuid,text\) to authenticated,service_role/);
+assert.match(admin, /ops-cancel-order/);
+assert.match(admin, /Cancellation reason/);
+assert.match(admin, /order\.payment_status === 'PAID'/);
+assert.match(operations, /rpc\('admin_cancel_customer_order'/);
+assert.doesNotMatch(operations, /from\('customer_orders'\)[\s\S]{0,300}\.(update|delete)/);
+assert.match(orders, /\["Completed", "Delivered", "Cancelled"\]/);
+assert.match(orders, /order\.rawStatus === 'CANCELLED'/);
+const cancelled = mapCustomerOrder({ order_number: 'CLX-TEST', fulfillment_type: 'PICKUP', status: 'CANCELLED', cancellation_reason: 'Payment not received', total_kobo: 0, orders: [] });
+assert.equal(cancelled.status, 'Cancelled');
+assert.equal(cancelled.cancellationReason, 'Payment not received');
+assert.deepEqual(customerProgressForOrder({ status: 'CANCELLED', fulfillment_type: 'PICKUP' }), { steps: ['Cancelled'], currentStep: 1, isComplete: false, isCancelled: true });
+console.log('ORDER CANCELLATION HARDENING: 24/24 PASS');

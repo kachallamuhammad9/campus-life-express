@@ -26,6 +26,7 @@ tmp/
 temp/
 **/tmp/
 **/temp/
+.qa/
 
 # IDE / editor
 .vscode/
@@ -37,3 +38,12 @@ Thumbs.db
 
 # Supabase CLI local state
 supabase/.temp/
+
+# Local Vercel CLI state, cached builds, browser-test output and embedded test DBs
+frontend/.vercel/
+
+# One-off QA command output (permanent test sources are intentionally not ignored)
+*-run.txt
+*-output.txt
+*-counts-before*.txt
+*.err

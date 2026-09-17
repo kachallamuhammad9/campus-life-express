@@ -1,20 +1,60 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Campus Life Express (CLX)
 
-# Run and deploy your AI Studio app
+## Overview
 
-This contains everything you need to run your app locally.
+Campus Life Express (CLX) is the flagship campus commerce and services platform of Dandalin Sauki LTD. The current pilot serves the University of Maiduguri (UNIMAID).
 
-View your app in AI Studio: https://ai.studio/apps/47a9b7e1-7ea5-4b9e-b9ab-35fa399ec929
+## Core Platform Areas
 
-## Run Locally
+- Food
+- Student Shopping
+- Campus Services
+- Student Marketplace
+- Delivery
 
-**Prerequisites:**  Node.js
+## Current Production Architecture
 
+CLX is a Vite-built, static multi-page web frontend hosted on Vercel. Browser code uses Supabase for the current production backend services:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- Supabase Auth for customer and administrator sessions
+- PostgreSQL for platform, order, payment, fulfilment, and operational data
+- Row Level Security (RLS) for data access boundaries
+- protected RPCs for customer-safe and operational mutations
+- WhatsApp Business handoff for customer and operations communication
+
+The browser uses only public Supabase frontend configuration. Privileged credentials and database access stay outside browser code.
+
+## Important Directories
+
+- `frontend/` — Vite application, pages, build configuration, and frontend package scripts.
+- `frontend/js/` — client modules for Supabase, authentication, catalogue, cart, checkout, orders, and operations.
+- `frontend/css/` — frontend stylesheets.
+- `supabase/migrations/` — canonical, forward-only database schema and RPC evolution.
+- `docs/` — pilot, operations, release, and current-architecture documentation.
+- `clx-backend/` — legacy Express/backend material retained for history and reference; it is not the current production request path.
+
+## Local Development
+
+Run this existing package script from `frontend/`:
+
+```sh
+npm run dev
+```
+
+The development server script uses Vite on port 5173.
+
+## Validation
+
+Run the existing validation scripts from `frontend/`:
+
+```sh
+npm run lint
+npm run build
+npm run test:regression
+```
+
+`npm run test:regression` runs the approved safe local regression set. Browser, production/live, and local database integration suites are intentionally separate.
+
+## Production
+
+Production URL: [https://clx.dandalinsauki.com](https://clx.dandalinsauki.com)

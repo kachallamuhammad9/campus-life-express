@@ -116,7 +116,7 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // ─── Main UI factory ─────────────────────────────────────────────────────────
-export function createAdminProducts(root) {
+export function createAdminProducts(root, { onProductChanged } = {}) {
     let vendors = [], campuses = [], categories = [], products = [];
     let selectedVendorId = '', selectedCampusId = '';
     let busy = false, generation = 0;
@@ -152,7 +152,7 @@ export function createAdminProducts(root) {
       <label>Search <input id="ap-search" type="search"></label>
       <label>Category <select id="ap-category-filter"><option value="">All categories</option></select></label>
       <label>Subcategory <select id="ap-subcategory-filter"><option value="">All subcategories</option></select></label>
-      <label>Stock <select id="ap-stock-filter"><option value="">All stock</option><option value="in">In stock</option><option value="out">Out of stock</option></select></label>
+      <label>Availability <select id="ap-stock-filter"><option value="">All products</option><option value="in">Available</option><option value="out">Out of Stock</option></select></label>
       <button id="ap-refresh" type="button">Refresh</button>
     </div>
     <p id="ap-msg" role="status" style="font-size:13px;color:var(--gray-600);margin:0 0 12px;min-height:18px;"></p>
@@ -360,7 +360,7 @@ export function createAdminProducts(root) {
               <td style="padding:9px 10px;color:var(--gray-600);">${p.stock_quantity != null ? p.stock_quantity : '—'}</td>
               <td style="padding:9px 10px;">
                 <span style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;background:${p.is_in_stock ? 'rgba(21,128,61,0.1)' : 'rgba(220,38,38,0.1)'};color:${p.is_in_stock ? '#15803D' : '#B91C1C'};">
-                  ${p.is_in_stock ? 'In Stock' : 'Out of Stock'}
+                  ${p.is_in_stock ? 'Available' : 'Out of Stock'}
                 </span>
               </td>
               <td style="padding:9px 10px;display:flex;gap:8px;">
@@ -368,7 +368,7 @@ export function createAdminProducts(root) {
                   style="padding:5px 10px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;color:var(--gray-700);font-size:12px;cursor:pointer;">Edit</button>
                 <button type="button" data-toggle-stock="${esc(p.id)}"
                   style="padding:5px 10px;border:1px solid ${p.is_in_stock ? 'rgba(220,38,38,0.3)' : 'rgba(21,128,61,0.3)'};border-radius:7px;background:#fff;color:${p.is_in_stock ? '#B91C1C' : '#15803D'};font-size:12px;cursor:pointer;">
-                  ${p.is_in_stock ? 'Mark Out' : 'Mark In'}
+                  ${p.is_in_stock ? 'Mark Out of Stock' : 'Mark Available'}
                 </button>
               </td>
             </tr>`).join('')}
@@ -390,6 +390,7 @@ export function createAdminProducts(root) {
     root.querySelector('#ap-refresh').addEventListener('click', () => { if (!busy) loadProducts(); });
 
     let editingProductId = null;
+    let editingProduct = null;
     let returnFocus = null;
     function showModal() {
         const overlay = root.querySelector('#ap-modal-overlay');
@@ -422,16 +423,17 @@ export function createAdminProducts(root) {
         showModal();
     }
 
-    function openEditModal(productId) {
-        const product = products.find(p => p.id === productId);
+    function openEditModal(productId, suppliedProduct) {
+        const product = suppliedProduct || products.find(p => p.id === productId);
         if (!product) return;
+        editingProduct = product;
         editingProductId = productId;
         const vendor = vendors.find(v => v.id === selectedVendorId);
         const campus = root.querySelector('#ap-campus-select');
         const campusName = campus.options[campus.selectedIndex]?.text || '';
         root.querySelector('#ap-modal-title').textContent = 'Edit Product';
         root.querySelector('#ap-form-vendor-info').innerHTML =
-            `Vendor: ${esc(vendor?.name || '—')} · Campus: ${esc(campusName)} ` +
+            `Vendor: ${esc(product.vendors?.name || vendor?.name || '—')} · Campus: ${esc(product.campuses?.name || campusName)} ` +
             `<span style="font-size:11px;color:var(--gray-500);">(vendor &amp; campus are immutable)</span>`;
         root.querySelector('#ap-f-name').value = product.name || '';
         root.querySelector('#ap-f-description').value = product.description || '';
@@ -455,6 +457,7 @@ export function createAdminProducts(root) {
         for (const child of root.children) child.inert = false;
         if (returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
         editingProductId = null;
+        editingProduct = null;
         showError('');
     }
 
@@ -486,18 +489,19 @@ export function createAdminProducts(root) {
             const product = products.find(p => p.id === toggleId);
             if (!product) return;
             const confirm = window.confirm(
-                `${product.is_in_stock ? 'Mark out of stock' : 'Mark in stock'}: "${product.name}"?`
+                `${product.is_in_stock ? 'Mark Out of Stock' : 'Mark Available'}: "${product.name}"?`
             );
             if (!confirm) return;
             const ver = generation;
             busy = true;
-            msg('Updating stock…');
+            msg('Updating availability…');
             const patch = { is_in_stock: !product.is_in_stock };
             const result = await adminUpdateProduct(toggleId, patch);
             if (ver !== generation) return;
             busy = false;
             if (!result.success) { msg(result.error || 'Failed to update stock.'); return; }
             await loadProducts();
+            await onProductChanged?.();
         }
     });
 
@@ -563,7 +567,7 @@ export function createAdminProducts(root) {
                 is_in_stock: isInStock,
                 stock_quantity: stockQty,
             };
-            const original = products.find(p => p.id === editingProductId);
+            const original = editingProduct;
             for (const key of Object.keys(patch)) {
                 if (patch[key] === (original?.[key] ?? null)) delete patch[key];
             }
@@ -592,7 +596,23 @@ export function createAdminProducts(root) {
         if (!result.success) { showError(result.error || 'Operation failed.'); return; }
         closeModal();
         await loadProducts();
+        await onProductChanged?.();
     });
+
+    // Reuse this editor from the operational lifecycle rows, without requiring filters.
+    async function editProduct(productId) {
+        if (busy) return;
+        const ver = generation;
+        const [{ data, error }, loadedCategories] = await Promise.all([
+            client.from('products').select('*,vendors(name),campuses(name)').eq('id', productId).single(),
+            fetchCategories(client),
+        ]);
+        if (ver !== generation) return;
+        if (error) throw error;
+        if (!data) throw new Error('Product not found.');
+        categories = loadedCategories;
+        openEditModal(productId, data);
+    }
 
     // ── Initialize metadata ──
     async function init() {
@@ -618,5 +638,5 @@ export function createAdminProducts(root) {
         msg('');
     }
 
-    return { init, reset };
+    return { init, reset, editProduct, refresh: loadProducts };
 }

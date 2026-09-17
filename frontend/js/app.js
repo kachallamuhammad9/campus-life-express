@@ -5,6 +5,7 @@
 
 import { CLX_CONFIG, CAMPUSES, CATEGORIES } from './data.js';
 import { api } from './api.js';
+import { onAuthChange, updateAuthNavigation } from './auth.js';
 
 // ==================================================
 // UTILITIES & HELPERS
@@ -37,6 +38,47 @@ export const Utils = {
         }, 3200);
     }
 };
+
+export function trackGA4Event(eventName, params = {}) {
+    try {
+        if (typeof window.gtag === "function") {
+            window.gtag("event", eventName, params);
+        }
+    } catch {
+        // Analytics must never interrupt the customer journey.
+    }
+}
+
+export function analyticsValue(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
+}
+
+export function analyticsItem(item, quantity = 1) {
+    const price = analyticsValue(item?.price);
+    const safeQuantity = Number(quantity);
+    if (!item?.id || !item?.name || !Number.isFinite(safeQuantity)) return null;
+
+    return {
+        item_id: String(item.id),
+        item_name: String(item.name),
+        ...(item.vendorName ? { item_brand: String(item.vendorName) } : {}),
+        price,
+        quantity: safeQuantity
+    };
+}
+
+export function analyticsCartItems(items) {
+    return (Array.isArray(items) ? items : [])
+        .map(item => analyticsItem(item, item.quantity))
+        .filter(Boolean);
+}
+
+export function analyticsCartValue(items) {
+    return (Array.isArray(items) ? items : []).reduce((sum, item) => {
+        return sum + analyticsValue(item?.price) * analyticsValue(item?.quantity);
+    }, 0);
+}
 
 // ==================================================
 // CAMPUS MANAGER
@@ -282,6 +324,15 @@ export const CartManager = {
                     };
                     this.addItem(item);
                 }
+
+                const checkoutBtn = e.target.closest("#cart-checkout-btn");
+                if (checkoutBtn && this.items.length > 0) {
+                    trackGA4Event("begin_checkout", {
+                        currency: "NGN",
+                        value: analyticsCartValue(this.items),
+                        items: analyticsCartItems(this.items)
+                    });
+                }
             });
         }
     },
@@ -312,14 +363,26 @@ export const CartManager = {
         this.save();
         this.updateUI();
         Utils.showToast(`Added "${item.name}" to cart`);
+        trackGA4Event("add_to_cart", {
+            currency: "NGN",
+            value: analyticsValue(item.price),
+            items: [analyticsItem(item, 1)].filter(Boolean)
+        });
         this.open();
     },
 
     async removeItem(id) {
         // MVP: local cart only (server cart sync deferred)
+        const removedItem = this.items.find(item => item.id === id);
+        if (!removedItem) return;
         this.items = this.items.filter(i => i.id !== id);
         this.save();
         this.updateUI();
+        trackGA4Event("remove_from_cart", {
+            currency: "NGN",
+            value: analyticsValue(removedItem.price) * analyticsValue(removedItem.quantity),
+            items: [analyticsItem(removedItem, removedItem.quantity)].filter(Boolean)
+        });
     },
 
     async updateQuantity(id, delta) {
@@ -379,11 +442,13 @@ export const CartManager = {
     },
 
     getDeliveryFee() {
-        return this.items.length > 0 ? 400 : 0;
+        // Checkout defaults to Pickup. The selected checkout method calculates
+        // the flat ₦200 delivery charge; the cart must not pre-charge it.
+        return 0;
     },
 
     getServiceFee() {
-        return this.items.length > 0 ? 100 : 0;
+        return 0;
     },
 
     getTotal() {
@@ -485,6 +550,13 @@ export const CartManager = {
             this.overlay.style.opacity = "1";
             this.overlay.style.visibility = "visible";
             this.overlay.style.pointerEvents = "auto";
+        }
+        if (this.items.length > 0) {
+            trackGA4Event("view_cart", {
+                currency: "NGN",
+                value: analyticsCartValue(this.items),
+                items: analyticsCartItems(this.items)
+            });
         }
     },
 
@@ -680,6 +752,8 @@ function initCLXApp() {
     CartManager.init();
     SearchController.init();
     AuthManager.init();
+    updateAuthNavigation();
+    onAuthChange(() => updateAuthNavigation());
 
     // Mobile nav toggle
     const mobileToggle = document.getElementById("mobile-toggle");

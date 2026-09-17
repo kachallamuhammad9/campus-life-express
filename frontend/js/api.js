@@ -1,3 +1,4 @@
+import { isRefundOrder } from './order-refunds.js';
 /**
  * Campus Life Express (CLX 2.0) - Production API Client Layer
  * Supabase-first MVP client layer. Retired Express endpoints are inert.
@@ -146,12 +147,103 @@ const normalizeOrder = (o) => {
     };
 };
 
+export function customerProgressForOrder(order) {
+    const status = String(order?.status || 'ORDER_RECEIVED');
+    if (isRefundOrder(status)) return { steps: [status === 'REFUNDED' ? 'Refunded' : 'Refund Pending'], currentStep: 1, isComplete: false, isRefund: true };
+    if (status === 'CANCELLED') return { steps: ['Cancelled'], currentStep: 1, isComplete: false, isCancelled: true };
+    const delivery = Array.isArray(order?.delivery_requests) ? order.delivery_requests[0] : order?.delivery_requests;
+    const deliveryStatus = String(order?.delivery_status || delivery?.status || '');
+    const isPickup = order?.fulfillment_type === 'PICKUP';
+    const steps = isPickup
+        ? ['Submitted', 'Confirmed', 'Preparing', 'Ready for Pickup', 'Completed']
+        : ['Submitted', 'Confirmed', 'Preparing', 'Out for Delivery', 'Completed'];
+    let currentStep = 1;
+    if (['PAYMENT_CONFIRMED', 'ORDER_CONFIRMED'].includes(status)) currentStep = 2;
+    if (status === 'PREPARING') currentStep = 3;
+    if (isPickup && ['READY_FOR_PICKUP', 'READY'].includes(status)) currentStep = 4;
+    if (!isPickup && ['READY_FOR_DISPATCH', 'RIDER_ASSIGNED'].includes(status)) currentStep = 3;
+    // "Out for Delivery" is a transport milestone, not a rider-pickup milestone.
+    // Keep the legacy parent status fallback so historic orders remain readable.
+    if (!isPickup && (deliveryStatus === 'IN_TRANSIT' || status === 'OUT_FOR_DELIVERY')) currentStep = 4;
+    if (['DELIVERED', 'COMPLETED'].includes(status)) currentStep = 5;
+    return { steps, currentStep, isComplete: status === 'COMPLETED' };
+}
+
+export function customerStatusForOrder(order) {
+    const status = String(order?.status || 'ORDER_RECEIVED');
+    if (isRefundOrder(status)) return status === 'REFUNDED' ? 'Refunded' : 'Refund Pending';
+    const delivery = Array.isArray(order?.delivery_requests) ? order.delivery_requests[0] : order?.delivery_requests;
+    const deliveryStatus = String(order?.delivery_status || delivery?.status || '');
+    if (order?.fulfillment_type === 'DELIVERY') {
+        if (status === 'COMPLETED') return 'Completed';
+        if (status === 'DELIVERED' || deliveryStatus === 'DELIVERED') return 'Delivered';
+        if (deliveryStatus === 'IN_TRANSIT' || status === 'OUT_FOR_DELIVERY') return 'Out for Delivery';
+        if (['READY_FOR_DISPATCH', 'RIDER_ASSIGNED'].includes(status) || ['REQUESTED', 'ACCEPTED', 'PICKED_UP'].includes(deliveryStatus)) return 'Ready for Dispatch';
+    }
+    return status.split('_').map((word) => word[0] + word.slice(1).toLowerCase()).join(' ');
+}
+
 /**
  * Retained legacy API surface. It intentionally performs no network request:
  * the MVP uses public Supabase catalogue reads and customer-order RPCs only.
  */
 async function fetchJson(endpoint, options = {}) {
     return { success: false, status: 410, error: { code: 'RETIRED_API', message: 'This legacy CLX feature is not available in the current MVP.' }, data: null };
+}
+
+// Customer-order cards deliberately use the public CLX reference, never the
+// database UUID. Vendor names are taken from the live vendor relation when it
+// is available, with the immutable checkout snapshot as a historical fallback.
+export function mapCustomerOrder(order) {
+    const payment = Array.isArray(order.customer_order_payments) ? order.customer_order_payments[0] : order.customer_order_payments;
+    const vendorOrders = Array.isArray(order.orders) ? order.orders : [];
+    const vendorGroups = vendorOrders.map((vendorOrder) => {
+        const items = (vendorOrder.order_items || []).map((item) => ({
+            name: item.product_name_snapshot || 'Item',
+            quantity: Number(item.quantity || 0),
+            unitPriceKobo: Number(item.unit_price_kobo || 0),
+            lineTotalKobo: Number(item.total_price_kobo || 0),
+            vendorName: item.vendor_name_snapshot || vendorOrder.vendor?.name || 'Vendor'
+        }));
+        return { vendorName: vendorOrder.vendor?.name || items[0]?.vendorName || 'Vendor', items };
+    });
+    const items = vendorGroups.flatMap((group) => group.items);
+    const vendorNames = [...new Set(vendorOrders.flatMap((vendorOrder) => {
+        const liveName = String(vendorOrder.vendor?.name || '').trim();
+        const snapshotNames = (vendorOrder.order_items || []).map((item) => item.vendor_name_snapshot);
+        return (liveName ? [liveName] : snapshotNames)
+            .map((name) => String(name || '').trim())
+            .filter(Boolean);
+    }))];
+    const orderNumber = String(order.order_number || '').trim();
+    const delivery = Array.isArray(order.delivery_requests) ? order.delivery_requests[0] : order.delivery_requests;
+    const customerOrder = { ...order, delivery_status: delivery?.status || null };
+    const progress = customerProgressForOrder(customerOrder);
+    return {
+        // The UUID remains in state only for authenticated payment lookups.
+        id: order.id,
+        orderNumber: orderNumber || null,
+        referenceLabel: orderNumber ? `Order #${orderNumber}` : 'Order details',
+        type: 'order',
+        title: items.length === 1 ? items[0].name : `${items.length} items`,
+        vendor: vendorNames.length ? vendorNames.join(' • ') : 'Vendor details unavailable',
+        total: Number(order.total_kobo || 0) / 100,
+        status: customerStatusForOrder(customerOrder),
+        rawStatus: order.status,
+        statusStep: progress.currentStep,
+        progressSteps: progress.steps,
+        progressComplete: progress.isComplete,
+        date: order.created_at ? new Date(order.created_at).toLocaleDateString() : '',
+        fulfillment: order.fulfillment_type === 'PICKUP' ? 'Pickup' : 'Delivery',
+        paymentMethod: payment?.payment_method || 'Payment method unavailable',
+        paymentStatus: payment ? payment.status : 'Payment status unavailable',
+        refund: order.refund ? { status: order.refund.status, reason: order.refund.reason, amount_kobo: order.refund.amount_kobo, requested_at: order.refund.requested_at, confirmed_at: order.refund.confirmed_at } : null,
+        cancellationReason: order.cancellation_reason || null,
+        cancelledAt: order.cancelled_at || null,
+        vendorOrders,
+        vendorGroups,
+        items
+    };
 }
 
 export const api = {
@@ -803,6 +895,27 @@ export const api = {
     // ORDERS (/api/v1/orders)
     // ----------------------------------------------------
     orders: {
+        async listCustomerOrders(userId) {
+            const client = getSupabaseClient();
+            if (!client || !userId) return { success: false, error: { code: 'AUTH_REQUIRED', message: 'Please sign in to view your orders.' } };
+            const result = await supabaseQuery(
+                (sb) => sb.from('customer_orders')
+                    .select('id,order_number,fulfillment_type,total_kobo,status,created_at,delivery_location,cancellation_reason,cancelled_at,customer_order_payments(payment_method,status),delivery_requests(status),orders(id,status,vendor_group_number,vendor:vendors(name),order_items(product_name_snapshot,vendor_name_snapshot,quantity,unit_price_kobo,total_price_kobo,currency_code))')
+                    .eq('customer_user_id', userId)
+                    .order('created_at', { ascending: false }),
+                'customer_orders.list'
+            );
+            if (!result.success) return result;
+            const rows = result.data || [];
+            const references = rows.filter(order => isRefundOrder(order.status)).map(order => order.order_number);
+            const refunds = new Map();
+            for (let offset = 0; offset < references.length; offset += 200) {
+                const response = await supabaseQuery(sb => sb.rpc('get_customer_order_refunds', { p_order_numbers: references.slice(offset, offset + 200) }), 'customer_orders.refunds');
+                if (!response.success) return response;
+                for (const entry of response.data || []) refunds.set(entry.order_number, entry.refund);
+            }
+            return { success: true, source: 'supabase', data: rows.map(order => mapCustomerOrder({ ...order, refund: refunds.get(order.order_number) || null })) };
+        },
         async getCheckoutCampus(campusRef) {
             const live = await supabaseQuery(
                 (sb) => sb.from('campuses').select('id, slug, name, short_name').eq('slug', campusRef).eq('is_active', true).maybeSingle(),
@@ -827,6 +940,7 @@ export const api = {
                     p_payment_method: order.paymentMethod,
                     p_delivery_location: order.deliveryLocation,
                     p_delivery_zone_id: order.deliveryZoneId,
+                    p_nearest_landmark: order.nearestLandmark,
                     p_notes: order.notes
                 }),
                 'customer_order.create'

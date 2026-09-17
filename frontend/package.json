@@ -7,7 +7,8 @@
     "dev": "vite --port 5173 --host",
     "build": "vite build",
     "preview": "vite preview --port 3000",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:regression": "node tests/run-regression.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",

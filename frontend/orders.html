@@ -121,13 +121,19 @@
                         <label for="chk-name" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Customer Name *</label>
                         <input type="text" id="chk-name" required placeholder="e.g. Aisha Mohammed" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
                     </div>
-                    <div id="chk-zone-field" style="display:none;">
-                        <label for="chk-zone" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Delivery Zone *</label>
-                        <select id="chk-zone" disabled style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;"><option value="">Loading delivery zones...</option></select>
+                    <div id="chk-landmark-field" style="display:none;">
+                        <label for="chk-landmark" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Nearest Landmark *</label>
+                        <select id="chk-landmark" disabled style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;background:#fff;">
+                            <option value="">Select nearest landmark</option>
+                            <option>Acada</option><option>Park</option><option>Male Hostels</option><option>Female Hostels</option>
+                            <option>Joints</option><option>Complex Area</option><option>Remedial Studies</option><option>Faculties</option>
+                            <option>Commercial Area</option><option>Postgraduate School</option><option>UNIMAID Garden</option><option>El-Kanemi Hall</option>
+                            <option>Student Centre</option><option>NUGA</option><option>Senate Building</option><option>Other</option>
+                        </select>
                     </div>
                     <div id="chk-location-field" style="display:none;">
-                        <label for="chk-location" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Delivery Location *</label>
-                        <input type="text" id="chk-location" disabled placeholder="e.g. Hostel B Room 18 / FASS building" style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:10px;padding:0 14px;font-size:14px;">
+                        <label for="chk-location" style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Exact Delivery Location *</label>
+                        <textarea id="chk-location" disabled required placeholder="e.g. Faculty of Basic Medical Sciences, Nutrition &amp; Dietetics Department" style="width:100%;min-height:88px;border:1px solid var(--gray-300);border-radius:10px;padding:10px 14px;font-size:14px;resize:vertical;box-sizing:border-box;"></textarea>
                     </div>
                     <div>
                         <label style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:4px;">Phone Number *</label>
@@ -258,8 +264,9 @@
 
     <!-- Scripts -->
     <script type="module">
+        import { isRefundOrder, renderCustomerRefund } from './js/order-refunds.js';
         import { api } from './js/api.js';
-        import { Utils, CampusManager, CartManager } from './js/app.js';
+        import { Utils, CampusManager, CartManager, trackGA4Event, analyticsValue } from './js/app.js';
         import { buildCustomerOrderItems, buildTrackingTimeline, buildWhatsAppOrderUrl, customerStatusLabel, formatKobo, getSavedTrackingOrders, paymentStatusLabel, saveTrackingOrder } from './js/customer-orders.js';
 
         let allOrders = [];
@@ -268,10 +275,20 @@
         async function loadOrders() {
             const container = document.getElementById("orders-list-container");
             if (!container) return;
-
-            // Customer orders are tracked by the secure Supabase RPC below.
-            // Do not query the retired Express order or delivery APIs on page load.
-            allOrders = [];
+            const { getCurrentUser } = await import('./js/auth.js');
+            const user = await getCurrentUser();
+            if (!user) return;
+            const result = await api.orders.listCustomerOrders(user.id);
+            // A previous user's request must not paint after an account switch.
+            const currentUser = await getCurrentUser();
+            if (!currentUser || currentUser.id !== user.id) return;
+            if (!result.success) {
+                console.warn('[CLX Orders] Unable to load authenticated orders:', result.error?.message || 'Unknown error');
+                allOrders = [];
+                renderOrdersList();
+                return;
+            }
+            allOrders = result.data;
             renderOrdersList();
         }
 
@@ -280,7 +297,7 @@
             let filtered = allOrders;
 
             if (activeFilter === "active") {
-                filtered = allOrders.filter(o => o.status !== "Completed" && o.status !== "Delivered");
+                filtered = allOrders.filter(o => !["Completed", "Delivered", "Cancelled"].includes(o.status));
             } else if (activeFilter === "completed") {
                 filtered = allOrders.filter(o => o.status === "Completed" || o.status === "Delivered");
             }
@@ -297,16 +314,15 @@
                 return;
             }
 
-            const stepLabels = ["Submitted", "Confirmed", "Processing", "Out for Delivery", "Completed"];
-
             container.innerHTML = filtered.map(order => {
-                const currentStep = order.statusStep || 2;
+                const currentStep = order.statusStep || 1;
+                const stepLabels = order.progressSteps || ["Submitted", "Confirmed", "Preparing", "Out for Delivery", "Completed"];
                 return `
                     <div style="background:#fff;border-radius:20px;padding:24px;border:1px solid var(--gray-200);box-shadow:0 4px 15px rgba(0,0,0,0.03);">
                         <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
                             <div>
                                 <div style="display:inline-block;font-size:11px;font-weight:700;color:var(--color-primary);background:rgba(0,31,127,0.08);padding:3px 8px;border-radius:6px;margin-bottom:6px;">
-                                    ${order.id} • ${order.type.toUpperCase()}
+                                    ${order.referenceLabel}
                                 </div>
                                 <h3 style="font-size:17px;font-weight:700;color:var(--gray-900);margin:0 0 4px;">${order.title || 'Campus Order'}</h3>
                                 <div style="font-size:13px;color:var(--gray-500);">${order.vendor || 'Campus Merchant'} • ${order.fulfillment || 'Campus Delivery'} • ${order.date}</div>
@@ -316,17 +332,15 @@
                                 <span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:${order.status === 'Completed' ? 'rgba(22,163,74,0.1)' : 'rgba(0,31,127,0.1)'};color:${order.status === 'Completed' ? 'var(--color-success)' : 'var(--color-primary)'};margin-top:4px;">
                                     ${order.status}
                                 </span>
-                                <div style="margin-top:8px;font-size:12px;color:var(--gray-500);">Payment: ${order.paymentStatus || 'PENDING'}</div>
-                                <button type="button" class="payment-status-btn" data-order-id="${order.id}" style="margin-top:6px;padding:5px 9px;border:1px solid var(--gray-300);border-radius:7px;background:#fff;color:var(--gray-700);font-size:11px;cursor:pointer;">View payment</button>
+                                <div style="margin-top:8px;font-size:12px;color:var(--gray-500);">Payment: ${order.paymentStatus}</div>
                             </div>
                         </div>
 
-                        <!-- 5-Stage Status Pipeline -->
-                        <div class="order-status-steps">
+                        ${isRefundOrder(order.rawStatus) ? renderCustomerRefund(order.rawStatus, order.refund) : order.rawStatus === 'CANCELLED' ? `<div style="margin:14px 0;padding:12px;border-radius:10px;background:rgba(220,38,38,0.08);color:#991B1B;font-size:13px;"><strong>Cancelled</strong>${order.cancellationReason ? ` · ${order.cancellationReason}` : ''}</div>` : `<div class="order-status-steps">
                             ${stepLabels.map((label, idx) => {
                                 const stepNum = idx + 1;
-                                const isCompleted = stepNum < currentStep || order.status === "Completed";
-                                const isActive = stepNum === currentStep && order.status !== "Completed";
+                                const isCompleted = stepNum < currentStep || order.progressComplete;
+                                const isActive = stepNum === currentStep && !order.progressComplete;
                                 return `
                                     <div class="status-step-node ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
                                         <div class="status-step-circle">
@@ -336,15 +350,17 @@
                                     </div>
                                 `;
                             }).join('')}
-                        </div>
+                        </div>`}
+                        <details style="margin-top:18px;border-top:1px solid var(--gray-100);padding-top:14px;">
+                            <summary style="cursor:pointer;font-size:13px;font-weight:700;color:var(--color-primary);">View all items (${order.items?.length || 0})</summary>
+                            ${(order.vendorGroups || []).map(group => `<div style="margin-top:12px;"><strong style="font-size:13px;color:var(--gray-900);">${group.vendorName}</strong><div style="margin-top:5px;display:grid;gap:5px;">${group.items.map(item => `<div style="display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;font-size:12px;color:var(--gray-600);"><span>${item.name} ×${item.quantity}</span><span>${Utils.formatPrice(item.unitPriceKobo / 100)}</span><strong style="color:var(--gray-800);">${Utils.formatPrice(item.lineTotalKobo / 100)}</strong></div>`).join('')}</div></div>`).join('') || '<p style="font-size:13px;color:var(--gray-500);">Item details are unavailable.</p>'}
+                        </details>
                     </div>
                 `;
             }).join('');
         }
 
         let checkoutCampus = null;
-        let deliveryZones = [];
-
         function renderCheckoutSummary() {
             const summaryEl = document.getElementById("checkout-summary");
             if (!summaryEl) return;
@@ -356,8 +372,9 @@
             const groups = CartManager.getVendorGroups();
             const fulfillment = document.getElementById("chk-fulfillment")?.value || "pickup";
             const productsSubtotal = CartManager.getSubtotal();
-            const selectedZone = deliveryZones.find(zone => zone.id === document.getElementById("chk-zone")?.value);
-            const deliveryEstimate = fulfillment === "delivery" && selectedZone ? Number(selectedZone.base_delivery_fee_kobo || 0) / 100 : 0;
+            const deliveryEstimate = fulfillment === "delivery" ? 200 : 0;
+            const landmark = document.getElementById("chk-landmark")?.value || "";
+            const exactLocation = document.getElementById("chk-location")?.value.trim() || "";
 
             summaryEl.innerHTML = `
                 <h4 style="font-size:14px;font-weight:700;margin:0 0 12px;color:var(--gray-900);">Order Summary</h4>
@@ -383,10 +400,11 @@
                         <span>Products subtotal</span><span style="font-weight:600;">${Utils.formatPrice(productsSubtotal)}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;padding:3px 0;color:var(--gray-700);">
-                        <span>Delivery fee${fulfillment === "pickup" ? " (pickup)" : " estimate"}</span><span style="font-weight:600;">${Utils.formatPrice(deliveryEstimate)}</span>
+                        <span>Delivery Fee</span><span style="font-weight:600;">${Utils.formatPrice(deliveryEstimate)}</span>
                     </div>
+                    ${fulfillment === "delivery" ? `<div style="display:grid;gap:3px;padding:6px 0;color:var(--gray-700);"><span>Fulfilment: <strong>Delivery</strong></span><span>Nearest Landmark: <strong>${landmark || "Not selected"}</strong></span><span>Exact Delivery Location: <strong>${exactLocation || "Not entered"}</strong></span></div>` : '<div style="padding:6px 0;color:var(--gray-700);">Fulfilment: <strong>Pickup</strong></div>'}
                     <div style="display:flex;justify-content:space-between;padding:8px 0 0;margin-top:6px;border-top:1px solid var(--gray-200);font-size:15px;font-weight:800;color:var(--color-primary);">
-                        <span>Items total</span><span>${Utils.formatPrice(productsSubtotal)}</span>
+                        <span>Grand Total</span><span>${Utils.formatPrice(productsSubtotal + deliveryEstimate)}</span>
                     </div>
                 </div>
             `;
@@ -394,16 +412,16 @@
 
         function updateFulfillmentFields() {
             const isDelivery = document.getElementById("chk-fulfillment")?.value === "delivery";
-            const zone = document.getElementById("chk-zone");
+            const landmark = document.getElementById("chk-landmark");
             const location = document.getElementById("chk-location");
-            document.getElementById("chk-zone-field").style.display = isDelivery ? "block" : "none";
+            document.getElementById("chk-landmark-field").style.display = isDelivery ? "block" : "none";
             document.getElementById("chk-location-field").style.display = isDelivery ? "block" : "none";
-            zone.required = isDelivery;
+            landmark.required = isDelivery;
             location.required = isDelivery;
-            zone.disabled = !isDelivery;
+            landmark.disabled = !isDelivery;
             location.disabled = !isDelivery;
             if (!isDelivery) {
-                zone.value = "";
+                landmark.value = "";
                 location.value = "";
             }
             renderCheckoutSummary();
@@ -412,10 +430,6 @@
         async function loadCheckoutContext() {
             checkoutCampus = await api.orders.getCheckoutCampus(api.campuses.getSelectedCampus());
             if (!checkoutCampus.success) return;
-            const zones = await api.campuses.getDeliveryZones(checkoutCampus.data.id);
-            deliveryZones = zones.success ? zones.data : [];
-            const zoneSelect = document.getElementById("chk-zone");
-            zoneSelect.innerHTML = `<option value="">Select a delivery zone</option>${deliveryZones.map(zone => `<option value="${zone.id}">${zone.name} (${formatKobo(zone.base_delivery_fee_kobo)})</option>`).join("")}`;
             document.getElementById("chk-fulfillment").value = "pickup";
             updateFulfillmentFields();
         }
@@ -437,13 +451,27 @@
             const timeline = buildTrackingTimeline(order);
             const delivery = order.fulfillment_type === 'DELIVERY' ? `<div style="margin-top:12px;font-size:13px;color:var(--gray-700);">Delivery: ${customerStatusLabel(order.delivery_status || 'REQUESTED')}${order.rider_name ? ` · Rider: ${order.rider_name}` : ''}</div>` : '';
             const history = timeline.length ? `<ol style="margin:12px 0 0;padding-left:20px;font-size:13px;color:var(--gray-700);">${timeline.map((entry) => `<li style="padding:3px 0;"><strong>${entry.label}</strong>${entry.timestamp ? ` <span style="color:var(--gray-500);">${entry.timestamp}</span>` : ''}</li>`).join('')}</ol>` : '';
-            result.innerHTML = `<div style="border-top:1px solid var(--gray-200);padding-top:15px;"><strong style="color:var(--color-primary);">${order.order_number}</strong><span style="font-size:13px;color:var(--gray-600);"> · ${customerStatusLabel(order.status)} · ${paymentStatusLabel(order.payment_status)}</span>${delivery}${history}${(order.vendor_groups || []).map(group => `<div style="margin-top:12px;font-size:13px;"><strong>${group.vendor_name}</strong> · ${customerStatusLabel(group.status)}${(group.items || []).map(item => `<div style="color:var(--gray-600);padding-top:4px;">${item.product_name} x ${item.quantity} · ${formatKobo(item.line_total_kobo)}</div>`).join("")}</div>`).join("")}</div>`;
+            const cancellation = order.status === 'CANCELLED' ? `<div style="margin-top:12px;padding:10px;border-radius:8px;background:rgba(220,38,38,0.08);color:#991B1B;font-size:13px;"><strong>Cancelled</strong>${order.cancellation_reason ? ` · ${order.cancellation_reason}` : ''}</div>` : '';
+            result.innerHTML = `<div style="border-top:1px solid var(--gray-200);padding-top:15px;"><strong style="color:var(--color-primary);">${order.order_number}</strong><span style="font-size:13px;color:var(--gray-600);"> · ${customerStatusLabel(order.status)} · ${paymentStatusLabel(order.payment_status)}</span>${renderCustomerRefund(order.status, order.refund)}${cancellation}${delivery}${history}${(order.vendor_groups || []).map(group => `<div style="margin-top:12px;font-size:13px;"><strong>${group.vendor_name}</strong> · ${customerStatusLabel(group.status)}${(group.items || []).map(item => `<div style="color:var(--gray-600);padding-top:4px;">${item.product_name} x ${item.quantity} · ${formatKobo(item.line_total_kobo)}</div>`).join("")}</div>`).join("")}</div>`;
         }
 
-        function renderConfirmation(response, customer, campusName) {
+        function renderConfirmation(response, customer, campusName, handoffItems) {
             const confirmation = document.getElementById("customer-order-confirmation");
             const whatsappUrl = buildWhatsAppOrderUrl(response, customer, campusName);
             confirmation.innerHTML = `<div style="display:flex;gap:12px;align-items:flex-start;"><i class="fa-solid fa-circle-check" style="font-size:32px;color:#16A34A;"></i><div><div style="font-size:13px;color:#15803D;font-weight:700;">ORDER RECEIVED</div><h2 style="margin:3px 0;color:var(--gray-900);font-size:24px;">${response.order_number}</h2><p style="margin:0;color:var(--gray-600);font-size:14px;">${customerStatusLabel(response.fulfillment_type)} · Payment: Awaiting Payment</p></div></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:18px 0;font-size:13px;"><span>Subtotal<br><strong>${formatKobo(response.subtotal_kobo)}</strong></span><span>Delivery<br><strong>${formatKobo(response.delivery_fee_kobo)}</strong></span><span>Service fee<br><strong>${formatKobo(response.service_fee_kobo)}</strong></span><span>Total<br><strong>${formatKobo(response.total_kobo)}</strong></span></div><p style="font-size:13px;color:var(--gray-600);">Payment is not automatically confirmed. Send your confirmed order details to CLX on WhatsApp at ${window.CLX.config.supportPhone}. A CLX agent will provide and confirm official payment instructions.</p><a href="${whatsappUrl}" target="_blank" rel="noopener" class="btn" style="display:inline-block;background:#25D366;color:#fff;"><i class="fa-brands fa-whatsapp"></i> Continue Order on WhatsApp</a>`;
+            const whatsappButton = confirmation.querySelector("a[href^='https://wa.me/']");
+            whatsappButton?.addEventListener("click", () => {
+                const items = handoffItems;
+                trackGA4Event("whatsapp_order_handoff", {
+                    fulfillment_type: String(response.fulfillment_type || "").toLowerCase(),
+                    currency: "NGN",
+                    value: analyticsValue(response.total_kobo) / 100,
+                    item_count: items.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+                    vendor_count: new Set(items.map(item => item.vendorId || "v-general")).size,
+                    campus: String(api.campuses.getSelectedCampus() || ""),
+                    source: "checkout"
+                });
+            });
             confirmation.style.display = "block";
             confirmation.scrollIntoView({ behavior: "smooth", block: "start" });
         }
@@ -462,7 +490,8 @@
             await loadCheckoutContext();
             const fulfillmentSelect = document.getElementById("chk-fulfillment");
             if (fulfillmentSelect) fulfillmentSelect.addEventListener("change", updateFulfillmentFields);
-            document.getElementById("chk-zone")?.addEventListener("change", renderCheckoutSummary);
+            document.getElementById("chk-landmark")?.addEventListener("change", renderCheckoutSummary);
+            document.getElementById("chk-location")?.addEventListener("input", renderCheckoutSummary);
             window.addEventListener("clx:campus-changed", loadCheckoutContext);
             renderRecentOrders();
 
@@ -500,6 +529,10 @@
                         phone: document.getElementById("chk-phone").value.trim(),
                         notes: document.getElementById("chk-note").value.trim()
                     };
+                    if (fulfillmentType === "DELIVERY" && (!document.getElementById("chk-landmark").value || !document.getElementById("chk-location").value.trim())) {
+                        Utils.showToast("Select a nearest landmark and enter the exact delivery location.", "error");
+                        return;
+                    }
                     let payload;
                     try {
                         payload = {
@@ -510,7 +543,8 @@
                             customerPhone: customer.phone,
                             paymentMethod: document.getElementById("chk-payment").value === "cod" ? "CASH_ON_DELIVERY" : "BANK_TRANSFER",
                             deliveryLocation: fulfillmentType === "DELIVERY" ? document.getElementById("chk-location").value.trim() : null,
-                            deliveryZoneId: fulfillmentType === "DELIVERY" ? document.getElementById("chk-zone").value || null : null,
+                            deliveryZoneId: null,
+                            nearestLandmark: fulfillmentType === "DELIVERY" ? document.getElementById("chk-landmark").value || null : null,
                             notes: customer.notes || null
                         };
                     } catch (error) {
@@ -543,10 +577,10 @@
                         return;
                     }
                     saveTrackingOrder({ orderNumber: orderResult.data.order_number, trackingToken: orderResult.data.tracking_token });
+                    const handoffItems = CartManager.items.slice();
                     await CartManager.clear();
                     document.getElementById("checkout-box").style.display = "none";
-                    const selectedZone = deliveryZones.find((zone) => zone.id === payload.deliveryZoneId);
-                    renderConfirmation({ ...orderResult.data, delivery_location: payload.deliveryLocation, delivery_zone_name: selectedZone?.name || null }, customer, checkoutCampus.data.name);
+                    renderConfirmation({ ...orderResult.data, delivery_location: payload.deliveryLocation, nearest_landmark: payload.nearestLandmark }, customer, checkoutCampus.data.name, handoffItems);
                     renderRecentOrders();
                     Utils.showToast("Order received. Payment is awaiting confirmation.");
                 });
@@ -570,6 +604,25 @@
             document.addEventListener("DOMContentLoaded", initOrdersPage);
         } else {
             initOrdersPage();
+        }
+    </script>
+    <script type="module">
+        import { getSupabaseClient } from './js/supabase.js';
+        import { getCurrentUser, loadProfile, requireAuth } from './js/auth.js';
+        const checkoutMode = new URLSearchParams(location.search).get('checkout') === 'direct';
+        const user = checkoutMode ? await getCurrentUser() : await requireAuth();
+        if (user) {
+            const profile = await loadProfile();
+            const nameInput = document.getElementById('chk-name');
+            const phoneInput = document.getElementById('chk-phone');
+            if (nameInput && profile?.full_name) nameInput.value = profile.full_name;
+            if (phoneInput && profile?.phone_number) phoneInput.value = profile.phone_number;
+            const supabase = null;
+            const { data: orders } = supabase ? await supabase.from('customer_orders').select('order_number,fulfillment_type,total_kobo,status,created_at').eq('customer_user_id', user.id).order('created_at', { ascending: false }) : { data: [] };
+            const container = document.getElementById('orders-list-container');
+            if (false && container && Array.isArray(orders)) {
+                container.innerHTML = orders.length ? orders.map(order => `<div style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:20px;"><strong style="color:var(--color-primary);">${order.order_number}</strong><div style="display:flex;justify-content:space-between;gap:12px;margin-top:8px;font-size:13px;color:var(--gray-600);"><span>${String(order.fulfillment_type).toLowerCase()} · ${order.status.replaceAll('_', ' ')}</span><strong>₦${(Number(order.total_kobo || 0) / 100).toLocaleString()}</strong></div><div style="font-size:12px;color:var(--gray-400);margin-top:6px;">${new Date(order.created_at).toLocaleDateString()}</div></div>`).join('') : `<div style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:24px;color:var(--gray-500);">No authenticated orders yet.</div>`;
+            }
         }
     </script>
 </body>

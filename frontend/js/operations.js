@@ -98,6 +98,28 @@ export function formatDateTime(iso) {
     return Number.isNaN(d.getTime()) ? String(iso) : d.toLocaleString();
 }
 
+export function buildDashboardMetrics(orders) {
+    const counts = { received: 0, awaitingPayment: 0, paymentConfirmed: 0, preparing: 0, ready: 0, outForDelivery: 0, completed: 0 };
+    for (const order of orders || []) {
+        if (order.status === 'ORDER_RECEIVED') counts.received += 1;
+        if (order.status === 'AWAITING_PAYMENT' || (order.payment_status === 'PENDING' && order.status === 'ORDER_RECEIVED')) counts.awaitingPayment += 1;
+        if (order.status === 'PAYMENT_CONFIRMED') counts.paymentConfirmed += 1;
+        if (order.status === 'PREPARING') counts.preparing += 1;
+        if (['READY_FOR_PICKUP', 'READY_FOR_DISPATCH', 'RIDER_ASSIGNED'].includes(order.status)) counts.ready += 1;
+        if (order.status === 'OUT_FOR_DELIVERY') counts.outForDelivery += 1;
+        if (['DELIVERED', 'COMPLETED'].includes(order.status)) counts.completed += 1;
+    }
+    return { ...counts, active: (orders || []).filter((order) => !['DELIVERED', 'COMPLETED', 'CANCELLED', 'PAYMENT_FAILED', 'REFUNDED'].includes(order.status)).length };
+}
+
+export function buildWhatsAppContactUrl(order) {
+    const rawPhone = String(order?.customer_phone || '').replace(/[^0-9]/g, '');
+    const phone = rawPhone.startsWith('0') ? `234${rawPhone.slice(1)}` : rawPhone;
+    if (!phone || !order?.order_number) return null;
+    const message = `Hello, this is CLX Operations regarding order ${order.order_number}. We are following up on your order.`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+}
+
 // --- Queue filters (Phase 4H, client-side only) ---
 
 export const QUEUE_FILTERS = [
@@ -108,7 +130,9 @@ export const QUEUE_FILTERS = [
     { id: 'ready', label: 'Ready', match: (o) => ['READY_FOR_PICKUP', 'READY_FOR_DISPATCH', 'RIDER_ASSIGNED'].includes(o.status) },
     { id: 'delivery', label: 'Delivery', match: (o) => o.fulfillment_type === 'DELIVERY' },
     { id: 'completed', label: 'Completed', match: (o) => o.status === 'COMPLETED' },
-    { id: 'cancelled', label: 'Cancelled', match: (o) => ['CANCELLED', 'PAYMENT_FAILED', 'REFUND_PENDING', 'REFUNDED'].includes(o.status) }
+    { id: 'cancelled', label: 'Cancelled', match: (o) => ['CANCELLED', 'PAYMENT_FAILED'].includes(o.status) },
+    { id: 'refund_pending', label: 'Refund Pending', match: (o) => o.status === 'REFUND_PENDING' },
+    { id: 'refunded', label: 'Refunded', match: (o) => o.status === 'REFUNDED' }
 ];
 
 export function filterQueue(orders, filterId, searchText) {
@@ -145,26 +169,30 @@ export async function fetchOperationsQueue() {
         const { data: parents, error: pErr } = await supabase
             .from('customer_orders')
             .select(`id, order_number, customer_name, customer_phone, campus_id, fulfillment_type,
-                delivery_zone_id, delivery_location, notes, subtotal_kobo, delivery_fee_kobo,
+                delivery_zone_id, nearest_landmark, delivery_location, notes, cancellation_reason, cancelled_at, subtotal_kobo, delivery_fee_kobo,
                 service_fee_kobo, total_kobo, status, created_at`)
             .order('created_at', { ascending: false })
             .limit(200);
         if (pErr) { safeLog('customer_orders select', pErr); return { success: false, error: 'Unable to load CLX operations data. Please try again.' }; }
         const parentIds = (parents || []).map((o) => o.id);
 
-        const [childrenRes, paymentsRes, deliveriesRes, campusesRes, zonesRes, vendorsRes, ridersRes] = await Promise.all([
+        const [childrenRes, paymentsRes, deliveriesRes, historyRes, campusesRes, zonesRes, vendorsRes, ridersRes, refundsRes] = await Promise.all([
             parentIds.length ? supabase.from('orders').select('id, customer_order_id, vendor_id, vendor_group_number, status, subtotal_kobo, total_kobo, type').in('customer_order_id', parentIds) : Promise.resolve({ data: [], error: null }),
-            supabase.from('customer_order_payments').select('customer_order_id, payment_method, provider, provider_reference, amount_kobo, status, paid_at').in('customer_order_id', parentIds),
+            supabase.from('customer_order_payments').select('customer_order_id, payment_method, provider, provider_reference, amount_kobo, status, paid_at, verified_at').in('customer_order_id', parentIds),
             parentIds.length ? supabase.from('delivery_requests').select('customer_order_id, rider_user_id, rider_id, pickup_location, dropoff_location, estimated_fee_kobo, actual_fee_kobo, status, preferred_at, picked_up_at, delivered_at').in('customer_order_id', parentIds) : Promise.resolve({ data: [], error: null }),
+            parentIds.length ? supabase.from('customer_order_status_history').select('customer_order_id, vendor_order_id, status, created_at').in('customer_order_id', parentIds).order('created_at', { ascending: true }) : Promise.resolve({ data: [], error: null }),
             supabase.from('campuses').select('id, name, short_name'),
             supabase.from('delivery_zones').select('id, name, campus_id'),
             supabase.from('vendors').select('id, name, location'),
-            supabase.from('riders').select('id, name, campus_id, is_active, is_available')
+            supabase.from('riders').select('id, name, campus_id, is_active, is_available'),
+            parentIds.length ? supabase.from('customer_order_refunds').select('customer_order_id, amount_kobo, reason, status, requested_at, confirmed_at, admin_reference').in('customer_order_id', parentIds) : Promise.resolve({ data: [], error: null })
         ]);
 
         if (childrenRes.error) { safeLog('orders select', childrenRes.error); return { success: false, error: 'Unable to load CLX operations data. Please try again.' }; }
+        if (refundsRes.error) { safeLog('refunds select', refundsRes.error); return { success: false, error: 'Unable to load refund records. Please refresh.' }; }
         if (paymentsRes.error) { safeLog('payments select', paymentsRes.error); return { success: false, error: 'Unable to load CLX operations data. Please try again.' }; }
         if (deliveriesRes.error) { safeLog('delivery_requests select', deliveriesRes.error); return { success: false, error: 'Unable to load CLX operations data. Please try again.' }; }
+        if (historyRes.error) { safeLog('customer_order_status_history select', historyRes.error); return { success: false, error: 'Unable to load CLX operations data. Please try again.' }; }
         if (campusesRes.error) safeLog('campuses select', campusesRes.error);
         if (zonesRes.error) safeLog('delivery_zones select', zonesRes.error);
         if (vendorsRes.error) safeLog('vendors select', vendorsRes.error);
@@ -189,7 +217,13 @@ export async function fetchOperationsQueue() {
         }
 
         const paymentByOrder = new Map((paymentsRes.data || []).map((p) => [p.customer_order_id, p]));
+        const refundByOrder = new Map((refundsRes.data || []).map((r) => [r.customer_order_id, r]));
         const deliveryByOrder = new Map((deliveriesRes.data || []).map((d) => [d.customer_order_id, d]));
+        const historyByOrder = new Map();
+        for (const entry of historyRes.data || []) {
+            if (!historyByOrder.has(entry.customer_order_id)) historyByOrder.set(entry.customer_order_id, []);
+            historyByOrder.get(entry.customer_order_id).push({ vendor_order_id: entry.vendor_order_id, status: entry.status, created_at: entry.created_at });
+        }
         const childrenByOrder = new Map();
         for (const child of children) {
             if (!childrenByOrder.has(child.customer_order_id)) childrenByOrder.set(child.customer_order_id, []);
@@ -234,9 +268,12 @@ export async function fetchOperationsQueue() {
                 campus_name: campus?.name || 'Unknown campus',
                 fulfillment_type: parent.fulfillment_type,
                 fulfillment_label: fulfillmentLabel(parent.fulfillment_type),
+                nearest_landmark: parent.fulfillment_type === 'DELIVERY' ? parent.nearest_landmark : null,
                 delivery_location: parent.fulfillment_type === 'DELIVERY' ? parent.delivery_location : null,
                 delivery_zone_name: zone?.name || null,
                 notes: parent.notes || '',
+                cancellation_reason: parent.cancellation_reason || null,
+                cancelled_at: parent.cancelled_at || null,
                 status: parent.status,
                 status_label: orderStatusLabel(parent.status),
                 payment_status: payment?.status || 'PENDING',
@@ -244,10 +281,15 @@ export async function fetchOperationsQueue() {
                 payment_method: payment?.payment_method || null,
                 payment_method_label: payment?.payment_method ? paymentMethodLabel(payment.payment_method) : null,
                 provider_reference: payment?.provider_reference || null,
+                paid_amount_kobo: payment?.amount_kobo || 0,
+                payment_verified_at: payment?.verified_at || null,
+                payment_paid_at: payment?.paid_at || null,
+                refund: refundByOrder.get(parent.id) || null,
                 subtotal_kobo: parent.subtotal_kobo,
                 delivery_fee_kobo: parent.delivery_fee_kobo,
                 service_fee_kobo: parent.service_fee_kobo,
                 total_kobo: parent.total_kobo,
+                history: historyByOrder.get(parent.id) || [],
                 vendor_names: vendorGroups.map((g) => g.vendor_name),
                 vendor_groups: vendorGroups,
                 delivery: delivery ? {
@@ -258,6 +300,9 @@ export async function fetchOperationsQueue() {
                     estimated_fee_kobo: delivery.estimated_fee_kobo,
                     actual_fee_kobo: delivery.actual_fee_kobo,
                     rider_id: delivery.rider_id,
+                    has_rider_assignment: !!(delivery.rider_id || delivery.rider_user_id),
+                    picked_up_at: delivery.picked_up_at,
+                    delivered_at: delivery.delivered_at,
                     rider_name: riderById.get(delivery.rider_id)?.name || null
                 } : null
                 // Note: rider_user_id deliberately not exposed (raw UUID, no name resolvable without profiles read)
@@ -301,6 +346,20 @@ export async function verifyCustomerOrderPayment(customerOrderId) {
     }
 }
 
+export async function cancelCustomerOrder(customerOrderId, reason) {
+    const supabase = getSupabaseClient();
+    if (!supabase || !customerOrderId || !reason) return { success: false, error: 'Select a cancellation reason.' };
+    try {
+        const { data, error } = await supabase.rpc('admin_cancel_customer_order', { p_customer_order_id: customerOrderId, p_reason: reason });
+        if (error || !data?.success) {
+            if (data?.code === 'PAID_ORDER_REQUIRES_REFUND') return { success: false, error: 'Paid orders require a refund workflow and cannot be cancelled here.' };
+            if (data?.code === 'ALREADY_CANCELLED') return { success: false, error: 'This order has already been cancelled.' };
+            return { success: false, error: 'This order is not eligible for cancellation.' };
+        }
+        return { success: true };
+    } catch (err) { safeLog('order cancellation', err); return { success: false, error: 'Unable to cancel this order.' }; }
+}
+
 export async function advanceVendorOrder(vendorOrderId, targetStatus) {
     const supabase = getSupabaseClient();
     if (!supabase || !vendorOrderId || !['CONFIRMED', 'PREPARING', 'READY'].includes(targetStatus)) {
@@ -329,21 +388,48 @@ export async function advanceVendorOrder(vendorOrderId, targetStatus) {
     }
 }
 
-async function operationsRpc(name, payload, failureMessage) {
+const RIDER_ERROR_MESSAGES = {
+    DUPLICATE_PHONE: 'A rider with this phone number already exists.',
+    INVALID_PHONE: 'Enter a valid Nigerian phone number.',
+    INVALID_CAMPUS: 'Please select an active campus.',
+    UNAUTHORIZED: 'You are not authorized to add riders.',
+    UNKNOWN: 'Unable to save rider. Please try again.'
+};
+
+export function classifyRiderError(errorText) {
+    const text = String(errorText || '').toLowerCase();
+    if (/already exists|duplicate key|riders_normalized_phone_unique/.test(text)) return 'DUPLICATE_PHONE';
+    if (/not authorized|admin authorization required|permission denied/.test(text)) return 'UNAUTHORIZED';
+    if (/active campus|campus is required|campus.*inactive|invalid campus/.test(text)) return 'INVALID_CAMPUS';
+    if (/invalid rider details|invalid.*phone|phone.*invalid|phone.*format/.test(text)) return 'INVALID_PHONE';
+    return 'UNKNOWN';
+}
+
+export function riderErrorMessage(errorCode) {
+    return RIDER_ERROR_MESSAGES[errorCode] || RIDER_ERROR_MESSAGES.UNKNOWN;
+}
+
+async function operationsRpc(name, payload, failureMessage, errorClassifier = null) {
     const supabase = getSupabaseClient();
     if (!supabase) return { success: false, error: failureMessage };
     try {
         const { data, error } = await supabase.rpc(name, payload);
-        if (error || !data?.success) return { success: false, error: failureMessage };
+        if (error || !data?.success) {
+            const errorCode = errorClassifier ? errorClassifier(error?.message || data?.message) : null;
+            return { success: false, error: errorCode ? riderErrorMessage(errorCode) : failureMessage, errorCode };
+        }
         return { success: true, alreadyApplied: data.already_applied === true, data };
-    } catch {
-        return { success: false, error: failureMessage };
+    } catch (error) {
+        const errorCode = errorClassifier ? errorClassifier(error?.message) : null;
+        return { success: false, error: errorCode ? riderErrorMessage(errorCode) : failureMessage, errorCode };
     }
 }
 
-export const createRider = (payload) => operationsRpc('admin_create_rider', payload, 'Unable to save rider.');
-export const updateRider = (riderId, patch) => operationsRpc('admin_update_rider', { p_rider_id: riderId, p_patch: patch }, 'Unable to save rider.');
+export const createRider = (payload) => operationsRpc('admin_create_rider', payload, RIDER_ERROR_MESSAGES.UNKNOWN, classifyRiderError);
+export const updateRider = (riderId, patch) => operationsRpc('admin_update_rider', { p_rider_id: riderId, p_patch: patch }, RIDER_ERROR_MESSAGES.UNKNOWN, classifyRiderError);
 export const assignDeliveryRider = (orderId, riderId) => operationsRpc('admin_assign_delivery_rider', { p_customer_order_id: orderId, p_rider_id: riderId }, 'Unable to assign this rider.');
 export const advanceDelivery = (orderId, targetStatus) => operationsRpc('admin_advance_delivery_request', { p_customer_order_id: orderId, p_target_status: targetStatus }, 'Unable to update delivery.');
 export const completePickup = (orderId) => operationsRpc('admin_complete_pickup_order', { p_customer_order_id: orderId }, 'Unable to complete pickup.');
 export const completeDelivery = (orderId) => operationsRpc('admin_complete_delivery_order', { p_customer_order_id: orderId }, 'Unable to complete delivery.');
+export const requestOrderRefund = (orderId, reason) => operationsRpc('admin_request_order_refund', { p_customer_order_id: orderId, p_reason: reason }, 'Unable to mark this order for refund. Refresh its status; progressed orders require manual intervention.');
+export const confirmOrderRefund = (orderId, reference) => operationsRpc('admin_confirm_order_refund', { p_customer_order_id: orderId, p_money_returned: true, p_reference: reference || null }, 'Unable to confirm this refund. Refresh and check the recorded refund state.');

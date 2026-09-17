@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /account
+Disallow: /checkout
+Disallow: /orders
+
+Sitemap: https://clx.dandalinsauki.com/sitemap.xml
