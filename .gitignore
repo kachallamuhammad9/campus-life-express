@@ -51,4 +51,5 @@ frontend/.vercel/
 # Distribution
 *.apk
 *.aab
-/frontend/public/downloads/
+/frontend/public/downloads/*
+!/frontend/public/downloads/CLX-v1.0.0.apk
