@@ -47,3 +47,8 @@ frontend/.vercel/
 *-output.txt
 *-counts-before*.txt
 *.err
+
+# Distribution
+*.apk
+*.aab
+/frontend/public/downloads/
