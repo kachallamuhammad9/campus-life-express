@@ -6,6 +6,7 @@
 import { CLX_CONFIG, CAMPUSES, CATEGORIES } from './data.js';
 import { api } from './api.js';
 import { onAuthChange, updateAuthNavigation } from './auth.js';
+import { generateIdempotencyKey, generateTrackingToken } from './customer-orders.js';
 
 // ==================================================
 // UTILITIES & HELPERS
@@ -744,7 +745,9 @@ window.CLX = {
     search: SearchController,
     auth: AuthManager,
     utils: Utils,
-    getCampus: () => CampusManager.selectedCampus
+    getCampus: () => CampusManager.selectedCampus,
+    generateIdempotencyKey,
+    generateTrackingToken
 };
 
 function initCLXApp() {

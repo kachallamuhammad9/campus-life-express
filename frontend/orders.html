@@ -361,6 +361,9 @@
         }
 
         let checkoutCampus = null;
+        let currentIdempotencyKey = null;
+        let currentTrackingToken = null;
+
         function renderCheckoutSummary() {
             const summaryEl = document.getElementById("checkout-summary");
             if (!summaryEl) return;
@@ -484,6 +487,8 @@
             if (urlParams.get("checkout") === "direct" && CartManager.items.length > 0) {
                 const chkBox = document.getElementById("checkout-box");
                 if (chkBox) chkBox.style.display = "block";
+                currentIdempotencyKey = window.CLX.generateIdempotencyKey();
+                currentTrackingToken = window.CLX.generateTrackingToken();
                 renderCheckoutSummary();
             }
 
@@ -535,6 +540,9 @@
                     }
                     let payload;
                     try {
+                        if (!currentIdempotencyKey) currentIdempotencyKey = window.CLX.generateIdempotencyKey();
+                        if (!currentTrackingToken) currentTrackingToken = window.CLX.generateTrackingToken();
+
                         payload = {
                             items: buildCustomerOrderItems(items),
                             campusId: checkoutCampus.data.id,
@@ -545,7 +553,9 @@
                             deliveryLocation: fulfillmentType === "DELIVERY" ? document.getElementById("chk-location").value.trim() : null,
                             deliveryZoneId: null,
                             nearestLandmark: fulfillmentType === "DELIVERY" ? document.getElementById("chk-landmark").value || null : null,
-                            notes: customer.notes || null
+                            notes: customer.notes || null,
+                            idempotencyKey: currentIdempotencyKey,
+                            trackingToken: currentTrackingToken
                         };
                     } catch (error) {
                         Utils.showToast(error.message, "error");
@@ -560,6 +570,9 @@
                     if (!orderResult.success) {
                         const code = orderResult.error?.code;
                         if (code === "PRICE_CHANGED") {
+                            // PRICE_CHANGED: Invalidate attempt
+                            currentIdempotencyKey = null;
+                            currentTrackingToken = null;
                             Utils.showToast("The catalogue price changed. Please review your cart before trying again.", "error");
                             const refreshed = await api.products.list({ campus: api.campuses.getSelectedCampus() });
                             if (refreshed.source === "supabase") {
@@ -576,11 +589,13 @@
                         }
                         return;
                     }
-                    saveTrackingOrder({ orderNumber: orderResult.data.order_number, trackingToken: orderResult.data.tracking_token });
+                    saveTrackingOrder({ orderNumber: orderResult.data.order_number, trackingToken: currentTrackingToken });
                     const handoffItems = CartManager.items.slice();
                     await CartManager.clear();
+                    currentIdempotencyKey = null;
+                    currentTrackingToken = null;
                     document.getElementById("checkout-box").style.display = "none";
-                    renderConfirmation({ ...orderResult.data, delivery_location: payload.deliveryLocation, nearest_landmark: payload.nearestLandmark }, customer, checkoutCampus.data.name, handoffItems);
+                    renderConfirmation({ ...orderResult.data, delivery_location: payload.deliveryLocation, nearest_landmark: payload.nearestLandmark, tracking_token: currentTrackingToken }, customer, checkoutCampus.data.name, handoffItems);
                     renderRecentOrders();
                     Utils.showToast("Order received. Payment is awaiting confirmation.");
                 });

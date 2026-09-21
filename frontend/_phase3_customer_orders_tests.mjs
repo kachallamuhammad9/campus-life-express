@@ -17,7 +17,7 @@ const firstProduct = '11111111-1111-4111-8111-111111111111';
 const secondProduct = '22222222-2222-4222-8222-222222222222';
 const cart = [{ id: firstProduct, quantity: 2, price: 1, isLiveProduct: true }, { id: secondProduct, quantity: 3, price: 999, isLiveProduct: true }];
 const items = buildCustomerOrderItems(cart);
-test('single/multi-vendor payload contains product ID and quantity only', JSON.stringify(items) === JSON.stringify([{ product_id: firstProduct, quantity: 2 }, { product_id: secondProduct, quantity: 3 }]));
+test('single/multi-vendor payload contains product ID, quantity and price', JSON.stringify(items) === JSON.stringify([{ product_id: firstProduct, quantity: 2, client_unit_price_kobo: 100 }, { product_id: secondProduct, quantity: 3, client_unit_price_kobo: 99900 }]));
 test('invalid quantities are rejected before RPC', (() => { try { buildCustomerOrderItems([{ id: firstProduct, quantity: 51 }]); return false; } catch { return true; } })());
 test('fallback/static products are blocked before RPC without changing the cart', (() => { const fallback = [{ id: 'static-product', quantity: 1 }]; try { buildCustomerOrderItems(fallback); return false; } catch { return fallback.length === 1; } })());
 

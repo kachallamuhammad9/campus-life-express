@@ -931,13 +931,15 @@ export const api = {
                 return { success: false, error: { code: 'SUPABASE_UNAVAILABLE', message: 'Secure checkout is unavailable. Your cart has not been changed.' } };
             }
             const result = await supabaseQuery(
-                (sb) => sb.rpc('create_customer_order', {
+                (sb) => sb.rpc('create_customer_order_v2', {
                     p_items: order.items,
                     p_campus_id: order.campusId,
                     p_fulfillment_type: order.fulfillmentType,
                     p_customer_name: order.customerName,
                     p_customer_phone: order.customerPhone,
                     p_payment_method: order.paymentMethod,
+                    p_idempotency_key: order.idempotencyKey,
+                    p_tracking_token: order.trackingToken,
                     p_delivery_location: order.deliveryLocation,
                     p_delivery_zone_id: order.deliveryZoneId,
                     p_nearest_landmark: order.nearestLandmark,

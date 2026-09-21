@@ -17,7 +17,7 @@ test('legacy transport makes no fetch call', !api.includes('fetch(') && api.incl
 test('no active Express base URL remains', !api.includes('API_BASE') && !api.includes('VITE_API_BASE_URL'));
 test('orders page does not load legacy orders or deliveries', !orders.includes('api.orders.list()') && !orders.includes('api.delivery.list()'));
 test('delivery page does not request retired delivery API', !delivery.includes('api.delivery.requestDelivery'));
-test('Supabase customer order RPC remains', api.includes("rpc('create_customer_order'"));
+test('Supabase customer order V2 RPC remains', api.includes("rpc('create_customer_order_v2'"));
 test('Supabase tracking RPC remains', api.includes("rpc('get_customer_order_tracking'"));
 test('Vite remains static without Express middleware', !config.includes('clx-backend') && !config.includes('configureServer'));
 
