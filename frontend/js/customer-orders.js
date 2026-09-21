@@ -16,7 +16,11 @@ export function buildCustomerOrderItems(cartItems) {
             throw new Error('Your cart contains an invalid product or quantity.');
         }
         productIds.add(productId);
-        return { product_id: productId, quantity };
+        return {
+            product_id: productId,
+            quantity,
+            client_unit_price_kobo: Math.round(Number(item.price || 0) * 100)
+        };
     });
 }
 
@@ -31,6 +35,16 @@ export function saveTrackingOrder(order) {
 
 export function getSavedTrackingOrders() {
     try { return JSON.parse(localStorage.getItem(TRACKING_STORAGE_KEY) || '[]'); } catch { return []; }
+}
+
+export function generateIdempotencyKey() {
+    return crypto.randomUUID();
+}
+
+export function generateTrackingToken() {
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export function formatKobo(kobo) {
