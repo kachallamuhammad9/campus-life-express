@@ -411,3 +411,70 @@ button.admin-metric-card:hover { border-color: var(--admin-blue); transform: tra
 @media (max-width: 900px) { .admin-container { width: min(100% - 32px, 760px); } .admin-topbar { min-height: 76px; } .admin-topbar-tools { gap: 8px; } .admin-topbar-tools .admin-global-search, .admin-campus-indicator { display: none; } .admin-sidebar { background: #0a0a0a; } .admin-menu-toggle { border-color: var(--admin-line); background: var(--admin-card); color: var(--admin-gold); } .admin-dashboard-grid { grid-template-columns: 1fr; } .admin-trend-card, .admin-category-card { grid-column: auto; grid-row: auto; } }
 @media (max-width: 600px) { .admin-container { width: calc(100% - 24px); } .admin-topbar { padding-bottom: 12px; } .admin-brand-lockup { gap: 8px; } .admin-brand-mark { width: 34px; height: 34px; flex-basis: 34px; font-size: 11px; } .admin-brand-lockup h1 { font-size: 18px; } .admin-dashboard-hero { align-items: flex-start; flex-direction: column; margin-bottom: 20px; } .admin-dashboard-hero h2 { font-size: 26px; } .admin-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .admin-kpi-card { min-height: 112px; padding: 12px; gap: 8px; } .admin-kpi-icon { width: 27px; height: 27px; flex-basis: 27px; font-size: 11px; } .admin-kpi-copy strong { font-size: 23px; } .admin-kpi-copy small { font-size: 9px; } .admin-insight-card { padding: 15px; } .admin-status-chart { grid-template-columns: 112px minmax(0, 1fr); gap: 12px; } .admin-status-ring { width: 112px; height: 112px; } }
 @media (max-width: 390px) { .admin-container { width: calc(100% - 20px); } .admin-kpi-grid { grid-template-columns: 1fr 1fr; } .admin-kpi-card { display: block; } .admin-kpi-icon { margin-bottom: 9px; } .admin-kpi-copy strong { font-size: 21px; } .admin-status-chart { grid-template-columns: 1fr; justify-items: center; } .admin-status-legend { width: 100%; } }
+
+/* Button contrast: keep light controls dark, and primary controls on gold. */
+.admin-page button,
+.admin-page a { -webkit-tap-highlight-color: transparent; }
+.admin-page button:focus-visible,
+.admin-page a:focus-visible,
+.admin-page input:focus-visible,
+.admin-page select:focus-visible,
+.admin-page textarea:focus-visible { outline: 2px solid var(--admin-gold-soft); outline-offset: 3px; }
+
+#admin-signin,
+#rider-new,
+#rider-editor button[type="submit"],
+#ap-add-btn:not(:disabled),
+#ap-form-submit,
+#as-add,
+#ops-detail-content .ops-assign-rider,
+#ops-detail-content .ops-verify-payment { background: var(--admin-gold) !important; border-color: var(--admin-gold) !important; color: var(--admin-black) !important; }
+#admin-signin i, #admin-signin svg,
+#rider-new i, #rider-new svg,
+#rider-editor button[type="submit"] i, #rider-editor button[type="submit"] svg,
+#ap-add-btn i, #ap-add-btn svg, #ap-form-submit i, #ap-form-submit svg,
+#as-add i, #as-add svg,
+#ops-detail-content .ops-assign-rider i, #ops-detail-content .ops-assign-rider svg,
+#ops-detail-content .ops-verify-payment i, #ops-detail-content .ops-verify-payment svg { color: currentColor !important; }
+
+#admin-denied-signout,
+#admin-logout,
+#ops-detail-close,
+#rider-editor button#rider-cancel,
+#ap-refresh,
+#ap-modal-close,
+#ap-form-cancel,
+#ops-queue .ops-view-detail,
+#admin-products-section button[data-edit],
+#admin-products-section button[data-toggle-stock],
+#admin-services-section button,
+#vendor-applications-admin button,
+#admin-lifecycle-section button:not([data-confirm]) { background: #fff !important; color: var(--admin-black) !important; border-color: rgba(255,255,255,.22) !important; }
+#admin-denied-signout i, #admin-denied-signout svg,
+#admin-logout i, #admin-logout svg,
+#ops-detail-close i, #ops-detail-close svg,
+#rider-editor button#rider-cancel i, #rider-editor button#rider-cancel svg,
+#ap-refresh i, #ap-refresh svg, #ap-modal-close i, #ap-modal-close svg,
+#ap-form-cancel i, #ap-form-cancel svg,
+#ops-queue .ops-view-detail i, #ops-queue .ops-view-detail svg,
+#admin-products-section button[data-edit] i, #admin-products-section button[data-edit] svg,
+#admin-services-section button i, #admin-services-section button svg,
+#vendor-applications-admin button i, #vendor-applications-admin button svg,
+#admin-lifecycle-section button:not([data-confirm]) i, #admin-lifecycle-section button:not([data-confirm]) svg { color: currentColor !important; }
+
+#ops-filter-buttons button { background: #fff !important; color: var(--admin-black) !important; border-color: rgba(255,255,255,.22) !important; }
+#ops-filter-buttons button[style*="var(--color-primary)"] { background: var(--admin-gold) !important; border-color: var(--admin-gold) !important; color: var(--admin-black) !important; }
+#ops-filter-buttons button i, #ops-filter-buttons button svg { color: currentColor !important; }
+
+#ops-detail-content .ops-advance-vendor-order,
+#ops-detail-content .ops-advance-delivery { background: transparent !important; border: 1px solid var(--admin-gold) !important; color: var(--admin-gold) !important; }
+#ops-detail-content .ops-advance-vendor-order i, #ops-detail-content .ops-advance-vendor-order svg,
+#ops-detail-content .ops-advance-delivery i, #ops-detail-content .ops-advance-delivery svg { color: currentColor !important; }
+#ops-detail-content .ops-request-refund { background: transparent !important; border: 1px solid #f0a35b !important; color: #f0a35b !important; }
+#ops-detail-content .ops-request-refund i, #ops-detail-content .ops-request-refund svg { color: currentColor !important; }
+
+#admin-signin:hover, #rider-new:hover, #rider-editor button[type="submit"]:hover,
+#ap-add-btn:not(:disabled):hover, #ap-form-submit:hover, #as-add:hover,
+#ops-detail-content .ops-assign-rider:hover, #ops-detail-content .ops-verify-payment:hover { background: var(--admin-gold-soft) !important; color: var(--admin-black) !important; }
+.admin-page button:disabled, .admin-page button[disabled] { cursor: not-allowed; opacity: .55; }
+#admin-signin:disabled, #rider-new:disabled, #ap-add-btn:disabled, #ap-form-submit:disabled, #as-add:disabled { color: #777 !important; background: #292929 !important; border-color: #444 !important; }
