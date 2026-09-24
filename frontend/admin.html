@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLX Admin Console</title>
+    <title>CLX Operations Command Center</title>
     <link rel="icon" href="./images/clx.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="./css/main.css">
     <link rel="stylesheet" href="./css/admin.css">
@@ -14,8 +17,13 @@
         <div class="admin-container">
             <header class="admin-topbar">
                 <button id="admin-menu-toggle" class="admin-menu-toggle" type="button" aria-label="Open admin navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
-                <div class="admin-brand-lockup"><span class="admin-eyebrow">CLX Operations</span><h1>Admin Console</h1><p>Manage CLX orders, vendors, products, riders and fulfilment operations.</p></div>
-                <a href="/" class="admin-back-link"><i class="fa-solid fa-arrow-left"></i><span>Back to CLX</span></a>
+                <div class="admin-brand-lockup"><div class="admin-brand-mark">CLX</div><div><span class="admin-eyebrow">Campus Life Express</span><h1>Operations Command Center</h1><p>Live fulfilment control for the CLX network.</p></div></div>
+                <div class="admin-topbar-tools">
+                    <label class="admin-global-search" for="admin-global-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="admin-global-search" type="search" placeholder="Search orders, vendors, products or customers..." aria-label="Search orders, vendors, products or customers"></label>
+                    <span class="admin-campus-indicator"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span><strong>UNIMAID</strong><small>Main Campus</small></span></span>
+                    <button class="admin-icon-button" type="button" aria-label="Notifications"><i class="fa-regular fa-bell" aria-hidden="true"></i><span class="admin-notification-dot"></span></button>
+                    <a href="/" class="admin-back-link" aria-label="Back to CLX"><i class="fa-solid fa-arrow-left"></i><span>Back to CLX</span></a>
+                </div>
             </header>
 
             <!-- State 1: Loading -->
@@ -48,7 +56,7 @@
             <section id="admin-content" hidden>
                 <div class="admin-shell">
                     <aside id="admin-sidebar" class="admin-sidebar" aria-label="Admin navigation">
-                        <div class="admin-sidebar-heading"><span>Workspace</span><button id="admin-menu-close" class="admin-menu-close" type="button" aria-label="Close admin navigation"><i class="fa-solid fa-xmark"></i></button></div>
+                        <div class="admin-sidebar-heading"><div class="admin-sidebar-brand"><span>CLX</span><small>Operations</small></div><button id="admin-menu-close" class="admin-menu-close" type="button" aria-label="Close admin navigation"><i class="fa-solid fa-xmark"></i></button></div>
                         <nav id="admin-nav" class="admin-nav">
                             <button type="button" class="admin-nav-item is-active" data-admin-module="overview"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></button>
                             <button type="button" class="admin-nav-item" data-admin-module="orders"><i class="fa-solid fa-receipt"></i><span>Orders</span></button>
@@ -58,7 +66,7 @@
                             <button type="button" class="admin-nav-item" data-admin-module="products"><i class="fa-solid fa-box-open"></i><span>Products</span></button>
                             <button type="button" class="admin-nav-item" data-admin-module="lifecycle"><i class="fa-solid fa-box-archive"></i><span>Archive &amp; Lifecycle</span></button>
                         </nav>
-                        <div class="admin-sidebar-footer"><span>Security</span><strong><i class="fa-solid fa-shield-halved"></i> Authorized team access</strong></div>
+                        <div class="admin-sidebar-footer"><div class="admin-sidebar-footer-label">Secure workspace</div><strong><i class="fa-solid fa-shield-halved"></i> Authorized team access</strong><small>Supabase Auth protected</small></div>
                     </aside>
                     <div class="admin-main-column">
                     <div class="admin-mobile-heading"><span class="admin-eyebrow">CLX Operations</span><h2 id="admin-module-title">Operations Overview</h2><p id="admin-module-description">Monitor attention items and move quickly into the right management workspace.</p></div>
@@ -66,8 +74,13 @@
                     <p class="admin-auth-note">Authorized CLX team access only.</p>
 
                 <section id="admin-overview" class="admin-module-panel is-active" data-admin-panel="overview">
-                    <h3 style="font-size:15px;margin:0 0 10px;color:var(--gray-900);">Operations overview</h3>
+                    <div class="admin-dashboard-hero"><div><span class="admin-section-kicker">Today at CLX</span><h2>Good to see you, <span id="admin-welcome-name">Administrator</span>.</h2><p>Here is what is moving across the network today.</p></div><time id="admin-today" datetime=""></time></div>
                     <div id="ops-summary" class="admin-metric-groups"></div>
+                    <div class="admin-dashboard-grid">
+                        <section class="admin-insight-card admin-trend-card"><div class="admin-insight-heading"><div><span class="admin-section-kicker">Order flow</span><h3>Orders overview</h3></div><span class="admin-live-label"><i class="fa-solid fa-circle"></i> Live queue</span></div><div id="admin-order-trend" class="admin-trend-chart" aria-label="Orders over the last seven days"></div><div id="admin-trend-labels" class="admin-trend-labels"></div></section>
+                        <section class="admin-insight-card"><div class="admin-insight-heading"><div><span class="admin-section-kicker">Distribution</span><h3>Order status</h3></div></div><div id="admin-status-chart" class="admin-status-chart"></div></section>
+                        <section class="admin-insight-card admin-category-card"><div class="admin-insight-heading"><div><span class="admin-section-kicker">Catalogue pulse</span><h3>Top operational signals</h3></div></div><div id="admin-category-list" class="admin-category-list"></div></section>
+                    </div>
                     <div class="admin-management-heading"><div><span class="admin-section-kicker">Workspace</span><h3>Quick management</h3></div><span class="admin-section-note">Open a focused module</span></div>
                     <div class="admin-management-grid">
                         <button type="button" class="admin-management-card" data-admin-module="orders"><i class="fa-solid fa-receipt"></i><span><strong>Orders</strong><small>Manage customer orders and fulfilment</small></span><i class="fa-solid fa-arrow-right admin-card-arrow"></i></button>
@@ -127,6 +140,7 @@
         import { createAdminServices } from './js/admin-services.js';
         import { REFUND_REASONS, isRefundOrder, canRequestOrderRefund } from './js/order-refunds.js';
         import { createAdminLifecycle } from './js/admin-lifecycle.js';
+        import { getSupabaseClient } from './js/supabase.js';
         const applicationAdmin = createVendorApplicationsAdmin(document.getElementById('vendor-applications-admin'));
         const productsAdmin = createAdminProducts(document.getElementById('admin-products-section'), {
             onProductChanged: () => lifecycleAdmin.init(),
@@ -181,6 +195,7 @@
         let opsSearch = '';
         let opsRiders = [];
         let opsCampuses = [];
+        let dashboardCatalog = { vendors: null, products: null };
         let opsLoadVersion = 0;
         let activeAdminUserId = null;
 
@@ -241,6 +256,7 @@
             opsOrders = [];
             opsRiders = [];
             opsCampuses = [];
+            dashboardCatalog = { vendors: null, products: null };
             opsLoaded = false;
             opsLoadPromise = null;
             opsActiveFilter = 'all';
@@ -257,26 +273,48 @@
 
         function renderSummary() {
             const metrics = buildDashboardMetrics(opsOrders);
-            const refundPending = opsOrders.filter((order) => order.status === 'REFUND_PENDING').length;
-            const refunded = opsOrders.filter((order) => order.status === 'REFUNDED').length;
-            const groups = [
-                ['Needs attention', 'attention', [
-                    ['Awaiting Payment', metrics.awaitingPayment, 'awaiting_payment'],
-                    ['Ready for Pickup / Dispatch', metrics.ready, 'ready'],
-                    ['Refund Pending', refundPending, 'refund_pending']
-                ]],
-                ['In progress', 'progress', [
-                    ['Confirmed', metrics.paymentConfirmed, 'confirmed'],
-                    ['Preparing', metrics.preparing, 'preparing'],
-                    ['Delivery', metrics.outForDelivery, 'delivery']
-                ]],
-                ['Finished', 'finished', [
-                    ['Completed', metrics.completed, 'completed'],
-                    ['Cancelled', opsOrders.filter((order) => order.status === 'CANCELLED').length, 'cancelled'],
-                    ['Refunded', refunded, 'refunded']
-                ]]
+            const pending = opsOrders.filter((order) => ['ORDER_RECEIVED', 'AWAITING_PAYMENT'].includes(order.status) || order.payment_status === 'PENDING').length;
+            const ready = opsOrders.filter((order) => ['READY_FOR_PICKUP', 'READY_FOR_DISPATCH', 'RIDER_ASSIGNED'].includes(order.status)).length;
+            const activeVendors = new Set(opsOrders.flatMap((order) => order.vendor_groups.map((group) => group.vendor_name))).size;
+            const cards = [
+                ['Total orders', opsOrders.length, 'All-time orders', 'fa-receipt', 'all'],
+                ['Pending orders', pending, 'Awaiting confirmation', 'fa-hourglass-half', 'awaiting_payment'],
+                ['Ready orders', ready, 'Pickup or dispatch ready', 'fa-box-open', 'ready'],
+                ['Active vendors', dashboardCatalog.vendors ?? activeVendors, dashboardCatalog.vendors == null ? 'In current queue' : 'Verified active partners', 'fa-store', 'all'],
+                ['Total products', dashboardCatalog.products ?? '—', dashboardCatalog.products == null ? 'Catalogue count unavailable' : 'Across all categories', 'fa-cubes', 'all']
             ];
-            opsSummary.innerHTML = groups.map(([heading, tone, cards]) => `<div class="admin-metric-group"><div class="admin-metric-group-heading">${esc(heading)}</div>${cards.map(([label, value, filter]) => `<button type="button" class="admin-metric-card ${tone}" data-metric-filter="${filter}"><small>${esc(label)}</small><strong>${value}</strong></button>`).join('')}</div>`).join('');
+            opsSummary.innerHTML = `<div class="admin-kpi-grid">${cards.map(([label, value, description, icon, filter]) => `<button type="button" class="admin-kpi-card" data-metric-filter="${filter}"><span class="admin-kpi-icon"><i class="fa-solid ${icon}" aria-hidden="true"></i></span><span class="admin-kpi-copy"><small>${esc(label)}</small><strong>${esc(value)}</strong><em>${esc(description)}</em></span></button>`).join('')}</div>`;
+
+            const now = new Date();
+            const days = Array.from({ length: 7 }, (_, index) => {
+                const date = new Date(now); date.setHours(0, 0, 0, 0); date.setDate(now.getDate() - (6 - index));
+                const count = opsOrders.filter((order) => { const created = new Date(order.created_at); return created >= date && created < new Date(date.getTime() + 86400000); }).length;
+                return { date, count };
+            });
+            const max = Math.max(...days.map((day) => day.count), 1);
+            document.getElementById('admin-order-trend').innerHTML = days.map((day) => `<span class="admin-trend-bar" style="--bar-height:${Math.max(10, Math.round((day.count / max) * 100))}%" title="${day.count} order${day.count === 1 ? '' : 's'}"><i></i></span>`).join('');
+            document.getElementById('admin-trend-labels').innerHTML = days.map((day) => `<span>${day.date.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 3)}</span>`).join('');
+
+            const statusGroups = [
+                ['Pending', pending, 'pending'], ['Confirmed', opsOrders.filter((order) => ['PAYMENT_CONFIRMED', 'ORDER_CONFIRMED'].includes(order.status)).length, 'confirmed'],
+                ['Preparing', opsOrders.filter((order) => order.status === 'PREPARING').length, 'preparing'], ['Ready', ready, 'ready'],
+                ['Out for delivery', opsOrders.filter((order) => order.status === 'OUT_FOR_DELIVERY').length, 'delivery'], ['Completed', metrics.completed, 'completed']
+            ];
+            const total = Math.max(opsOrders.length, 1);
+            document.getElementById('admin-status-chart').innerHTML = `<div class="admin-status-ring" style="--status-progress:${Math.min(100, Math.round((metrics.completed / total) * 100))}%"><div><strong>${opsOrders.length}</strong><small>Total orders</small></div></div><div class="admin-status-legend">${statusGroups.map(([label, value, tone]) => `<span><i class="status-${tone}"></i><b>${esc(label)}</b><em>${value}</em></span>`).join('')}</div>`;
+            const signalRows = [['Order queue', `${opsOrders.length} tracked`, 'fa-layer-group'], ['Active vendor signal', `${activeVendors} in queue`, 'fa-store'], ['Catalogue count', dashboardCatalog.products == null ? 'Unavailable' : `${dashboardCatalog.products} products`, 'fa-cubes']];
+            document.getElementById('admin-category-list').innerHTML = signalRows.map(([label, value, icon]) => `<div class="admin-signal-row"><span class="admin-signal-icon"><i class="fa-solid ${icon}" aria-hidden="true"></i></span><span><strong>${esc(label)}</strong><small>${esc(value)}</small></span><i class="fa-solid fa-arrow-up-right-dots admin-signal-arrow" aria-hidden="true"></i></div>`).join('');
+        }
+
+        async function loadDashboardCatalog() {
+            const client = getSupabaseClient();
+            if (!client) return;
+            const [vendors, products] = await Promise.all([
+                client.from('vendors').select('id', { count: 'exact', head: true }).eq('status', 'ACTIVE').eq('is_verified', true),
+                client.from('products').select('id', { count: 'exact', head: true })
+            ]);
+            dashboardCatalog = { vendors: vendors.error ? null : vendors.count, products: products.error ? null : products.count };
+            renderSummary();
         }
 
         function renderFilterButtons() {
@@ -590,7 +628,12 @@
         async function enterAuthorizedState(user) {
             if (activeAdminUserId !== user.id) resetOperationsState();
             activeAdminUserId = user.id;
+            const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Administrator';
             document.getElementById('admin-user-email').textContent = user.email || 'CLX admin';
+            document.getElementById('admin-welcome-name').textContent = displayName;
+            const today = new Date();
+            document.getElementById('admin-today').dateTime = today.toISOString();
+            document.getElementById('admin-today').textContent = today.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
             const roles = await getUserRoles(user.id);
             document.getElementById('admin-user-role').textContent = roles.length ? roles.join(', ') : 'ADMIN';
             if (typeof loadFailsafe !== 'undefined') clearTimeout(loadFailsafe);
@@ -602,19 +645,26 @@
             productsAdmin.init();
             servicesAdmin.init();
             lifecycleAdmin.init();
+            loadDashboardCatalog().catch(() => { /* dashboard counts remain explicitly unavailable */ });
         }
+
+        let stateResolutionVersion = 0;
 
         /**
          * Decide UI state from the live session + database role.
-         * Fail-safe: any error resolves to the SIGNED-OUT login state —
-         * the page can never remain stuck on 'Checking authorization...'.
+         * Authorization errors remain retryable and never sign out a valid
+         * session; only a confirmed non-admin result reaches the denied state.
          */
         async function resolveState() {
             try {
+                const resolutionVersion = ++stateResolutionVersion;
                 const { user, error, timeout } = await getSessionUser();
+                if (resolutionVersion !== stateResolutionVersion) return;
                 if (!user) { showLogin(error || (timeout ? 'Unable to verify session. Please sign in again.' : '')); activeAdminUserId = null; return; }
                 const auth = await isAuthorizedAdmin();
-                if (!auth.authorized) { clearTimeout(loadFailsafe); show(deniedPanel); return; }
+                if (resolutionVersion !== stateResolutionVersion) return;
+                if (auth.status === 'error') { showLogin(auth.reason || 'Unable to verify admin access. Please try again.'); return; }
+                if (auth.status === 'denied') { clearTimeout(loadFailsafe); show(deniedPanel); return; }
                 await enterAuthorizedState(user);
             } catch (err) {
                 console.error('Admin auth initialization failed:', err);
